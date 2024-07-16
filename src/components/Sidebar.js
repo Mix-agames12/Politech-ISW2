@@ -1,5 +1,6 @@
 import React from 'react';
 import '../components/Sidebar.css';
+// import { neologo } from 'src\assets\images\neologo.png';
 
 export const Sidebar = () => {
 return  (
@@ -9,7 +10,12 @@ return  (
         <nav class="main-menu">
             <ul>
             <li>
-                <a href="https://jbfarrow.com">
+                <a href="https://facebook.com">
+                {/* <img src={neologo} alt="logo"/> */}
+                </a>
+            </li>
+            <li>
+                <a href="https://facebook.com">
                 <i class='bx bx-home'></i>
                 <span class="nav-text">
                     Dashboard
@@ -37,7 +43,7 @@ return  (
             <ul class="logout">
             <li>
                 <a href="#">
-                <i class="fa fa-power-off fa-2x"></i>
+                <i class='bx bx-power-off'></i>
                 <span class="nav-text">
                     Logout
                 </span>

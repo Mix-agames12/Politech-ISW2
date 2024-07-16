@@ -6,10 +6,15 @@ import Login from './components/Login';
 import PasswordReset from './components/PasswordReset';
 import UpdateProfile from './components/UpdateProfile';
 import Transaction from './components/Transaction';
+// import { Sidebar } from './components/Sidebar';
+import { GestionarCuentas } from './components/GestionarCuentas';
 
 function App() {
   return (
     <Router>
+      {/* <Sidebar /> */}
+      <GestionarCuentas />
+
       <div className="container">
         <nav className="navbar navbar-expand-lg navbar-light bg-light">
           <Link className="navbar-brand" to="/">Banking App</Link>

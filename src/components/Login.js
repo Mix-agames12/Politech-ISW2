@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { auth } from '../firebaseConfig';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { Sidebar } from './Sidebar';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -18,6 +19,7 @@ const Login = () => {
 
     return (
         <div className="container">
+            <div class="sidebar"> <Sidebar/> </div>
             <h2>Login</h2>
             <div className="form-group">
                 <label>Email</label>

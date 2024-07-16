@@ -78,6 +78,7 @@ font-size:18px;
 position:relative;
 display:table-cell;
 vertical-align:middle;
+text-align: center;
 width:190px;
 font-family: 'Titillium Web', sans-serif;
 }
@@ -87,20 +88,34 @@ position:absolute;
 left:0;
 bottom:0;
 }
-
+.main-menu>ul.logout .nav-text{
+    position:relative;
+    display:table-cell;
+    vertical-align:middle;
+    text-align: center;
+    width:190px;
+    font-family: 'Titillium Web', sans-serif;
+    }
 /* Editar iconos del dashboard */
 .main-menu ul li .bx-home {
     font-size: 30px;
     margin-left: 10px;
-    margin-top: auto;
+    margin-top: 4px;
 }
 .main-menu ul li .bx-transfer {
     font-size: 30px;
-    margin-left: 11px;
+    margin-left: 10px;
+    margin-top: 4px;
 }
 .main-menu ul li .bx-calendar {
     font-size: 30px;
-    margin-left: 11px;
+    margin-left: 10px;
+    margin-top: 4px;
+}
+.main-menu ul li .bx-power-off {
+    font-size: 30px;
+    margin-left: 10px;
+    margin-top: 4px;
 }
 /*-----------------------------------------------*/
 
@@ -129,6 +144,7 @@ nav ul,nav li {
 outline:0;
 margin:0;
 padding:0;
+
 }
 .main-menu li:hover>a,nav.main-menu li.active>a,.dropdown-menu>li>a:hover,.dropdown-menu>li>a:focus,.dropdown-menu>.active>a,.dropdown-menu>.active>a:hover,.dropdown-menu>.active>a:focus,.no-touch .dashboard-page nav.dashboard-menu ul li:hover a,.dashboard-page nav.dashboard-menu ul li.active a {
 color:#fff;
