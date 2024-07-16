@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../firebaseConfig';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { Sidebar } from './Sidebar';
 import '../Login.css';
 
 const Login = () => {
@@ -26,6 +27,17 @@ const Login = () => {
     };
 
     return (
+        <div className="container">
+            <div class="sidebar"> <Sidebar/> </div>
+            <h2>Login</h2>
+            <div className="form-group">
+                <label>Email</label>
+                <input
+                    type="email"
+                    className="form-control"
+                    placeholder="Email"
+                    onChange={(e) => setEmail(e.target.value)}
+                />
         <div className="container" id="container">
             <div className="form-container sign-up-container">
                 <form>

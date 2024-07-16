@@ -6,13 +6,17 @@ import SignUp from './components/SignUp';
 import PasswordReset from './components/PasswordReset';
 import UpdateProfile from './components/UpdateProfile';
 import Transaction from './components/Transaction';
+// import { Sidebar } from './components/Sidebar';
+import { GestionarCuentas } from './components/GestionarCuentas';
 import AccountManagement from './components/AccountManagement';
 import Home from './components/Home';
-
 
 function App() {
   return (
     <Router>
+
+      {/* <Sidebar /> */}
+      <GestionarCuentas />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
