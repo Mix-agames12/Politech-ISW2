@@ -21,10 +21,6 @@ const Login = () => {
         }
     };
 
-    const handleSignUpClick = () => {
-        document.getElementById('container').classList.add('right-panel-active');
-    };
-
     const handleSignInClick = () => {
         document.getElementById('container').classList.remove('right-panel-active');
     };
@@ -70,7 +66,7 @@ const Login = () => {
                     <div className="overlay-panel overlay-right">
                         <h1>Bienvenido</h1>
                         <p>Ingresa tus datos personales para usar todas las funcionalidades</p>
-                        <button className="ghost" id="signUp" onClick={handleSignUpClick}>Registrarse</button>
+                        <button type="button" className="ghost" id="signUp" onClick={() => navigate('/signup')}>Registrarse</button>
                     </div>
                 </div>
             </div>

@@ -15,6 +15,7 @@ body {
     height: 100vh;
     justify-content: center;
     align-items: center;
+    background: #f6f5f7;
 }
 
 .container {
@@ -25,7 +26,6 @@ body {
     width: 800px;
     max-width: 100%;
     display: flex;
-    justify-content: space-between;
     position: relative;
 }
 
@@ -89,7 +89,9 @@ body {
 }
 
 .overlay {
-    background: linear-gradient(to right, #4d4d4d, #bbbbbb);
+    background: #FF416C;
+    background: -webkit-linear-gradient(to right, #FF4B2B, #FF416C);
+    background: linear-gradient(to right, #FF4B2B, #FF416C);
     background-repeat: no-repeat;
     background-size: cover;
     background-position: 0 0;
@@ -160,7 +162,7 @@ body {
     padding: 10px 25px;
     border-radius: 20px;
     background-color: #ffffff;
-    color: #4d4d4d;
+    color: #FF4B2B;
     font-size: 14px;
     font-weight: 600;
     letter-spacing: 1px;
@@ -218,12 +220,12 @@ body {
 }
 
 .btn.primary {
-    background-color: #E31B6D;
+    background-color: #FF4B2B;
     color: #fff;
     margin-right: 100px;
 }
 
 .btn.secondary {
-    background-color: #E31B6D;
+    background-color: #FF4B2B;
     color: #fff;
 }
