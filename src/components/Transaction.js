@@ -1,22 +1,23 @@
 // src/components/Transaction.js
 import React, { useState } from 'react';
 import { db } from '../firebaseConfig';
-import { collection, getDocs, query, where, updateDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, query, where, updateDoc, doc, addDoc } from 'firebase/firestore';
 
 const Transaction = () => {
-    const [senderEmail, setSenderEmail] = useState('');
-    const [receiverEmail, setReceiverEmail] = useState('');
+    const [senderAccount, setSenderAccount] = useState('');
+    const [receiverAccount, setReceiverAccount] = useState('');
     const [amount, setAmount] = useState(0);
+    const [message, setMessage] = useState('');
 
     const handleTransaction = async () => {
         try {
-            const usersCollection = collection(db, 'users');
-
-            const senderQuery = query(usersCollection, where('email', '==', senderEmail));
+            // Consulta la cuenta del remitente
+            const senderQuery = query(collection(db, 'cuentas'), where('numero_cuenta', '==', senderAccount));
             const senderSnapshot = await getDocs(senderQuery);
             const senderDoc = senderSnapshot.docs[0];
 
-            const receiverQuery = query(usersCollection, where('email', '==', receiverEmail));
+            // Consulta la cuenta del receptor
+            const receiverQuery = query(collection(db, 'cuentas'), where('numero_cuenta', '==', receiverAccount));
             const receiverSnapshot = await getDocs(receiverQuery);
             const receiverDoc = receiverSnapshot.docs[0];
 
@@ -24,56 +25,82 @@ const Transaction = () => {
                 const senderData = senderDoc.data();
                 const receiverData = receiverDoc.data();
 
-                if (senderData.accountBalance >= amount) {
-                    await updateDoc(doc(db, 'users', senderDoc.id), {
-                        accountBalance: senderData.accountBalance - amount
+                if (senderData.monto >= amount) {
+                    // Actualiza el saldo del remitente
+                    await updateDoc(doc(db, 'cuentas', senderDoc.id), {
+                        monto: senderData.monto - amount
                     });
-                    await updateDoc(doc(db, 'users', receiverDoc.id), {
-                        accountBalance: receiverData.accountBalance + amount
+
+                    // Actualiza el saldo del receptor
+                    await updateDoc(doc(db, 'cuentas', receiverDoc.id), {
+                        monto: receiverData.monto + amount
                     });
-                    console.log('Transaction completed');
+
+                    // Crear una transacción
+                    const transactionRef = await addDoc(collection(db, 'transacciones'), {
+                        numero_cuenta_origen: senderData.numero_cuenta,
+                        numero_cuenta_destino: receiverData.numero_cuenta,
+                        monto: amount,
+                        tipo_transaccion: 'Transferencia',
+                        fecha: new Date().toISOString()
+                    });
+
+                    // Crear una transferencia
+                    await addDoc(collection(db, 'transferencias'), {
+                        numero_Transaccion: transactionRef.id,
+                        cuenta_origen: senderData.numero_cuenta,
+                        cuenta_Destino: receiverData.numero_cuenta,
+                        monto: amount
+                    });
+
+                    setMessage('Transferencia completada con éxito');
                 } else {
-                    console.error('Insufficient funds');
+                    setMessage('Fondos insuficientes');
                 }
             } else {
-                console.error('Sender or receiver not found');
+                setMessage('Cuenta del remitente o receptor no encontrada');
             }
         } catch (error) {
-            console.error('Error processing transaction:', error);
+            console.error('Error al procesar la transacción:', error);
+            setMessage('Error al procesar la transacción');
         }
     };
 
     return (
         <div className="container">
-            <h2>Transaction</h2>
+            <h2>Transacción</h2>
             <div className="form-group">
-                <label>Sender Email</label>
+                <label>Número de Cuenta Origen</label>
                 <input
-                    type="email"
+                    type="text"
                     className="form-control"
-                    placeholder="Sender Email"
-                    onChange={(e) => setSenderEmail(e.target.value)}
+                    placeholder="Número de Cuenta Origen"
+                    value={senderAccount}
+                    onChange={(e) => setSenderAccount(e.target.value)}
                 />
             </div>
             <div className="form-group">
-                <label>Receiver Email</label>
+                <label>Número de Cuenta Destino</label>
                 <input
-                    type="email"
+                    type="text"
                     className="form-control"
-                    placeholder="Receiver Email"
-                    onChange={(e) => setReceiverEmail(e.target.value)}
+                    placeholder="Número de Cuenta Destino"
+                    value={receiverAccount}
+                    onChange={(e) => setReceiverAccount(e.target.value)}
                 />
             </div>
             <div className="form-group">
-                <label>Amount</label>
+                <label>Monto</label>
                 <input
                     type="number"
                     className="form-control"
-                    placeholder="Amount"
+                    placeholder="Monto"
+                    value={amount}
                     onChange={(e) => setAmount(Number(e.target.value))}
                 />
             </div>
-            <button className="btn btn-primary" onClick={handleTransaction}>Make Transaction</button>
+            <button className="btn btn-primary" onClick={handleTransaction}>Realizar Transacción</button>
+            {message && <p>{message}</p>}
         </div>
     );
 };

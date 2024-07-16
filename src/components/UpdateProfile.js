@@ -14,11 +14,11 @@ const UpdateProfile = () => {
         if (user) {
             if (name) {
                 await updateProfile(user, { displayName: name });
-                await updateDoc(doc(db, 'users', user.uid), { name: name });
+                await updateDoc(doc(db, 'clientes', user.uid), { nombre: name });
             }
             if (email) {
                 await updateEmail(user, email);
-                await updateDoc(doc(db, 'users', user.uid), { email: email });
+                await updateDoc(doc(db, 'clientes', user.uid), { correo_electronico: email });
             }
             if (password) {
                 await updatePassword(user, password);
