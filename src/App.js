@@ -6,10 +6,12 @@ import SignUp from './components/SignUp';
 import PasswordReset from './components/PasswordReset';
 import UpdateProfile from './components/UpdateProfile';
 import Transaction from './components/Transaction';
-// import { Sidebar } from './components/Sidebar';
 import { GestionarCuentas } from './components/GestionarCuentas';
 import AccountManagement from './components/AccountManagement';
 import Home from './components/Home';
+
+// import { Sidebar } from './components/Sidebar';
+import { GestionarCuentas } from './components/GestionarCuentas';
 
 function App() {
   return (
@@ -29,6 +31,8 @@ function App() {
       <div className="App">
       <Home /> {/* Usa el componente Home */}
     </div>
+      {/* <Sidebar /> */}
+      <GestionarCuentas />
       <div className="container">
         <nav className="navbar navbar-expand-lg navbar-light bg-light">
           <Link className="navbar-brand" to="/">Banking App</Link>
