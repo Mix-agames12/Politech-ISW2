@@ -6,6 +6,7 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { Sidebar } from './Sidebar';
 import '../Login.css';
 
+
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -30,7 +31,8 @@ const Login = () => {
         <div className="container">
             <div class="sidebar"> <Sidebar/> </div>
             <h2>Login</h2>
-            <div className="form-group">
+
+            <div className="form-group"/>
                 <label>Email</label>
                 <input
                     type="email"
@@ -38,7 +40,10 @@ const Login = () => {
                     placeholder="Email"
                     onChange={(e) => setEmail(e.target.value)}
                 />
-        <div className="container" id="container">
+
+
+        <div className="container" id="container"/>
+
             <div className="form-container sign-up-container">
                 <form>
                     <h1>Crear Cuenta</h1>
@@ -48,6 +53,7 @@ const Login = () => {
                     <input type="password" placeholder="Contraseña" />
                     <button type="button" onClick={() => navigate('/signup')}>Registrarse</button>
                 </form>
+
             </div>
             <div className="form-container sign-in-container">
                 <form onSubmit={handleLogin}>
