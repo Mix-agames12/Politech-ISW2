@@ -1,10 +1,10 @@
+// src/components/GestionarCuentas.js
 import '../components/GestionarCuentas.css';
-import { Sidebar } from "./Sidebar";
+import { Sidebar } from "../components/Sidebar";
 import React, { useEffect, useState } from 'react';
 import { auth, db } from '../firebaseConfig';
-import { collection, query, where, getDocs, addDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
-
 
 const GestionarCuentas = () => {
     const [accounts, setAccounts] = useState([]);
@@ -18,62 +18,37 @@ const GestionarCuentas = () => {
                 return;
             }
 
-            const q = query(collection(db, 'cuentas'), where('id', '==', user.uid));
-            const querySnapshot = await getDocs(q);
-            const accountsList = querySnapshot.docs.map(doc => doc.data());
-            setAccounts(accountsList);
+            try {
+                console.log('Fetching accounts for user ID:', user.uid);
+                const q = query(collection(db, 'cuentas'), where('id', '==', user.uid));
+                const querySnapshot = await getDocs(q);
+                const accountsList = querySnapshot.docs.map(doc => doc.data());
+                console.log('Accounts fetched:', accountsList);
+                setAccounts(accountsList);
+            } catch (error) {
+                console.error("Error fetching accounts: ", error);
+            }
         };
 
         fetchAccounts();
     }, [navigate]);
-
-    const generateAccountNumber = () => {
-        let accountNumber = '22';
-        for (let i = 0; i < 8; i++) {
-            accountNumber += Math.floor(Math.random() * 9) + 1;
-        }
-        return accountNumber;
-    };
-
-    const handleAddAccount = async () => {
-        const user = auth.currentUser;
-        if (!user) {
-            navigate('/login');
-            return;
-        }
-
-        const newAccount = {
-            id: user.uid,
-            cedula: "1234567890", // Replace with actual cedula value
-            tipo_cuenta: 'Ahorros',
-            monto: 100,
-            numero_cuenta: generateAccountNumber()
-        };
-
-        try {
-            await addDoc(collection(db, 'cuentas'), newAccount);
-            setAccounts([...accounts, newAccount]);
-        } catch (error) {
-            console.error("Error adding account: ", error);
-        }
-    };
 
     return (
         <>
             <div className="Sidebar">
                 <Sidebar />
             </div>
-            <div class="main-content">
+            <div className="main-content">
                 <h2>Mis Productos</h2>
                 <h3>Cuentas de ahorros</h3>
                 <div className="account-cards">
-                    {accounts.map((account, index) => (
+                    {accounts.length > 0 ? accounts.map((account, index) => (
                         <div className="account-card" key={index}>
-                            <h4 className="account-number">{account.numero_cuenta}</h4>
-                            <p>Tipo de Cuenta: {account.tipo_cuenta}</p>
-                            <p>Saldo Disponible: ${account.monto.toFixed(2)}</p>
+                            <h4 className="account-number">{account.accountNumber}</h4>
+                            <p>Tipo de Cuenta: {account.tipoCuenta}</p>
+                            <p>Saldo Disponible: ${account.accountBalance ? account.accountBalance.toFixed(2) : 'N/A'}</p>
                         </div>
-                    ))}
+                    )) : <p>No se encontraron cuentas.</p>}
                 </div>
             </div>
         </>

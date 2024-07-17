@@ -3,61 +3,81 @@ import React, { useState } from 'react';
 import { auth, db } from '../firebaseConfig';
 import { updateEmail, updatePassword, updateProfile } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore';
+import { Sidebar } from '../components/Sidebar';
+import './UpdateProfile.css';
 
 const UpdateProfile = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
 
     const handleUpdate = async () => {
+        setError('');
+        setSuccess('');
         const user = auth.currentUser;
         if (user) {
-            if (name) {
-                await updateProfile(user, { displayName: name });
-                await updateDoc(doc(db, 'users', user.uid), { name: name });
+            try {
+                if (name) {
+                    await updateProfile(user, { displayName: name });
+                    await updateDoc(doc(db, 'users', user.uid), { name: name });
+                }
+                if (email) {
+                    await updateEmail(user, email);
+                    await updateDoc(doc(db, 'users', user.uid), { email: email });
+                }
+                if (password) {
+                    await updatePassword(user, password);
+                }
+                setSuccess('Perfil actualizado correctamente');
+            } catch (error) {
+                setError('Error al actualizar el perfil. Por favor, intenta de nuevo.');
+                console.error('Error updating profile:', error);
             }
-            if (email) {
-                await updateEmail(user, email);
-                await updateDoc(doc(db, 'users', user.uid), { email: email });
-            }
-            if (password) {
-                await updatePassword(user, password);
-            }
-            console.log('Profile updated');
         }
     };
 
     return (
-        <div className="container">
-            <h2>Update Profile</h2>
-            <div className="form-group">
-                <label>Name</label>
+        <div className="mainContainer">
+            <div className='sidebar'>
+                <Sidebar />
+            </div>
+            <div className="titleContainer">
+                <h2>Actualizar Perfil</h2>
+            </div>
+            <div className="inputContainer">
+                <label>Nombre</label>
                 <input
                     type="text"
-                    className="form-control"
-                    placeholder="Name"
+                    className="inputBox"
+                    placeholder="Nombre"
                     onChange={(e) => setName(e.target.value)}
                 />
             </div>
-            <div className="form-group">
-                <label>Email</label>
+            <div className="inputContainer">
+                <label>Correo Electrónico</label>
                 <input
                     type="email"
-                    className="form-control"
-                    placeholder="Email"
+                    className="inputBox"
+                    placeholder="Correo Electrónico"
                     onChange={(e) => setEmail(e.target.value)}
                 />
             </div>
-            <div className="form-group">
-                <label>Password</label>
+            <div className="inputContainer">
+                <label>Contraseña</label>
                 <input
                     type="password"
-                    className="form-control"
-                    placeholder="Password"
+                    className="inputBox"
+                    placeholder="Contraseña"
                     onChange={(e) => setPassword(e.target.value)}
                 />
             </div>
-            <button className="btn btn-primary" onClick={handleUpdate}>Update Profile</button>
+            {error && <label className="errorLabel">{error}</label>}
+            {success && <label className="successLabel">{success}</label>}
+            <div className="buttonContainer">
+                <input className="inputButton" type="button" onClick={handleUpdate} value="Actualizar Perfil" />
+            </div>
         </div>
     );
 };

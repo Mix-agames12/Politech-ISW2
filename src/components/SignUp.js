@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { auth, db } from '../firebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
+import bcrypt from 'bcryptjs';
 import './SignUp.css';
 
 const SignUp = () => {
@@ -74,23 +75,48 @@ const SignUp = () => {
         return isValid;
     };
 
+    const generateAccountNumber = () => {
+        let accountNumber = '22';
+        while (accountNumber.length < 10) {
+            accountNumber += Math.floor(Math.random() * 10);
+        }
+        return accountNumber;
+    };
+
     const handleSignUp = async () => {
         if (!validateInputs()) {
             return;
         }
 
         try {
+            const hashedPassword = bcrypt.hashSync(password, 10);
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
+            const accountNumber = generateAccountNumber();
+
             await setDoc(doc(db, 'users', user.uid), {
-                uid: user.uid,
-                firstName,
-                lastName,
-                username,
-                email,
-                idNumber,
-                accountBalance: 100
+                id: user.uid,
+                correo: email,
+                contraseña: hashedPassword,
+                username
             });
+
+            await setDoc(doc(db, 'cuentas', user.uid), {
+                id: user.uid,
+                cedula: idNumber,
+                accountBalance: 100,
+                accountNumber,
+                tipoCuenta: 'ahorros'
+            });
+
+            await setDoc(doc(db, 'clientes', user.uid), {
+                id: user.uid,
+                correo: email,
+                cedula: idNumber,
+                nombre: firstName,
+                apellido: lastName
+            });
+
             console.log('Usuario registrado:', user);
         } catch (error) {
             console.error('Error al registrarse:', error);

@@ -90,7 +90,7 @@ export const Login = (props) => {
                 {passwordError && <label className="errorLabel">{passwordError}</label>}
             </div>
             <br />
-            <a href="/password-reset">¿Olvidaste tu contraseña?</a>
+            <a className="forgot" href="/password-reset">¿Olvidaste tu contraseña?</a>
             <br />
             <div className="buttonGroup">
                 <input className="inputButton" type="button" onClick={handleLogin} value="Log in" />

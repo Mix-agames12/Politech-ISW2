@@ -52,6 +52,13 @@
     color: red;
     font-size: 12px;
   }
+
+  .forgot {
+    color: #333;
+    font-size: 16px;
+    text-align: right;
+    text-decoration: none;
+  }
   
   .inputBox {
     height: 48px;

@@ -50,7 +50,7 @@ html, body {
 }
 
 .main-content .account-card {
-  background-color: #14b8a6;
+  background-image: linear-gradient(to bottom, #74d6c3, #0d9488);
   color: white;
   padding: 1rem;
   border-radius: 8px;
@@ -63,11 +63,11 @@ html, body {
   margin-top: 1px;
   margin-left: 1px;
   width: 300px;
-  font-size: 10px;
+  font-size: 18px;
   text-align: left;
 }
 .main-content .account-card p {
-  color: #134e4a;
+  color: #e1e1e1;
   font-weight: bold;
   margin-left: 1px;
   width: 300px;

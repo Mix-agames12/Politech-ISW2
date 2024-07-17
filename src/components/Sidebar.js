@@ -1,53 +1,53 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import '../components/Sidebar.css';
-// import { neologo } from 'src\assets\images\neologo.png';
 
 export const Sidebar = () => {
 return  (
     <>
         <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'/>
-        <div Class="area"></div>
-        <nav Class="main-menu">
+        <div className="area"></div>
+        <nav className="main-menu">
             <ul>
             <li>
-                <a href="https://facebook.com">
+                <Link to="/">
                 {/* <img src={neologo} alt="logo"/> */}
-                </a>
+                </Link>
             </li>
             <li>
-                <a href="https://facebook.com">
-                <i Class='bx bx-home'></i>
-                <span Class="nav-text">
+                <Link to="/gestionar-cuentas">
+                <i className='bx bx-home'></i>
+                <span className="nav-text">
                     Dashboard
                 </span>
-                </a>
+                </Link>
             </li>
             <li>
-                <a href="https://jbfarrow.com">
-                <i Class='bx bx-transfer'></i>
-                <span Class="nav-text">
+                <Link to="/transaction">
+                <i className='bx bx-transfer'></i>
+                <span className="nav-text">
                     Transferencias
                 </span>
-                </a>
+                </Link>
             </li>
             <li>
-                <a href="https://jbfarrow.com">
-                <i Class='bx bx-calendar'></i>
-                <span Class="nav-text">
+                <Link to="/update-profile">
+                <i className='bx bx-calendar'></i>
+                <span className="nav-text">
                     Movimientos
                 </span>
-                </a>
+                </Link>
             </li>
             </ul>
 
-            <ul Class="logout">
+            <ul className="logout">
             <li>
-                <a href="#">
-                <i Class='bx bx-power-off'></i>
-                <span Class="nav-text">
+                <Link to="/login">
+                <i className='bx bx-power-off'></i>
+                <span className="nav-text">
                     Logout
                 </span>
-                </a>
+                </Link>
             </li>
             </ul>
         </nav>
