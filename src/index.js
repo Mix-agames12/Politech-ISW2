@@ -6,6 +6,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import App from './App';
 import './Login.css';
 import './SignUp.css';
+import './GestionarCuentas.css';
 
 ReactDOM.render(
   <React.StrictMode>

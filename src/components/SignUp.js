@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
+import bcrypt from 'bcryptjs';
 import '../SignUp.css';
 
 const SignUp = () => {
@@ -38,12 +39,22 @@ const SignUp = () => {
         return valid;
     };
 
+    const generateAccountNumber = () => {
+        let accountNumber = '22';
+        for (let i = 0; i < 8; i++) {
+            accountNumber += Math.floor(Math.random() * 9) + 1;
+        }
+        return accountNumber;
+    };
+
     const handleSignUp = async (e) => {
         e.preventDefault();
         setError(''); // Clear previous errors
         if (!validateForm()) return;
 
         try {
+            const hashedPassword = await bcrypt.hash(password, 10);
+
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
@@ -52,7 +63,7 @@ const SignUp = () => {
             await setDoc(doc(db, 'users', user.uid), {
                 id: user.uid,
                 correo: email,
-                contraseña: password
+                contraseña: hashedPassword
             });
             console.log('User document created'); // Debugging
 
@@ -69,7 +80,7 @@ const SignUp = () => {
                 cedula: cedula,
                 tipo_cuenta: 'Ahorros',
                 monto: 100,
-                numero_cuenta: `ACC${user.uid}`
+                numero_cuenta: generateAccountNumber()
             });
             console.log('Account document created'); // Debugging
 
@@ -138,7 +149,6 @@ const SignUp = () => {
                         Las contraseñas no coinciden
                     </small>
                     <button type="submit">Registrarse</button>
-                    
                 </form>
             </div>
             <div className="overlay-container">

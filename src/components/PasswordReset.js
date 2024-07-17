@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { auth } from '../firebaseConfig';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import '../PasswordReset.css';
@@ -7,6 +8,7 @@ const PasswordReset = () => {
     const [email, setEmail] = useState('');
     const [cedula, setCedula] = useState('');
     const [message, setMessage] = useState('');
+    const navigate = useNavigate();
 
     const handlePasswordReset = async (e) => {
         e.preventDefault();
@@ -20,13 +22,7 @@ const PasswordReset = () => {
     };
 
     return (
-        <>
-            <div className="navbar">
-                <div className="logo">
-                    <img src="assets/images/neologo.png" alt="logo" id="logo-img" />
-                    <span className="logo-text"></span>
-                </div>
-            </div>
+        <div className="password-reset-container">
             <div className="recover-container">
                 <h2>Recuperar Cuenta</h2>
                 <form onSubmit={handlePasswordReset}>
@@ -59,8 +55,9 @@ const PasswordReset = () => {
                     </div>
                 </form>
                 {message && <p>{message}</p>}
+                <button className="btn secondary" onClick={() => navigate('/login')}>Iniciar Sesión</button>
             </div>
-        </>
+        </div>
     );
 };
 
