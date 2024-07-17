@@ -6,8 +6,8 @@ export const Sidebar = () => {
 return  (
     <>
         <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'/>
-        <div class="area"></div>
-        <nav class="main-menu">
+        <div Class="area"></div>
+        <nav Class="main-menu">
             <ul>
             <li>
                 <a href="https://facebook.com">
@@ -16,35 +16,35 @@ return  (
             </li>
             <li>
                 <a href="https://facebook.com">
-                <i class='bx bx-home'></i>
-                <span class="nav-text">
+                <i Class='bx bx-home'></i>
+                <span Class="nav-text">
                     Dashboard
                 </span>
                 </a>
             </li>
             <li>
                 <a href="https://jbfarrow.com">
-                <i class='bx bx-transfer'></i>
-                <span class="nav-text">
+                <i Class='bx bx-transfer'></i>
+                <span Class="nav-text">
                     Transferencias
                 </span>
                 </a>
             </li>
             <li>
                 <a href="https://jbfarrow.com">
-                <i class='bx bx-calendar'></i>
-                <span class="nav-text">
+                <i Class='bx bx-calendar'></i>
+                <span Class="nav-text">
                     Movimientos
                 </span>
                 </a>
             </li>
             </ul>
 
-            <ul class="logout">
+            <ul Class="logout">
             <li>
                 <a href="#">
-                <i class='bx bx-power-off'></i>
-                <span class="nav-text">
+                <i Class='bx bx-power-off'></i>
+                <span Class="nav-text">
                     Logout
                 </span>
                 </a>

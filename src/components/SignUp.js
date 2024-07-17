@@ -3,59 +3,221 @@ import React, { useState } from 'react';
 import { auth, db } from '../firebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
+import './SignUp.css';
 
 const SignUp = () => {
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
+    const [idNumber, setIdNumber] = useState('');
     const [password, setPassword] = useState('');
-    const [name, setName] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [error, setError] = useState({});
+    const [passwordConditions, setPasswordConditions] = useState({
+        length: false,
+        uppercase: false,
+        number: false,
+        specialChar: false,
+    });
+    const [passwordsMatch, setPasswordsMatch] = useState(true);
+
+    const validateInputs = () => {
+        let isValid = true;
+        let errors = {};
+
+        if (firstName === '') {
+            errors.firstName = 'Por favor, ingresa tu nombre';
+            isValid = false;
+        }
+
+        if (lastName === '') {
+            errors.lastName = 'Por favor, ingresa tu apellido';
+            isValid = false;
+        }
+
+        if (username === '') {
+            errors.username = 'Por favor, ingresa un nombre de usuario';
+            isValid = false;
+        }
+
+        if (email === '') {
+            errors.email = 'Por favor, ingresa tu correo electrónico';
+            isValid = false;
+        } else if (!/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
+            errors.email = 'Por favor, ingresa un correo electrónico válido';
+            isValid = false;
+        }
+
+        if (idNumber === '') {
+            errors.idNumber = 'Por favor, ingresa tu cédula';
+            isValid = false;
+        }
+
+        if (password === '') {
+            errors.password = 'Por favor, ingresa una contraseña';
+            isValid = false;
+        } else if (!passwordConditions.length || !passwordConditions.uppercase || !passwordConditions.number || !passwordConditions.specialChar) {
+            errors.password = 'La contraseña no cumple con los requisitos';
+            isValid = false;
+        }
+
+        if (confirmPassword === '') {
+            errors.confirmPassword = 'Por favor, repite tu contraseña';
+            isValid = false;
+        } else if (password !== confirmPassword) {
+            errors.confirmPassword = 'Las contraseñas no coinciden';
+            isValid = false;
+        }
+
+        setError(errors);
+        return isValid;
+    };
 
     const handleSignUp = async () => {
+        if (!validateInputs()) {
+            return;
+        }
+
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
             await setDoc(doc(db, 'users', user.uid), {
                 uid: user.uid,
-                name: name,
-                email: email,
+                firstName,
+                lastName,
+                username,
+                email,
+                idNumber,
                 accountBalance: 100
             });
-            console.log('User registered:', user);
+            console.log('Usuario registrado:', user);
         } catch (error) {
-            console.error('Error signing up:', error);
+            console.error('Error al registrarse:', error);
+            let errors = {};
+            if (error.code === 'auth/email-already-in-use') {
+                errors.email = 'Este correo electrónico ya está en uso';
+            } else {
+                errors.general = 'No se pudo registrar. Inténtalo de nuevo.';
+            }
+            setError(errors);
         }
     };
 
+    const validatePassword = (password) => {
+        const length = password.length >= 8;
+        const uppercase = /[A-Z]/.test(password);
+        const number = /[0-9]/.test(password);
+        const specialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+        setPasswordConditions({ length, uppercase, number, specialChar });
+        setPassword(password);
+    };
+
+    const handleConfirmPassword = (value) => {
+        setConfirmPassword(value);
+        setPasswordsMatch(value === password);
+    };
+
     return (
-        <div className="container">
-            <h2>Sign Up</h2>
-            <div className="form-group">
-                <label>Name</label>
-                <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Name"
-                    onChange={(e) => setName(e.target.value)}
-                />
+        <div className="mainContainer">
+            <div className="titleContainer">
+                <h2>Registrarse</h2>
             </div>
-            <div className="form-group">
-                <label>Email</label>
-                <input
-                    type="email"
-                    className="form-control"
-                    placeholder="Email"
-                    onChange={(e) => setEmail(e.target.value)}
-                />
+            <div className="formContainer">
+                <div className="column">
+                    <div className="inputContainer">
+                        <label>Nombre</label>
+                        <input
+                            type="text"
+                            className="inputBox"
+                            placeholder="Nombre"
+                            onChange={(e) => setFirstName(e.target.value)}
+                        />
+                        {error.firstName && <label className="errorLabel">{error.firstName}</label>}
+                    </div>
+                    <div className="inputContainer">
+                        <label>Apellido</label>
+                        <input
+                            type="text"
+                            className="inputBox"
+                            placeholder="Apellido"
+                            onChange={(e) => setLastName(e.target.value)}
+                        />
+                        {error.lastName && <label className="errorLabel">{error.lastName}</label>}
+                    </div>
+                    <div className="inputContainer">
+                        <label>Nombre de usuario</label>
+                        <input
+                            type="text"
+                            className="inputBox"
+                            placeholder="Nombre de usuario"
+                            onChange={(e) => setUsername(e.target.value)}
+                        />
+                        {error.username && <label className="errorLabel">{error.username}</label>}
+                    </div>
+                    <div className="inputContainer">
+                        <label>Cédula</label>
+                        <input
+                            type="text"
+                            className="inputBox"
+                            placeholder="Cédula"
+                            onChange={(e) => setIdNumber(e.target.value)}
+                        />
+                        {error.idNumber && <label className="errorLabel">{error.idNumber}</label>}
+                    </div>
+                </div>
+                <div className="column">
+                    <div className="inputContainer">
+                        <label>Correo electrónico</label>
+                        <input
+                            type="email"
+                            className="inputBox"
+                            placeholder="Correo electrónico"
+                            onChange={(e) => setEmail(e.target.value)}
+                        />
+                        {error.email && <label className="errorLabel">{error.email}</label>}
+                    </div>
+                    <div className="inputContainer">
+                        <label>Contraseña</label>
+                        <input
+                            type="password"
+                            className="inputBox"
+                            placeholder="Contraseña"
+                            onChange={(e) => validatePassword(e.target.value)}
+                        />
+                        {error.password && <label className="errorLabel">{error.password}</label>}
+                    </div>
+                    <div className="inputContainer">
+                        <label>Repetir contraseña</label>
+                        <input
+                            type="password"
+                            className="inputBox"
+                            placeholder="Repetir contraseña"
+                            onChange={(e) => handleConfirmPassword(e.target.value)}
+                        />
+                        {!passwordsMatch && <label className="errorLabel">Las contraseñas no coinciden</label>}
+                    </div>
+                    <div className="inputContainer">
+                        <label className={`passwordRequirements ${passwordConditions.length ? 'valid' : 'invalid'}`}>
+                            La contraseña debe tener al menos 8 caracteres
+                        </label>
+                        <label className={`passwordRequirements ${passwordConditions.uppercase ? 'valid' : 'invalid'}`}>
+                            La contraseña debe tener al menos una letra mayúscula
+                        </label>
+                        <label className={`passwordRequirements ${passwordConditions.number ? 'valid' : 'invalid'}`}>
+                            La contraseña debe tener al menos un número
+                        </label>
+                        <label className={`passwordRequirements ${passwordConditions.specialChar ? 'valid' : 'invalid'}`}>
+                            La contraseña debe tener al menos un carácter especial
+                        </label>
+                    </div>
+                </div>
             </div>
-            <div className="form-group">
-                <label>Password</label>
-                <input
-                    type="password"
-                    className="form-control"
-                    placeholder="Password"
-                    onChange={(e) => setPassword(e.target.value)}
-                />
+            <div className="buttonContainer">
+                <input className="inputButton" type="button" onClick={handleSignUp} value="Registrarse" />
+                {error.general && <label className="errorLabel">{error.general}</label>}
             </div>
-            <button className="btn btn-primary" onClick={handleSignUp}>Sign Up</button>
         </div>
     );
 };

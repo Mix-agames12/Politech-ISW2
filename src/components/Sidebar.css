@@ -16,12 +16,12 @@ font-size:20px;
 }
 
 .main-menu:hover,nav.main-menu.expanded {
-width:250px;
+width:265px;
 overflow:visible;
 }
 
 .main-menu {
-background:#99f6e4;
+background:#ffffff;
 border-right:1px solid #e5e5e5;
 position:absolute;
 top:0;
@@ -38,7 +38,7 @@ z-index:1000;
 }
 
 .main-menu>ul {
-margin:20px 0;
+margin:20px 6px;
 }
 
 .main-menu li {
@@ -53,7 +53,7 @@ position:relative;
 display:table;
 border-collapse:collapse;
 border-spacing:0;
-color:#0f766e;
+color:#134e4a;
  font-family: arial;
 font-size: 14px;
 text-decoration:none;
@@ -148,7 +148,7 @@ padding:0;
 }
 .main-menu li:hover>a,nav.main-menu li.active>a,.dropdown-menu>li>a:hover,.dropdown-menu>li>a:focus,.dropdown-menu>.active>a,.dropdown-menu>.active>a:hover,.dropdown-menu>.active>a:focus,.no-touch .dashboard-page nav.dashboard-menu ul li:hover a,.dashboard-page nav.dashboard-menu ul li.active a {
 color:#fff;
-background-color:#000000;
+background-color:#0d9488;
 border-radius: 15px;
 margin: auto;
 }
