@@ -89,9 +89,9 @@ body {
 }
 
 .overlay {
-    background: #FF416C;
-    background: -webkit-linear-gradient(to right, #FF4B2B, #FF416C);
-    background: linear-gradient(to right, #FF4B2B, #FF416C);
+    background: #4441ff;
+    background: -webkit-linear-gradient(to right, #2b6bff, #419aff);
+    background: linear-gradient(to right, #2baeff, #4741ff);
     background-repeat: no-repeat;
     background-size: cover;
     background-position: 0 0;
@@ -162,7 +162,7 @@ body {
     padding: 10px 25px;
     border-radius: 20px;
     background-color: #ffffff;
-    color: #FF4B2B;
+    color: #2b75ff;
     font-size: 14px;
     font-weight: 600;
     letter-spacing: 1px;

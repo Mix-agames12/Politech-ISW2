@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../firebaseConfig';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { Sidebar } from './Sidebar';
 import '../Login.css';
 
 
@@ -17,7 +16,7 @@ const Login = () => {
         try {
             await signInWithEmailAndPassword(auth, email, password);
             console.log('User logged in');
-            navigate('/account-management');
+            navigate('/gestionar-cuentas');
         } catch (error) {
             console.error('Error logging in:', error);
         }
@@ -28,27 +27,14 @@ const Login = () => {
     };
 
     return (
-        <div className="container">
-            <div class="sidebar"> <Sidebar/> </div>
-            <h2>Login</h2>
 
-            <div className="form-group"/>
-                <label>Email</label>
-                <input
-                    type="email"
-                    className="form-control"
-                    placeholder="Email"
-                    onChange={(e) => setEmail(e.target.value)}
-                />
-
-
-        <div className="container" id="container"/>
+        <div className="container" id="container">
 
             <div className="form-container sign-up-container">
                 <form>
                     <h1>Crear Cuenta</h1>
                     <span>o usa tu correo electrónico para registrarte</span>
-                    <input type="text" placeholder="Nombre" />
+                    <input type="text" placeholder="Nombre"/>
                     <input type="email" placeholder="Correo Electrónico" />
                     <input type="password" placeholder="Contraseña" />
                     <button type="button" onClick={() => navigate('/signup')}>Registrarse</button>
@@ -77,13 +63,13 @@ const Login = () => {
             <div className="overlay-container">
                 <div className="overlay">
                     <div className="overlay-panel overlay-left">
-                        <h1>Bienvenido de vuelta</h1>
-                        <p>Para mantenerse conectado con nosotros, inicie sesión con su información personal</p>
+                        <h1>Bienvenido </h1>
+                        <p>Ingresa tus datos personales para usar todas las funcionalidades</p>
                         <button className="ghost" id="signIn" onClick={handleSignInClick}>Iniciar Sesión</button>
                     </div>
                     <div className="overlay-panel overlay-right">
-                        <h1>Bienvenido</h1>
-                        <p>Ingresa tus datos personales para usar todas las funcionalidades</p>
+                        <h1>Bienvenido de vuelta</h1>
+                        <p>Para mantenerse conectado con nosotros, inicie sesión con su información personal.</p>
                         <button type="button" className="ghost" id="signUp" onClick={() => navigate('/signup')}>Registrarse</button>
                     </div>
                 </div>
