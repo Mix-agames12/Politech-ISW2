@@ -1,46 +1,38 @@
-// import React from 'react';
-// import '../components/Header.css';
-// import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
-// import SignUp from './components/SignUp';
-// import Login from './components/Login';
-// import PasswordReset from './components/PasswordReset';
-// import UpdateProfile from './components/UpdateProfile';
-// import Transaction from './components/Transaction';
+import React from 'react';
+import '../components/Header.css';
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import Logo from '../assets/images/neologo.png';
+import { verifyPasswordResetCode } from 'firebase/auth';
 
-// export const Header = () => {
-//     return (
-//         <Router>
-//             <div className="container">
-//             <nav className="navbar navbar-expand-lg navbar-light bg-light">
-//                 <Link className="navbar-brand" to="/">Banco PoliTech</Link>
-//                 <div className="collapse navbar-collapse">
-//                     <ul className="navbar-nav mr-auto">
-//                         <li className="nav-item">
-//                             <Link className="nav-link" to="/signup">Sign Up</Link>
-//                         </li>
-//                         <li className="nav-item">
-//                             <Link className="nav-link" to="/login">Login</Link>
-//                         </li>
-//                         <li className="nav-item">
-//                             <Link className="nav-link" to="/password-reset">Reset Password</Link>
-//                         </li>
-//                         <li className="nav-item">
-//                             <Link className="nav-link" to="/update-profile">Update Profile</Link>
-//                         </li>
-//                         <li className="nav-item">
-//                             <Link className="nav-link" to="/transaction">Transaction</Link>
-//                         </li>
-//                     </ul>
-//                 </div>
-//             </nav>
-//         </div>
-//             <Routes>
-//             <Route path="/signup" element={<SignUp />} />
-//             <Route path="/login" element={<Login />} />
-//             <Route path="/password-reset" element={<PasswordReset />} />
-//             <Route path="/update-profile" element={<UpdateProfile />} />
-//             <Route path="/transaction" element={<Transaction />} />
-//             </Routes>
-//         </Router>
-//     );
-// }
+export const Header = () => {
+    return (
+        <>
+            <nav className="navbar navbar-expand-lg bg-body- fixed-top" style={{ backgroundColor: '#061f3e' }}>
+                <div className="container-fluid">
+                    <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation">
+                        <span className="navbar-toggler-icon"></span>
+                    </button>
+                    {/* <a className="navbar-brand" href="#">BANCO POLITECH</a> */}
+                    <img src={Logo} alt="Logo Politech" width="130" height="35" style={ {padding: '0'} }/>
+                    <div className="collapse navbar-collapse" id="navbarTogglerDemo03">
+                        <ul className="navbar-nav me-auto mb-2 mb-lg-0">
+                            <li className="nav-item">
+                                <a className="nav-link active" aria-current="page" href="#" style={{ color: 'white' }}>Home</a>
+                            </li>
+                            <li className="nav-item">
+                                <a className="nav-link" href="#" style={{ color: 'white' }}>Link</a>
+                            </li>
+                            <li className="nav-item">
+                                <a className="nav-link disabled" aria-disabled="true" style={{ color: 'white' }}>Disabled</a>
+                            </li>
+                        </ul>
+                        <form className="d-flex" role="search">
+                            <input className="form-control me-2" type="search" placeholder="Search" aria-label="Search" />
+                            <button className="btn btn-outline-success" type="submit" style={{ color: 'white' }}>Search</button>
+                        </form>
+                    </div>
+                </div>
+            </nav>
+        </>
+    );
+}

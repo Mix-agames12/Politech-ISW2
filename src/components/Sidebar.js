@@ -1,19 +1,16 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import '../components/Sidebar.css';
+import { Header } from './Header';
 
 export const Sidebar = () => {
 return  (
     <>
         <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'/>
+        <Header />
         <div className="area"></div>
         <nav className="main-menu">
             <ul>
-            <li>
-                <Link to="/">
-                {/* <img src={neologo} alt="logo"/> */}
-                </Link>
-            </li>
             <li>
                 <Link to="/gestionar-cuentas">
                 <i className='bx bx-home'></i>

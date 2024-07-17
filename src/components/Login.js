@@ -1,35 +1,33 @@
 // src/components/Login.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auth } from '../firebaseConfig';
+import { auth, db } from '../firebaseConfig';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import '../components/Login.css';
 
 export const Login = (props) => {
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
-    const [emailError, setEmailError] = useState('');
+    const [usernameError, setUsernameError] = useState('');
     const [passwordError, setPasswordError] = useState('');
 
     const validateInputs = () => {
         let isValid = true;
-        setEmailError('');
+        setUsernameError('');
         setPasswordError('');
 
-        if (email === '') {
-            setEmailError('Please enter your email');
-            isValid = false;
-        } else if (!/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
-            setEmailError('Please enter a valid email');
+        if (username === '') {
+            setUsernameError('Por favor, ingresa tu nombre de usuario');
             isValid = false;
         }
 
         if (password === '') {
-            setPasswordError('Please enter a password');
+            setPasswordError('Por favor, ingresa una contraseña');
             isValid = false;
-        } else if (password.length < 7) {
-            setPasswordError('The password must be 8 characters or longer');
+        } else if (password.length < 8) {
+            setPasswordError('La contraseña debe tener al menos 8 caracteres');
             isValid = false;
         }
 
@@ -43,17 +41,31 @@ export const Login = (props) => {
         }
 
         try {
-            await signInWithEmailAndPassword(auth, email, password);
+            // Buscar el correo electrónico correspondiente al nombre de usuario
+            const usersCollection = collection(db, 'users');
+            const userQuery = query(usersCollection, where('username', '==', username));
+            const userSnapshot = await getDocs(userQuery);
+
+            if (userSnapshot.empty) {
+                setUsernameError('No se encontró ningún usuario con este nombre de usuario');
+                return;
+            }
+
+            const userDoc = userSnapshot.docs[0];
+            const userEmail = userDoc.data().correo;
+
+            // Intentar iniciar sesión con el correo electrónico obtenido
+            await signInWithEmailAndPassword(auth, userEmail, password);
             console.log('User logged in');
             navigate('/gestionar-cuentas');
         } catch (error) {
             console.error('Error logging in:', error);
             if (error.code === 'auth/user-not-found') {
-                setEmailError('No user found with this email');
+                setUsernameError('No se encontró ningún usuario con este nombre de usuario');
             } else if (error.code === 'auth/wrong-password') {
-                setPasswordError('Incorrect password');
+                setPasswordError('Contraseña incorrecta');
             } else {
-                setEmailError('Failed to login. Please try again.');
+                setUsernameError('Error al iniciar sesión. Por favor, intenta de nuevo.');
             }
         }
     };
@@ -70,20 +82,20 @@ export const Login = (props) => {
             <br />
             <div className="inputContainer">
                 <input
-                    type="email"
-                    value={email}
-                    placeholder="Enter your email here"
-                    onChange={(ev) => setEmail(ev.target.value)}
+                    type="text"
+                    value={username}
+                    placeholder="Ingresa tu nombre de usuario"
+                    onChange={(ev) => setUsername(ev.target.value)}
                     className="inputBox"
                 />
-                {emailError && <label className="errorLabel">{emailError}</label>}
+                {usernameError && <label className="errorLabel">{usernameError}</label>}
             </div>
             <br />
             <div className="inputContainer">
                 <input
                     type="password"
                     value={password}
-                    placeholder="Enter your password here"
+                    placeholder="Ingresa tu contraseña"
                     onChange={(ev) => setPassword(ev.target.value)}
                     className="inputBox"
                 />
@@ -93,8 +105,8 @@ export const Login = (props) => {
             <a className="forgot" href="/password-reset">¿Olvidaste tu contraseña?</a>
             <br />
             <div className="buttonGroup">
-                <input className="inputButton" type="button" onClick={handleLogin} value="Log in" />
-                <input className="inputButton" type="button" onClick={handleSignUp} value="Sign Up" />
+                <input className="inputButton" type="button" onClick={handleLogin} value="Iniciar Sesión" />
+                <input className="inputButton" type="button" onClick={handleSignUp} value="Registrarse" />
             </div>
         </div>
     );

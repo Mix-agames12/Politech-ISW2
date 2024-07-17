@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { auth, db } from '../firebaseConfig';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
+import { Header } from './Header';
 
 const GestionarCuentas = () => {
     const [accounts, setAccounts] = useState([]);

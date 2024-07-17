@@ -24,7 +24,7 @@ const PasswordReset = () => {
             setOpen(true);
             setTimeout(() => {
                 navigate('/login');
-            }, 3000); // Espera 3 segundos antes de redirigir al login
+            }, 2000); // Espera 3 segundos antes de redirigir al login
         } catch (error) {
             console.error('Error sending password reset email:', error);
             setError('Error sending password reset email. Please try again.');
