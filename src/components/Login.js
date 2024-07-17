@@ -31,6 +31,7 @@ const Login = () => {
         <div className="container">
             <div class="sidebar"> <Sidebar/> </div>
             <h2>Login</h2>
+
             <div className="form-group"/>
                 <label>Email</label>
                 <input
@@ -40,7 +41,9 @@ const Login = () => {
                     onChange={(e) => setEmail(e.target.value)}
                 />
 
+
         <div className="container" id="container"/>
+
             <div className="form-container sign-up-container">
                 <form>
                     <h1>Crear Cuenta</h1>

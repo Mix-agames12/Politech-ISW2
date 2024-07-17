@@ -6,13 +6,29 @@ import SignUp from './components/SignUp';
 import PasswordReset from './components/PasswordReset';
 import UpdateProfile from './components/UpdateProfile';
 import Transaction from './components/Transaction';
+// import { Sidebar } from './components/Sidebar';
+import { GestionarCuentas } from './components/GestionarCuentas';
 import AccountManagement from './components/AccountManagement';
 import Home from './components/Home';
-import { GestionarCuentas } from './components/GestionarCuentas';
+
 
 function App() {
   return (
     <Router>
+
+
+      {/* <Sidebar /> */}
+      <GestionarCuentas />
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/password-reset" element={<PasswordReset />} />
+        <Route path="/update-profile" element={<UpdateProfile />} />
+        <Route path="/transaction" element={<Transaction />} />
+        <Route path="/account-management" element={<AccountManagement />} />
+        <Route path="/" element={<Login />} /> {/* Página de inicio */}
+      </Routes>
+
       <div className="App">
         <nav className="navbar navbar-expand-lg navbar-light bg-light">
           <Link className="navbar-brand" to="/">Banking App</Link>
