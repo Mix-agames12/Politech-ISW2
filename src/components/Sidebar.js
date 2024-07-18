@@ -28,7 +28,7 @@ return  (
                 </Link>
             </li>
             <li>
-                <Link to="/update-profile">
+                <Link to="/gestionar-cuentas">
                 <i className='bx bx-calendar'></i>
                 <span className="nav-text">
                     Movimientos

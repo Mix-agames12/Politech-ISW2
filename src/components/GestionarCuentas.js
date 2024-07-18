@@ -1,41 +1,68 @@
-// src/components/GestionarCuentas.js
 import '../components/GestionarCuentas.css';
 import { Sidebar } from "../components/Sidebar";
 import React, { useEffect, useState } from 'react';
 import { auth, db } from '../firebaseConfig';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { Header } from './Header';
 
 const GestionarCuentas = () => {
     const [accounts, setAccounts] = useState([]);
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchAccounts = async () => {
-            const user = auth.currentUser;
-            if (!user) {
+        const fetchData = async () => {
+            const currentUser = auth.currentUser;
+            if (!currentUser) {
                 navigate('/login');
                 return;
             }
 
             try {
-                console.log('Fetching accounts for user ID:', user.uid);
-                const q = query(collection(db, 'cuentas'), where('id', '==', user.uid));
+                // Fetch user data
+                const userDoc = await getDoc(doc(db, 'clientes', currentUser.uid));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    console.log('User data:', userData);
+                    setUser(userData);
+                } else {
+                    console.log("No such document!");
+                }
+
+                // Fetch accounts
+                const q = query(collection(db, 'cuentas'), where('id', '==', currentUser.uid));
                 const querySnapshot = await getDocs(q);
                 const accountsList = querySnapshot.docs.map(doc => doc.data());
                 console.log('Accounts fetched:', accountsList);
                 setAccounts(accountsList);
             } catch (error) {
-                console.error("Error fetching accounts: ", error);
+                console.error("Error fetching data: ", error);
+            } finally {
+                setLoading(false);
             }
         };
 
-        fetchAccounts();
+        fetchData();
     }, [navigate]);
+
+    console.log('User:', user); // Verificar que los estados se actualizan
+    console.log('Accounts:', accounts);
+    console.log('Loading:', loading);
+
+    if (loading) {
+        console.log('Component is loading');
+        return null; // No renderizar nada hasta que los datos estén listos
+    }
+
+    console.log('Component is rendering with user:', user);
 
     return (
         <>
+            {user && (
+                <Header firstName={user.nombre} lastName={user.apellido} />
+            )}
             <div className="Sidebar">
                 <Sidebar />
             </div>
