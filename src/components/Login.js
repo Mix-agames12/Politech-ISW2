@@ -58,6 +58,7 @@ export const Login = (props) => {
             await signInWithEmailAndPassword(auth, userEmail, password);
             console.log('User logged in');
             navigate('/gestionar-cuentas');
+            navigate('/gestionar-cuentas');
         } catch (error) {
             console.error('Error logging in:', error);
             if (error.code === 'auth/user-not-found') {
