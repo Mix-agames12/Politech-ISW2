@@ -1,9 +1,10 @@
-// src/components/UpdateProfile.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { auth, db } from '../firebaseConfig';
 import { updateEmail, updatePassword, updateProfile } from 'firebase/auth';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { Sidebar } from '../components/Sidebar';
+import { Header } from '../components/Header';
+import { useNavigate } from 'react-router-dom'; // Importar useNavigate
 import './UpdateProfile.css';
 
 const UpdateProfile = () => {
@@ -12,6 +13,33 @@ const UpdateProfile = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const navigate = useNavigate(); // Usar useNavigate
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const currentUser = auth.currentUser;
+            if (!currentUser) {
+                navigate('/login');
+                return;
+            }
+
+            try {
+                const userDoc = await getDoc(doc(db, 'clientes', currentUser.uid));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    setUser(userData);
+                }
+            } catch (error) {
+                console.error("Error fetching user data: ", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUserData();
+    }, [navigate]);
 
     const handleUpdate = async () => {
         setError('');
@@ -21,11 +49,11 @@ const UpdateProfile = () => {
             try {
                 if (name) {
                     await updateProfile(user, { displayName: name });
-                    await updateDoc(doc(db, 'users', user.uid), { name: name });
+                    await updateDoc(doc(db, 'clientes', user.uid), { nombre: name });
                 }
                 if (email) {
                     await updateEmail(user, email);
-                    await updateDoc(doc(db, 'users', user.uid), { email: email });
+                    await updateDoc(doc(db, 'clientes', user.uid), { correo: email });
                 }
                 if (password) {
                     await updatePassword(user, password);
@@ -38,8 +66,15 @@ const UpdateProfile = () => {
         }
     };
 
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
     return (
         <div className="mainContainer">
+            {user && (
+                <Header firstName={user.nombre} lastName={user.apellido} />
+            )}
             <div className='sidebar'>
                 <Sidebar />
             </div>

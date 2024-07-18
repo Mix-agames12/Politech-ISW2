@@ -7,6 +7,7 @@ import PasswordReset from './components/PasswordReset';
 import UpdateProfile from './components/UpdateProfile';
 import Transaction from './components/Transaction';
 import GestionarCuentas from './components/GestionarCuentas';
+import CambioContrasena from './components/CambioContrasena';
 // import AccountManagement from './components/AccountManagement';
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
             <Route path="/update-profile" element={<UpdateProfile />} />
             <Route path="/transaction" element={<Transaction />} />
             <Route path="/gestionar-cuentas" element={<GestionarCuentas />} />
+            <Route path="/cambio-contrasena" element={<CambioContrasena/>} />
           </Routes>
         </div>
       </div>

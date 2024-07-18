@@ -5,6 +5,7 @@ import { auth, db } from '../firebaseConfig';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import '../components/Login.css';
+import { HeaderPrincipal } from './HeaderPrincipal';
 
 export const Login = (props) => {
     const [username, setUsername] = useState('');
@@ -76,6 +77,7 @@ export const Login = (props) => {
 
     return (
         <div className="mainContainer">
+            <HeaderPrincipal />
             <div className="titleContainer">
                 <div>Inicio de Sesión</div>
             </div>

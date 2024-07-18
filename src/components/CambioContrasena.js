@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import { auth } from '../firebaseConfig';
 import { sendPasswordResetEmail } from 'firebase/auth';
-import './PasswordReset.css';
+import './CambioContrasena.css';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import { useNavigate } from 'react-router-dom';
-import { HeaderPrincipal } from '../components/HeaderPrincipal';
+import { Sidebar } from '../components/Sidebar';
+import { Header } from '../components/Header';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-const PasswordReset = () => {
+const CambioContrasena = () => {
     const [email, setEmail] = useState('');
     const [error, setError] = useState('');
     const [open, setOpen] = useState(false);
@@ -41,7 +42,10 @@ const PasswordReset = () => {
 
     return (
         <div className="mainContainer">
-            <HeaderPrincipal />
+            <Header firstName="Nombre" lastName="Apellido" />
+            <div className="sidebar">
+                <Sidebar />
+            </div>
             <div className="titleContainer">
                 <h2>Reset Password</h2>
             </div>
@@ -67,4 +71,4 @@ const PasswordReset = () => {
     );
 };
 
-export default PasswordReset;
+export default CambioContrasena;

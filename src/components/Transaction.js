@@ -1,15 +1,43 @@
-// src/components/Transaction.js
-import React, { useState } from 'react';
-import { db } from '../firebaseConfig';
-import { collection, getDocs, query, where, updateDoc, doc } from 'firebase/firestore';
+import React, { useState, useEffect } from 'react';
+import { auth, db } from '../firebaseConfig';
+import { collection, getDocs, query, where, updateDoc, doc, getDoc } from 'firebase/firestore';
 import { Sidebar } from './Sidebar';
 import './Transaction.css';
+import { Header } from './Header';
 
 const Transaction = () => {
     const [senderEmail, setSenderEmail] = useState('');
     const [receiverEmail, setReceiverEmail] = useState('');
     const [amount, setAmount] = useState(0);
     const [error, setError] = useState('');
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const currentUser = auth.currentUser;
+            if (!currentUser) {
+                return;
+            }
+
+            try {
+                const userDoc = await getDoc(doc(db, 'clientes', currentUser.uid));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    console.log('User data:', userData);
+                    setUser(userData);
+                } else {
+                    console.log("No such document!");
+                }
+            } catch (error) {
+                console.error("Error fetching user data: ", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUserData();
+    }, []);
 
     const handleTransaction = async () => {
         setError('');
@@ -50,8 +78,15 @@ const Transaction = () => {
         }
     };
 
+    if (loading) {
+        return null; // No renderizar nada hasta que los datos estén listos
+    }
+
     return (
         <div className="mainContainer">
+            {user && (
+                <Header firstName={user.nombre} lastName={user.apellido} />
+            )}
             <div className='sidebar'>
                 <Sidebar />
             </div>
