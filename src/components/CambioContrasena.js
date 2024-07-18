@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
-import { auth } from '../firebaseConfig';
+import React, { useState, useEffect } from 'react';
+import { auth, db } from '../firebaseConfig';
 import { sendPasswordResetEmail } from 'firebase/auth';
-import './CambioContrasena.css';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import { useNavigate } from 'react-router-dom';
-import { Sidebar } from '../components/Sidebar';
 import { Header } from '../components/Header';
+import { doc, getDoc } from 'firebase/firestore';
+import './CambioContrasena.css';
+import { Sidebar } from "../components/Sidebar";
 
-const Alert = React.forwardRef(function Alert(props, ref) {
+const Alerta = React.forwardRef(function Alerta(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
@@ -16,56 +17,90 @@ const CambioContrasena = () => {
     const [email, setEmail] = useState('');
     const [error, setError] = useState('');
     const [open, setOpen] = useState(false);
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
-    const handlePasswordReset = async () => {
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const currentUser = auth.currentUser;
+            if (!currentUser) {
+                navigate('/login');
+                return;
+            }
+
+            try {
+                const userDoc = await getDoc(doc(db, 'clientes', currentUser.uid));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    setUser(userData);
+                    setEmail(currentUser.email);
+                }
+            } catch (error) {
+                console.error("Error fetching user data: ", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUserData();
+    }, [navigate]);
+
+    const manejarRestablecimientoContrasena = async () => {
         setError('');
         try {
             await sendPasswordResetEmail(auth, email);
-            console.log('Password reset email sent');
+            console.log('Correo de restablecimiento de contraseña enviado');
             setOpen(true);
             setTimeout(() => {
                 navigate('/login');
-            }, 2000); // Espera 3 segundos antes de redirigir al login
+            }, 2000); // Espera 2 segundos antes de redirigir al login
         } catch (error) {
-            console.error('Error sending password reset email:', error);
-            setError('Error sending password reset email. Please try again.');
+            console.error('Error al enviar el correo de restablecimiento de contraseña:', error);
+            setError('Error al enviar el correo de restablecimiento de contraseña. Por favor, inténtalo de nuevo.');
         }
     };
 
-    const handleClose = (event, reason) => {
+    const manejarCerrar = (event, reason) => {
         if (reason === 'clickaway') {
             return;
         }
         setOpen(false);
     };
 
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
     return (
         <div className="mainContainer">
-            <Header firstName="Nombre" lastName="Apellido" />
-            <div className="sidebar">
+            {user && (
+                <Header firstName={user.nombre} lastName={user.apellido} />
+            )}
+            <div className="Sidebar">
                 <Sidebar />
             </div>
             <div className="titleContainer">
-                <h2>Reset Password</h2>
+                <h2>Cambio de Contraseña</h2>
             </div>
             <div className="inputContainer">
-                <label>Email</label>
+                <label>Correo Electrónico</label>
                 <input
                     type="email"
                     className="inputBox"
-                    placeholder="Email"
+                    placeholder="Correo Electrónico"
+                    value={email}
                     onChange={(e) => setEmail(e.target.value)}
                 />
                 {error && <label className="errorLabel">{error}</label>}
             </div>
             <div className="buttonContainer">
-                <input className="inputButton" type="button" onClick={handlePasswordReset} value="Reset Password" />
+                <input className="inputButton" type="button" onClick={manejarRestablecimientoContrasena} value="Restablecer Contraseña" />
             </div>
-            <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
-                <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
-                    Password reset email sent successfully!
-                </Alert>
+            <Snackbar open={open} autoHideDuration={6000} onClose={manejarCerrar}>
+                <Alerta onClose={manejarCerrar} severity="success" sx={{ width: '100%' }}>
+                    ¡Correo de cambio de contraseña enviado exitosamente!
+                </Alerta>
             </Snackbar>
         </div>
     );
