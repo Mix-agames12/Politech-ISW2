@@ -167,7 +167,8 @@ const SignUp = () => {
 
     return (
         <div className="mainContainer">
-            <HeaderPrincipal /> {/* Agregar HeaderPrincipal */}
+            {/* Agregar HeaderPrincipal */}
+            <HeaderPrincipal />
             <div className="titleContainer">
                 <h2>Registrarse</h2>
             </div>
@@ -179,8 +180,7 @@ const SignUp = () => {
                             type="text"
                             className="inputBox"
                             placeholder="Nombre"
-                            onChange={(e) => setFirstName(e.target.value)}
-                        />
+                            onChange={(e) => setFirstName(e.target.value)} />
                         {error.firstName && <label className="errorLabel">{error.firstName}</label>}
                     </div>
                     <div className="inputContainer">
@@ -189,8 +189,7 @@ const SignUp = () => {
                             type="text"
                             className="inputBox"
                             placeholder="Apellido"
-                            onChange={(e) => setLastName(e.target.value)}
-                        />
+                            onChange={(e) => setLastName(e.target.value)} />
                         {error.lastName && <label className="errorLabel">{error.lastName}</label>}
                     </div>
                     <div className="inputContainer">
@@ -199,8 +198,7 @@ const SignUp = () => {
                             type="text"
                             className="inputBox"
                             placeholder="Nombre de usuario"
-                            onChange={(e) => setUsername(e.target.value)}
-                        />
+                            onChange={(e) => setUsername(e.target.value)} />
                         {error.username && <label className="errorLabel">{error.username}</label>}
                     </div>
                     <div className="inputContainer">
@@ -209,8 +207,7 @@ const SignUp = () => {
                             type="text"
                             className="inputBox"
                             placeholder="Cédula"
-                            onChange={(e) => setIdNumber(e.target.value)}
-                        />
+                            onChange={(e) => setIdNumber(e.target.value)} />
                         {error.idNumber && <label className="errorLabel">{error.idNumber}</label>}
                     </div>
                 </div>
@@ -221,8 +218,7 @@ const SignUp = () => {
                             type="email"
                             className="inputBox"
                             placeholder="Correo electrónico"
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
+                            onChange={(e) => setEmail(e.target.value)} />
                         {error.email && <label className="errorLabel">{error.email}</label>}
                     </div>
                     <div className="inputContainer">
@@ -231,8 +227,7 @@ const SignUp = () => {
                             type="password"
                             className="inputBox"
                             placeholder="Contraseña"
-                            onChange={(e) => validatePassword(e.target.value)}
-                        />
+                            onChange={(e) => validatePassword(e.target.value)} />
                         {error.password && <label className="errorLabel">{error.password}</label>}
                     </div>
                     <div className="inputContainer">
@@ -241,8 +236,7 @@ const SignUp = () => {
                             type="password"
                             className="inputBox"
                             placeholder="Repetir contraseña"
-                            onChange={(e) => handleConfirmPassword(e.target.value)}
-                        />
+                            onChange={(e) => handleConfirmPassword(e.target.value)} />
                         {!passwordsMatch && <label className="errorLabel">Las contraseñas no coinciden</label>}
                     </div>
                     <div className="inputContainer">
@@ -271,59 +265,7 @@ const SignUp = () => {
                 </Alert>
             </Snackbar>
         </div>
-        <div className="column">
-          <div className="inputContainer">
-            <label>Correo electrónico</label>
-            <input
-              type="email"
-              className="inputBox"
-              placeholder="Correo electrónico"
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            {error.email && <label className="errorLabel">{error.email}</label>}
-          </div>
-          <div className="inputContainer">
-            <label>Contraseña</label>
-            <input
-              type="password"
-              className="inputBox"
-              placeholder="Contraseña"
-              onChange={(e) => validatePassword(e.target.value)}
-            />
-            {error.password && <label className="errorLabel">{error.password}</label>}
-          </div>
-          <div className="inputContainer">
-            <label>Repetir contraseña</label>
-            <input
-              type="password"
-              className="inputBox"
-              placeholder="Repetir contraseña"
-              onChange={(e) => handleConfirmPassword(e.target.value)}
-            />
-            {!passwordsMatch && <label className="errorLabel">Las contraseñas no coinciden</label>}
-          </div>
-          <div className="inputContainer">
-            <label className={`passwordRequirements ${passwordConditions.length ? 'valid' : 'invalid'}`}>
-              La contraseña debe tener al menos 8 caracteres
-            </label>
-            <label className={`passwordRequirements ${passwordConditions.uppercase ? 'valid' : 'invalid'}`}>
-              La contraseña debe tener al menos una letra mayúscula
-            </label>
-            <label className={`passwordRequirements ${passwordConditions.number ? 'valid' : 'invalid'}`}>
-              La contraseña debe tener al menos un número
-            </label>
-            <label className={`passwordRequirements ${passwordConditions.specialChar ? 'valid' : 'invalid'}`}>
-              La contraseña debe tener al menos un carácter especial
-            </label>
-          </div>
-        </div>
-      </div>
-      <div className="buttonContainer">
-        <input className="inputButton" type="button" onClick={handleSignUp} value="Registrarse" />
-        {error.general && <label className="errorLabel">{error.general}</label>}
-      </div>
-    </div>
-  );
+    );
 };
 
 export default SignUp;

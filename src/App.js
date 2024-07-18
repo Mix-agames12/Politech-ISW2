@@ -24,7 +24,7 @@ function App() {
             <Route path="/update-profile" element={<UpdateProfile />} />
             <Route path="/transaction" element={<Transaction />} />
             <Route path="/gestionar-cuentas" element={<GestionarCuentas />} />
-            <Route path="/cambio-contrasena" element={<CambioContrasena/>} />
+            <Route path="/cambio-contrasena" element={<CambioContrasena />} />
           </Routes>
         </div>
       </div>
