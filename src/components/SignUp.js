@@ -271,7 +271,59 @@ const SignUp = () => {
                 </Alert>
             </Snackbar>
         </div>
-    );
+        <div className="column">
+          <div className="inputContainer">
+            <label>Correo electrónico</label>
+            <input
+              type="email"
+              className="inputBox"
+              placeholder="Correo electrónico"
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            {error.email && <label className="errorLabel">{error.email}</label>}
+          </div>
+          <div className="inputContainer">
+            <label>Contraseña</label>
+            <input
+              type="password"
+              className="inputBox"
+              placeholder="Contraseña"
+              onChange={(e) => validatePassword(e.target.value)}
+            />
+            {error.password && <label className="errorLabel">{error.password}</label>}
+          </div>
+          <div className="inputContainer">
+            <label>Repetir contraseña</label>
+            <input
+              type="password"
+              className="inputBox"
+              placeholder="Repetir contraseña"
+              onChange={(e) => handleConfirmPassword(e.target.value)}
+            />
+            {!passwordsMatch && <label className="errorLabel">Las contraseñas no coinciden</label>}
+          </div>
+          <div className="inputContainer">
+            <label className={`passwordRequirements ${passwordConditions.length ? 'valid' : 'invalid'}`}>
+              La contraseña debe tener al menos 8 caracteres
+            </label>
+            <label className={`passwordRequirements ${passwordConditions.uppercase ? 'valid' : 'invalid'}`}>
+              La contraseña debe tener al menos una letra mayúscula
+            </label>
+            <label className={`passwordRequirements ${passwordConditions.number ? 'valid' : 'invalid'}`}>
+              La contraseña debe tener al menos un número
+            </label>
+            <label className={`passwordRequirements ${passwordConditions.specialChar ? 'valid' : 'invalid'}`}>
+              La contraseña debe tener al menos un carácter especial
+            </label>
+          </div>
+        </div>
+      </div>
+      <div className="buttonContainer">
+        <input className="inputButton" type="button" onClick={handleSignUp} value="Registrarse" />
+        {error.general && <label className="errorLabel">{error.general}</label>}
+      </div>
+    </div>
+  );
 };
 
 export default SignUp;

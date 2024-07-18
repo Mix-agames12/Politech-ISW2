@@ -66,3 +66,4 @@ export const Header = ({ firstName, lastName }) => {
         </nav>
     );
 };
+
