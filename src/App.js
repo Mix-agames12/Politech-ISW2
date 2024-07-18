@@ -7,7 +7,7 @@ import PasswordReset from './components/PasswordReset';
 import UpdateProfile from './components/UpdateProfile';
 import Transaction from './components/Transaction';
 import GestionarCuentas from './components/GestionarCuentas';
-// import AccountManagement from './components/AccountManagement';
+import Home from './components/Home';
 
 function App() {
   return (
@@ -15,7 +15,8 @@ function App() {
       <div class="App">
         <div class="container">
           <Routes>
-            <Route path="/" element={<Login />} /> {/* Página de inicio */}
+            {/* Página de inicio */}
+            <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/password-reset" element={<PasswordReset />} />
@@ -29,4 +30,4 @@ function App() {
   );
 }
 
-export default App;
+export default App;

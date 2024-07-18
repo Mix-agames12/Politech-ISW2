@@ -1,115 +1,112 @@
-
-// src/Homepage.js
-import React from 'react';
-import { Carousel, Card, Container, Row, Col, Navbar, Nav, Footer } from 'react-bootstrap';
+// src/Home.js
+import React, { useState, useEffect } from 'react';
+import './Home.css';
+import Logo from '../assets/images/neologo.png';
 
 const Home = () => {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const images = [
+    "https://via.placeholder.com/801x400.png",
+    "https://via.placeholder.com/799x400.png",
+    "https://via.placeholder.com/802x400.png"
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prevSlide) => (prevSlide + 1) % images.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [images.length]);
+
   return (
     <div>
       {/* Navbar */}
-      <Navbar bg="dark" variant="dark" expand="lg">
-        <Container>
-          <Navbar.Brand href="#home">Mi Sitio</Navbar.Brand>
-          <Navbar.Toggle aria-controls="basic-navbar-nav" />
-          <Navbar.Collapse id="basic-navbar-nav">
-            <Nav className="me-auto">
-              <Nav.Link href="#home">Inicio</Nav.Link>
-              <Nav.Link href="#features">Características</Nav.Link>
-              <Nav.Link href="#contact">Contacto</Nav.Link>
-            </Nav>
-          </Navbar.Collapse>
-        </Container>
-      </Navbar>
-
+      <nav className="navbar">
+        <div className="navbar-logo">
+          <img src={Logo} alt="Logo Politech" />
+        </div>
+        <ul className="navbar-links">
+          <li><a href="#">Contactenos</a></li>
+          <li><a href="#">Ingresar</a></li>
+          <li><a href="#">Registrarse</a></li>
+        </ul>
+      </nav>
       {/* Carousel */}
-      <Carousel>
-        <Carousel.Item>
-          <img
-            className="d-block w-100"
-            src="https://via.placeholder.com/800x400"
-            alt="First slide"
-          />
-          <Carousel.Caption>
-            <h3>First slide label</h3>
-            <p>Nulla vitae elit libero, a pharetra augue mollis interdum.</p>
-          </Carousel.Caption>
-        </Carousel.Item>
-        <Carousel.Item>
-          <img
-            className="d-block w-100"
-            src="https://via.placeholder.com/800x400"
-            alt="Second slide"
-          />
-                            <Carousel.Caption>
-                                <h3>Second slide label</h3>
-                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-                            </Carousel.Caption>
-                        </Carousel.Item>
-                    </Carousel>
+      <div className="carousel">
+        <div className="carousel-inner" style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
+          {images.map((image, index) => (
+            <img key={index} src={image} alt={`foto ${index + 1}`} />
+          ))}
+        </div>
+      </div>
+      {/* Content */}
+      <hr />
+      <main className='content'>
+        <div className='content-title'>
+          <h1>Soluciones en Linea</h1>
+          <h3>Todo lo que necesitas sin salir de casa</h3>
+        </div>
+        <div className='content-body'>
+          {/* Cards */}
+          <div className='content-cards'>
+            <div className="card">
+              <div className="card-icon">
+                <img src="https://placehold.co/50x50.png" alt="Icono de ahorro" />
+              </div>
+              <div className="card-content">
+                <h2>Ahorro Flexible</h2>
+                <p>Gana <span className="highlight">5%</span> de interés y ten tu dinero siempre disponible.</p>
+              </div>
+              <a href="#" className="card-link">Abrir cuenta</a>
+            </div>
+            <div className="card">
+              <div className="card-icon">
+                <img src="https://placehold.co/50x50.png" alt="Icono de ahorro" />
+              </div>
+              <div className="card-content">
+                <h2>Ahorro Inteligente</h2>
+                <p>Obtén hasta un <span className="highlight">5%</span> de interés anual. ¡Disponibilidad inmediata!</p>
+              </div>
+              <a href="#" className="card-link">Empieza ahora</a>
+            </div>
+            <div className="card">
+              <div className="card-icon">
+                <img src="https://placehold.co/50x50.png" alt="Icono de ahorro" />
+              </div>
+              <div className="card-content">
+                <h2>Ahorro Seguro</h2>
+                <p>Disfruta de un <span className="highlight">5%</span> de interés y acceso a tu dinero en cualquier momento.</p>
+              </div>
+              <a href="#" className="card-link">Únete hoy</a>
+            </div>
+            <div className="card">
+              <div className="card-icon">
+                <img src="https://placehold.co/50x50.png" alt="Icono de ahorro" />
+              </div>
+              <div className="card-content">
+                <h2>Ahorro Dinámico</h2>
+                <p>Gana un <span className="highlight">5%</span> de interés con la flexibilidad que necesitas.</p>
+              </div>
+              <a href="#" className="card-link">Descubre más</a>
+            </div>
+            {/* Repetir las tarjetas según sea necesario */}
+          </div>
+        </div>
+      </main>
+      {/* Footer */}
+      <footer className="footer">
+        <div className="footer-content">
+          <ul className="footer-links">
+            <li><a href="#">Sobre Nosotros</a></li>
+            <li><a href="#">Terminos de Servicio</a></li>
+            <li><a href="#">Contactenos</a></li>
+          </ul>
+          <hr />
+          <p>&copy; 2024 PoliTech. Todos los Derechos Reservados.</p>
+        </div>
+      </footer>
+    </div>
+  );
+};
 
-                    {/* Cards */}
-                    <Container className="my-4">
-                        <Row>
-                            <Col>
-                                <Card>
-                                    <Card.Img variant="top" src="https://via.placeholder.com/150" />
-                                    <Card.Body>
-                                        <Card.Title>Card title</Card.Title>
-                                        <Card.Text>
-                                            This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.
-                                        </Card.Text>
-                                    </Card.Body>
-                                </Card>
-                            </Col>
-                            <Col>
-                                <Card>
-                                    <Card.Img variant="top" src="https://via.placeholder.com/150" />
-                                    <Card.Body>
-                                        <Card.Title>Card title</Card.Title>
-                                        <Card.Text>
-                                            This card has supporting text below as a natural lead-in to additional content.{' '}
-                                        </Card.Text>
-                                    </Card.Body>
-                                </Card>
-                            </Col>
-                            <Col>
-                                <Card>
-                                    <Card.Img variant="top" src="https://via.placeholder.com/150" />
-                                    <Card.Body>
-                                        <Card.Title>Card title</Card.Title>
-                                        <Card.Text>
-                                            This is a wider card with supporting text below as a natural lead-in to additional content. This card has even longer content than the first to show that equal height action.
-                                        </Card.Text>
-                                    </Card.Body>
-                                </Card>
-                            </Col>
-                        </Row>
-                    </Container>
-
-                    {/* Footer */}
-                    <footer className="bg-dark text-white mt-4">
-                        <Container fluid className="text-center p-3">
-                            <h5>Contacto</h5>
-                            <p>Email: contacto@misitio.com</p>
-                            <p>Tel: +123 456 7890</p>
-                            <h5>Redes Sociales</h5>
-                            <p>
-                                <a href="#" className="text-white me-2">
-                                    <i className="fab fa-facebook"></i>
-                                </a>
-                                <a href="#" className="text-white me-2">
-                                    <i className="fab fa-twitter"></i>
-                                </a>
-                                <a href="#" className="text-white me-2">
-                                    <i className="fab fa-instagram"></i>
-                                </a>
-                            </p>
-                            <p>&copy; {new Date().getFullYear()} Mi Sitio</p>
-                        </Container>
-                    </footer>
-                </div>
-            );
-        };
-
-export default Home;
-
+export default Home;
