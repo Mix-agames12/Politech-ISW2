@@ -59,7 +59,7 @@ const GestionarCuentas = () => {
     console.log('Component is rendering with user:', user);
 
     return (
-        <>
+        <div>
             {user && (
                 <Header firstName={user.nombre} lastName={user.apellido} />
             )}

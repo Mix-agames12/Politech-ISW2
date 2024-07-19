@@ -8,7 +8,9 @@ import UpdateProfile from './components/UpdateProfile';
 import Transaction from './components/Transaction';
 import GestionarCuentas from './components/GestionarCuentas';
 import CambioContrasena from './components/CambioContrasena';
-// import AccountManagement from './components/AccountManagement';
+import Home from './components/Home';
+// import PantallaPrincipal from './components/PantallaPrincipal';
+
 
 function App() {
   return (
@@ -16,14 +18,15 @@ function App() {
       <div class="App">
         <div class="container">
           <Routes>
-            <Route path="/" element={<Login />} /> {/* Página de inicio */}
+            {/* Página de inicio */}
+            <Route path="/" element={<Home/>} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/password-reset" element={<PasswordReset />} />
             <Route path="/update-profile" element={<UpdateProfile />} />
             <Route path="/transaction" element={<Transaction />} />
             <Route path="/gestionar-cuentas" element={<GestionarCuentas />} />
-            <Route path="/cambio-contrasena" element={<CambioContrasena/>} />
+            <Route path="/cambio-contrasena" element={<CambioContrasena />} />
           </Routes>
         </div>
       </div>
@@ -31,4 +34,4 @@ function App() {
   );
 }
 
-export default App;
+export default App;
