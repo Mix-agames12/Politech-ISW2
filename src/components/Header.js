@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Menu, MenuItem, IconButton } from '@mui/material';
+import { Menu, MenuItem, IconButton } from '@mui/material';
 import { AccountCircle } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import '../components/Header.css';

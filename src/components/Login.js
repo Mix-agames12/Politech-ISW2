@@ -79,8 +79,8 @@ export const Login = (props) => {
     return (
         <>  
         <HeaderPrincipal2 />
+        
         <div className="mainContainer">
-            
             <div className="titleContainer">
                 <div>Inicio de Sesión</div>
             </div>

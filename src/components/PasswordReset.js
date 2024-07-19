@@ -5,7 +5,6 @@ import { sendPasswordResetEmail } from 'firebase/auth';
 import './PasswordReset.css';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
-import { useNavigate } from 'react-router-dom';
 import { HeaderPrincipal } from '../components/HeaderPrincipal';
 
 const Alerta = React.forwardRef(function Alerta(props, ref) {
