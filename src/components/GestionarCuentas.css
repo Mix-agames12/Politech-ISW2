@@ -1,0 +1,84 @@
+/* Estilos para el contenido principal */
+html, body {
+  height: 100%;
+  width: 100%;
+}
+
+.main-content {
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: auto;
+  background-color: #f0fdfa;
+  /* Estirar el fondo a toda la pantalla */
+  height: 100vh;
+}
+.main-content {
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centrado horizontal */
+  justify-content: center; /* Centrado vertical */
+  height: 100vh; /* Asegura que el contenedor ocupe toda la altura del viewport */
+  width: auto;
+  background-color: #f0fdfa; /* Color de fondo celeste */
+}
+
+.main-content h2 {
+  color: #333;
+  font-weight: bold;
+  text-align: left; /* Alineación a la izquierda */
+  margin-bottom: 0.1rem; /* Espacio debajo del título principal */
+}
+
+.main-content h3 {
+  color: #333;
+  font-weight: normal;
+  font-size: 20px;
+  text-align: left; /* Alineación a la izquierda */
+  margin-bottom: 2rem; /* Espacio debajo del subtítulo */
+}
+
+.main-content .account-cards {
+  display: flex;
+  /* flex-direction: column; */
+  gap: 2rem;
+  cursor: pointer;
+}
+
+.main-content .account-card {
+  background-image: linear-gradient(to bottom, #74d6c3, #0d9488);
+  color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  width: 300px;
+  text-align: center;
+}
+
+.main-content .account-card h4 {
+  color: white;
+  margin-top: 1px;
+  margin-left: 1px;
+  width: 300px;
+  font-size: 18px;
+  text-align: left;
+}
+.main-content .account-card p {
+  color: #e1e1e1;
+  font-weight: bold;
+  margin-left: 1px;
+  width: 300px;
+  font-size: 18px;
+  text-align: left;
+  margin-bottom: 0; /* Remove interline spacing */
+}
+
+.main-content .account-card:hover {
+  background-color: #0f8e7d;
+  transform: scale(1.05);
+}
+
+

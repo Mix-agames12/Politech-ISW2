@@ -1,12 +1,12 @@
 import React from 'react';
-import '../components/Pantalla_Principal.css';
+import '../components/PantallaPrincipal.css';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import { Carusel } from './Carusel';
 import { SignUp } from './components/SignUp';
 import { Login } from './components/Login';
+// Revisar el contenido de esta vista, algunas cosas se pueden implementar en el Home.js
 
-
-export const Pantalla_Principal = () => {
+export const pantallaPrincipal = () => {
   return (
     <Router> 
     <>

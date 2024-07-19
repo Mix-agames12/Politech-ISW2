@@ -1,172 +1,271 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import bcrypt from 'bcryptjs';
-import '../SignUp.css';
+import './SignUp.css';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
+import { useNavigate } from 'react-router-dom';
+import { HeaderPrincipal } from './HeaderPrincipal'; // Importar HeaderPrincipal
+
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 const SignUp = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [name, setName] = useState('');
-    const [cedula, setCedula] = useState('');
-    const [error, setError] = useState('');
-    const navigate = useNavigate();
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [idNumber, setIdNumber] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState({});
+  const [passwordConditions, setPasswordConditions] = useState({
+    length: false,
+    uppercase: false,
+    number: false,
+    specialChar: false,
+  });
+  const [passwordsMatch, setPasswordsMatch] = useState(true);
+  const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
 
-    const validateForm = () => {
-        const passwordRequirements = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-        let valid = true;
+  const validateInputs = () => {
+    let isValid = true;
+    let errors = {};
 
-        const passwordRequirementsElement = document.getElementById('password-requirements');
-        const passwordErrorElement = document.getElementById('password-error');
+    if (firstName === '') {
+      errors.firstName = 'Por favor, ingresa tu nombre';
+      isValid = false;
+    }
 
-        if (!passwordRequirements.test(password)) {
-            if (passwordRequirementsElement) passwordRequirementsElement.style.display = 'block';
-            valid = false;
-        } else {
-            if (passwordRequirementsElement) passwordRequirementsElement.style.display = 'none';
-        }
+    if (lastName === '') {
+      errors.lastName = 'Por favor, ingresa tu apellido';
+      isValid = false;
+    }
 
-        if (password !== confirmPassword) {
-            if (passwordErrorElement) passwordErrorElement.style.display = 'block';
-            valid = false;
-        } else {
-            if (passwordErrorElement) passwordErrorElement.style.display = 'none';
-        }
+    if (username === '') {
+      errors.username = 'Por favor, ingresa un nombre de usuario';
+      isValid = false;
+    }
 
-        return valid;
-    };
+    if (email === '') {
+      errors.email = 'Por favor, ingresa tu correo electrónico';
+      isValid = false;
+    } else if (!/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
+      errors.email = 'Por favor, ingresa un correo electrónico válido';
+      isValid = false;
+    }
 
-    const generateAccountNumber = () => {
-        let accountNumber = '22';
-        for (let i = 0; i < 8; i++) {
-            accountNumber += Math.floor(Math.random() * 9) + 1;
-        }
-        return accountNumber;
-    };
+    if (idNumber === '') {
+      errors.idNumber = 'Por favor, ingresa tu cédula';
+      isValid = false;
+    }
 
-    const handleSignUp = async (e) => {
-        e.preventDefault();
-        setError(''); // Clear previous errors
-        if (!validateForm()) return;
+    if (password === '') {
+      errors.password = 'Por favor, ingresa una contraseña';
+      isValid = false;
+    } else if (!passwordConditions.length || !passwordConditions.uppercase || !passwordConditions.number || !passwordConditions.specialChar) {
+      errors.password = 'La contraseña no cumple con los requisitos';
+      isValid = false;
+    }
 
-        try {
-            const hashedPassword = await bcrypt.hash(password, 10);
+    if (confirmPassword === '') {
+      errors.confirmPassword = 'Por favor, repite tu contraseña';
+      isValid = false;
+    } else if (password !== confirmPassword) {
+      errors.confirmPassword = 'Las contraseñas no coinciden';
+      isValid = false;
+    }
 
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
+    setError(errors);
+    return isValid;
+  };
 
-            console.log('User created:', user.uid); // Debugging
+  const generateAccountNumber = () => {
+    let accountNumber = '22';
+    while (accountNumber.length < 10) {
+      accountNumber += Math.floor(Math.random() * 10);
+    }
+    return accountNumber;
+  };
 
-            await setDoc(doc(db, 'users', user.uid), {
-                id: user.uid,
-                correo: email,
-                contraseña: hashedPassword
-            });
-            console.log('User document created'); // Debugging
+  const handleSignUp = async () => {
+    if (!validateInputs()) {
+      return;
+    }
 
-            await setDoc(doc(db, 'clientes', user.uid), {
-                id: user.uid,
-                nombre: name,
-                cedula: cedula,
-                correo_electronico: email
-            });
-            console.log('Client document created'); // Debugging
+    try {
+      const hashedPassword = bcrypt.hashSync(password, 10);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      const accountNumber = generateAccountNumber();
 
-            await setDoc(doc(db, 'cuentas', user.uid), {
-                id: user.uid,
-                cedula: cedula,
-                tipo_cuenta: 'Ahorros',
-                monto: 100,
-                numero_cuenta: generateAccountNumber()
-            });
-            console.log('Account document created'); // Debugging
+      await setDoc(doc(db, 'users', user.uid), {
+        id: user.uid,
+        correo: email,
+        contraseña: hashedPassword,
+        username
+      });
 
-            navigate('/login');
-        } catch (error) {
-            if (error.code === 'auth/email-already-in-use') {
-                setError('El correo electrónico ya está en uso. Por favor, prueba con otro.');
-            } else {
-                setError('Error registrando el usuario. Por favor, inténtalo de nuevo.');
-                console.error('Error signing up:', error);
-            }
-        }
-    };
+      await setDoc(doc(db, 'cuentas', user.uid), {
+        id: user.uid,
+        cedula: idNumber,
+        accountBalance: 100,
+        accountNumber,
+        tipoCuenta: 'ahorros'
+      });
 
-    return (
-        <div className="container right-panel-active" id="container">
-            <div className="form-container sign-up-container">
-                <form onSubmit={handleSignUp}>
-                    <h1>Crear Cuenta</h1>
-                    {error && <p style={{ color: 'red' }}>{error}</p>}
-                    <input
-                        type="text"
-                        placeholder="Nombre"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                    />
-                    <input
-                        type="text"
-                        placeholder="Número de Cédula"
-                        value={cedula}
-                        onChange={(e) => setCedula(e.target.value)}
-                        maxLength="10"
-                        minLength="10"
-                        required
-                        inputMode="numeric"
-                        onInput={(e) => e.target.value = e.target.value.replace(/[^0-9]/g, '')}
-                    />
-                    <input
-                        type="email"
-                        placeholder="Correo Electrónico"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                    />
-                    <input
-                        type="password"
-                        placeholder="Contraseña"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        minLength="8"
-                        required
-                    />
-                    <small id="password-requirements" style={{ color: 'red', display: 'none' }}>
-                        La contraseña debe tener al menos 8 caracteres, una letra mayúscula, un número y un carácter especial.
-                    </small>
-                    <input
-                        type="password"
-                        placeholder="Confirmar Contraseña"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        minLength="8"
-                        required
-                    />
-                    <small id="password-error" style={{ color: 'red', display: 'none' }}>
-                        Las contraseñas no coinciden
-                    </small>
-                    <button type="submit">Registrarse</button>
-                </form>
-            </div>
-            <div className="overlay-container">
-                <div className="overlay">
-                    <div className="overlay-panel overlay-left">
-                        <h1>Bienvenido de vuelta</h1>
-                        <p>Para mantenerse conectado con nosotros, inicie sesión con su información personal</p>
-                        <button className="ghost" id="signIn" onClick={() => navigate('/login')}>Iniciar Sesión</button>
-                    </div>
-                    <div className="overlay-panel overlay-right">
-                        <h1>Bienvenido</h1>
-                        <p>Ingresa tus datos personales para usar todas las funcionalidades</p>
-                        <button className="ghost" id="signUp" onClick={() => document.getElementById('container').classList.add('right-panel-active')}>Registrarse</button>
-                    </div>
-                </div>
-            </div>
+      await setDoc(doc(db, 'clientes', user.uid), {
+        id: user.uid,
+        correo: email,
+        cedula: idNumber,
+        nombre: firstName,
+        apellido: lastName
+      });
+
+      console.log('Usuario registrado:', user);
+      setOpen(true);
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000); // Espera 2 segundos antes de redirigir al login
+    } catch (error) {
+      console.error('Error al registrarse:', error);
+      let errors = {};
+      if (error.code === 'auth/email-already-in-use') {
+        errors.email = 'Este correo electrónico ya está en uso';
+      } else {
+        errors.general = 'No se pudo registrar. Inténtalo de nuevo.';
+      }
+      setError(errors);
+    }
+  };
+
+  const validatePassword = (password) => {
+    const length = password.length >= 8;
+    const uppercase = /[A-Z]/.test(password);
+    const number = /[0-9]/.test(password);
+    const specialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    setPasswordConditions({ length, uppercase, number, specialChar });
+    setPassword(password);
+  };
+
+  const handleConfirmPassword = (value) => {
+    setConfirmPassword(value);
+    setPasswordsMatch(value === password);
+  };
+
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setOpen(false);
+  };
+
+  return (
+    <div className="mainContainer">
+      {/* Agregar HeaderPrincipal */}
+      <HeaderPrincipal />
+      <div className="titleContainer">
+        <h2>Registrarse</h2>
+      </div>
+      <div className="formContainer">
+        <div className="column">
+          <div className="inputContainer">
+            <label>Nombre</label>
+            <input
+              type="text"
+              className="inputBox"
+              placeholder="Nombre"
+              onChange={(e) => setFirstName(e.target.value)} />
+            {error.firstName && <label className="errorLabel">{error.firstName}</label>}
+          </div>
+          <div className="inputContainer">
+            <label>Apellido</label>
+            <input
+              type="text"
+              className="inputBox"
+              placeholder="Apellido"
+              onChange={(e) => setLastName(e.target.value)} />
+            {error.lastName && <label className="errorLabel">{error.lastName}</label>}
+          </div>
+          <div className="inputContainer">
+            <label>Nombre de usuario</label>
+            <input
+              type="text"
+              className="inputBox"
+              placeholder="Nombre de usuario"
+              onChange={(e) => setUsername(e.target.value)} />
+            {error.username && <label className="errorLabel">{error.username}</label>}
+          </div>
+          <div className="inputContainer">
+            <label>Cédula</label>
+            <input
+              type="text"
+              className="inputBox"
+              placeholder="Cédula"
+              onChange={(e) => setIdNumber(e.target.value)} />
+            {error.idNumber && <label className="errorLabel">{error.idNumber}</label>}
+          </div>
         </div>
-    );
+        <div className="column">
+          <div className="inputContainer">
+            <label>Correo electrónico</label>
+            <input
+              type="email"
+              className="inputBox"
+              placeholder="Correo electrónico"
+              onChange={(e) => setEmail(e.target.value)} />
+            {error.email && <label className="errorLabel">{error.email}</label>}
+          </div>
+          <div className="inputContainer">
+            <label>Contraseña</label>
+            <input
+              type="password"
+              className="inputBox"
+              placeholder="Contraseña"
+              onChange={(e) => validatePassword(e.target.value)} />
+            {error.password && <label className="errorLabel">{error.password}</label>}
+          </div>
+          <div className="inputContainer">
+            <label>Repetir contraseña</label>
+            <input
+              type="password"
+              className="inputBox"
+              placeholder="Repetir contraseña"
+              onChange={(e) => handleConfirmPassword(e.target.value)} />
+            {!passwordsMatch && <label className="errorLabel">Las contraseñas no coinciden</label>}
+          </div>
+          <div className="inputContainer">
+            <label className={`passwordRequirements ${passwordConditions.length ? 'valid' : 'invalid'}`}>
+              La contraseña debe tener al menos 8 caracteres
+            </label>
+            <label className={`passwordRequirements ${passwordConditions.uppercase ? 'valid' : 'invalid'}`}>
+              La contraseña debe tener al menos una letra mayúscula
+            </label>
+            <label className={`passwordRequirements ${passwordConditions.number ? 'valid' : 'invalid'}`}>
+              La contraseña debe tener al menos un número
+            </label>
+            <label className={`passwordRequirements ${passwordConditions.specialChar ? 'valid' : 'invalid'}`}>
+              La contraseña debe tener al menos un carácter especial
+            </label>
+          </div>
+        </div>
+      </div>
+      <div className="buttonContainer">
+        <input className="inputButton" type="button" onClick={handleSignUp} value="Registrarse" />
+        {error.general && <label className="errorLabel">{error.general}</label>}
+      </div>
+      <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+        <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+          ¡Registro exitoso! Redirigiendo al login...
+        </Alert>
+      </Snackbar>
+    </div>
+  );
 };
 
 export default SignUp;

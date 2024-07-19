@@ -1,80 +1,111 @@
-// src/components/Home.js
-
-import React from 'react';
+// src/Home.js
+import React, { useState, useEffect } from 'react';
 import './Home.css';
+import Logo from '../assets/images/neologo.png';
 
 const Home = () => {
-  return (
-    <>  
-     <div class="navbar">
-    <div class="logo">
-      <span class="logo-text">POLITECH</span>
-    </div>
-    <div class="nav-links">
-      <input type="text" placeholder="Buscar..."/>
-      <button class="btn search-btn"> <img src="https://cdn4.iconfinder.com/data/icons/ionicons/512/icon-ios7-search-strong-512.png" class="lupa-img" alt=""/></button>
-      <button class="btn primary">Abre tu cuenta</button>
-      <button class="btn secondary">Acceso Clientes</button>
-    </div>
-  </div>
-  
-  <div class="carousel">
-    <div class="carousel-inner">
-      <div class="carousel-item active">
-        <img src="https://img.freepik.com/vector-gratis/fondo-azul-degradado_23-2149331354.jpg"/>
-        <div class="carousel-caption">
-          <h1>POLITECH</h1>
-          <p>Construyendo confianza, juntos<br/>Disfruta de grandes beneficios.</p>
-          <button class="btn primary">Ingresa a la Banca</button>
-          <button class="btn secondary">Conoce Más...</button>
-        </div>
-      </div>
-      <div class="carousel-item">
-        <img src="https://st4.depositphotos.com/13324256/20097/i/450/depositphotos_200978284-stock-photo-blank-bright-blue-abstract-background.jpg"/>
-        <div class="carousel-caption">
-          <h1>POLITECH</h1>
-          <p>Innovación y seguridad<br/>Para tu tranquilidad financiera.</p>
-          <button class="btn primary">Ingresa a la Banca</button>
-          <button class="btn secondary">Conoce Más...</button>
-        </div>
-      </div>
-      <div class="carousel-item">
-        <img src="https://png.pngtree.com/thumb_back/fh260/background/20231104/pngtree-captivating-watercolor-painting-azure-blue-background-texture-image_13711734.png"/>
-        <div class="carousel-caption">
-          <h1>POLITECH</h1>
-          <p>Tu confianza, nuestro compromiso<br/>Beneficios sin igual.</p>
-          <button class="btn primary">Ingresa a la Banca</button>
-          <button class="btn secondary">Conoce Más...</button>
-        </div>
-      </div>
-    </div>
-    <button class="carousel-control-prev" > </button>
-    <button class="carousel-control-next" ></button>
-  </div>
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const images = [
+    "https://via.placeholder.com/801x400.png",
+    "https://via.placeholder.com/799x400.png",
+    "https://via.placeholder.com/802x400.png"
+  ];
 
-  <div class="welcome-section">
-    <h2>Bienvenido</h2>
-    <p>¿Qué quieres hacer hoy?</p>
-    <div class="action-cards">
-      <div class="card">
-        <img src="https://media.istockphoto.com/id/643578030/es/vector/icono-de-marca-de-verificaci%C3%B3n.jpg?s=612x612&w=0&k=20&c=T4aJx4Tiyd4U0GlZdF51skVa-1CRk57NJdq6c_AnKZI="  class="card-img"/>
-        <p>Cuenta creada con éxito</p>
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prevSlide) => (prevSlide + 1) % images.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [images.length]);
+
+  return (
+    <div>
+      {/* Navbar */}
+      <nav className="navbar">
+        <div className="navbar-logo">
+          <img src={Logo} alt="Logo Politech" />
+        </div>
+        <ul className="navbar-links">
+          <li><a href="#">Contactenos</a></li>
+          <li><a href="#">Ingresar</a></li>
+          <li><a href="#">Registrarse</a></li>
+        </ul>
+      </nav>
+      {/* Carousel */}
+      <div className="carousel">
+        <div className="carousel-inner" style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
+          {images.map((image, index) => (
+            <img key={index} src={image} alt={`foto ${index + 1}`} />
+          ))}
+        </div>
       </div>
-      <div class="card">
-        <img src="https://cdn-icons-png.freepik.com/512/82/82219.png"  class="card-img"/>
-        <p>Descubrir mi tarjeta ideal</p>
-      </div>
-      <div class="card">
-        <img src="https://previews.123rf.com/images/martialred/martialred1709/martialred170900043/85712048-una-pila-de-dinero-en-efectivo-o-billetes-de-d%C3%B3lares-icono-de-vector-de-l%C3%ADnea-de-arte-para.jpg" class="card-img"/>
-        <p>Retira tu dinero</p>
-      </div>
-      <div class="card">
-        <img src="https://cdn-icons-png.freepik.com/512/4703/4703487.png"  class="card-img"/>
-        <p>Usa nuestros servicios digitales</p>
-      </div>
+      {/* Content */}
+      <hr />
+      <main className='content'>
+        <div className='content-title'>
+          <h1>Soluciones en Linea</h1>
+          <h3>Todo lo que necesitas sin salir de casa</h3>
+        </div>
+        <div className='content-body'>
+          {/* Cards */}
+          <div className='content-cards'>
+            <div className="card">
+              <div className="card-icon">
+                <img src="https://placehold.co/50x50.png" alt="Icono de ahorro" />
+              </div>
+              <div className="card-content">
+                <h2>Ahorro Flexible</h2>
+                <p>Gana <span className="highlight">5%</span> de interés y ten tu dinero siempre disponible.</p>
+              </div>
+              <a href="#" className="card-link">Abrir cuenta</a>
+            </div>
+            <div className="card">
+              <div className="card-icon">
+                <img src="https://placehold.co/50x50.png" alt="Icono de ahorro" />
+              </div>
+              <div className="card-content">
+                <h2>Ahorro Inteligente</h2>
+                <p>Obtén hasta un <span className="highlight">5%</span> de interés anual. ¡Disponibilidad inmediata!</p>
+              </div>
+              <a href="#" className="card-link">Empieza ahora</a>
+            </div>
+            <div className="card">
+              <div className="card-icon">
+                <img src="https://placehold.co/50x50.png" alt="Icono de ahorro" />
+              </div>
+              <div className="card-content">
+                <h2>Ahorro Seguro</h2>
+                <p>Disfruta de un <span className="highlight">5%</span> de interés y acceso a tu dinero en cualquier momento.</p>
+              </div>
+              <a href="#" className="card-link">Únete hoy</a>
+            </div>
+            <div className="card">
+              <div className="card-icon">
+                <img src="https://placehold.co/50x50.png" alt="Icono de ahorro" />
+              </div>
+              <div className="card-content">
+                <h2>Ahorro Dinámico</h2>
+                <p>Gana un <span className="highlight">5%</span> de interés con la flexibilidad que necesitas.</p>
+              </div>
+              <a href="#" className="card-link">Descubre más</a>
+            </div>
+            {/* Repetir las tarjetas según sea necesario */}
+          </div>
+        </div>
+      </main>
+      {/* Footer */}
+      <footer className="footer">
+        <div className="footer-content">
+          <ul className="footer-links">
+            <li><a href="#">Sobre Nosotros</a></li>
+            <li><a href="#">Terminos de Servicio</a></li>
+            <li><a href="#">Contactenos</a></li>
+          </ul>
+          <hr />
+          <p>&copy; 2024 PoliTech. Todos los Derechos Reservados.</p>
+        </div>
+      </footer>
     </div>
-  </div>
-    </>
   );
 };
 

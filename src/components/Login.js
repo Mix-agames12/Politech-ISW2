@@ -1,81 +1,119 @@
 // src/components/Login.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auth } from '../firebaseConfig';
+import { auth, db } from '../firebaseConfig';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import '../Login.css';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import '../components/Login.css';
+import { HeaderPrincipal2 } from './HeaderPrincipal2';
 
+export const Login = (props) => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+  const [usernameError, setUsernameError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
-const Login = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const navigate = useNavigate();
+  const validateInputs = () => {
+    let isValid = true;
+    setUsernameError('');
+    setPasswordError('');
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        try {
-            await signInWithEmailAndPassword(auth, email, password);
-            console.log('User logged in');
-            navigate('/gestionar-cuentas');
-        } catch (error) {
-            console.error('Error logging in:', error);
-        }
-    };
+    if (username === '') {
+      setUsernameError('Por favor, ingresa tu nombre de usuario');
+      isValid = false;
+    }
 
-    const handleSignInClick = () => {
-        document.getElementById('container').classList.remove('right-panel-active');
-    };
+    if (password === '') {
+      setPasswordError('Por favor, ingresa una contraseña');
+      isValid = false;
+    } else if (password.length < 8) {
+      setPasswordError('La contraseña debe tener al menos 8 caracteres');
+      isValid = false;
+    }
 
-    return (
+    return isValid;
+  };
 
-        <div className="container" id="container">
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    if (!validateInputs()) {
+      return;
+    }
 
-            <div className="form-container sign-up-container">
-                <form>
-                    <h1>Crear Cuenta</h1>
-                    <span>o usa tu correo electrónico para registrarte</span>
-                    <input type="text" placeholder="Nombre"/>
-                    <input type="email" placeholder="Correo Electrónico" />
-                    <input type="password" placeholder="Contraseña" />
-                    <button type="button" onClick={() => navigate('/signup')}>Registrarse</button>
-                </form>
+    try {
+      // Buscar el correo electrónico correspondiente al nombre de usuario
+      const usersCollection = collection(db, 'users');
+      const userQuery = query(usersCollection, where('username', '==', username));
+      const userSnapshot = await getDocs(userQuery);
 
-            </div>
-            <div className="form-container sign-in-container">
-                <form onSubmit={handleLogin}>
-                    <h1>Iniciar Sesión</h1>
-                    <input
-                        type="email"
-                        placeholder="Correo Electrónico"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                    />
-                    <input
-                        type="password"
-                        placeholder="Contraseña"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
-                    <a href="/password-reset">¿Olvidaste tu contraseña?</a>
-                    <button type="submit">Iniciar Sesión</button>
-                </form>
-            </div>
-            <div className="overlay-container">
-                <div className="overlay">
-                    <div className="overlay-panel overlay-left">
-                        <h1>Bienvenido </h1>
-                        <p>Ingresa tus datos personales para usar todas las funcionalidades</p>
-                        <button className="ghost" id="signIn" onClick={handleSignInClick}>Iniciar Sesión</button>
-                    </div>
-                    <div className="overlay-panel overlay-right">
-                        <h1>Bienvenido de vuelta</h1>
-                        <p>Para mantenerse conectado con nosotros, inicie sesión con su información personal.</p>
-                        <button type="button" className="ghost" id="signUp" onClick={() => navigate('/signup')}>Registrarse</button>
-                    </div>
-                </div>
-            </div>
+      if (userSnapshot.empty) {
+        setUsernameError('No se encontró ningún usuario con este nombre de usuario');
+        return;
+      }
+
+      const userDoc = userSnapshot.docs[0];
+      const userEmail = userDoc.data().correo;
+
+      // Intentar iniciar sesión con el correo electrónico obtenido
+      await signInWithEmailAndPassword(auth, userEmail, password);
+      console.log('User logged in');
+      navigate('/gestionar-cuentas');
+    } catch (error) {
+      console.error('Error logging in:', error);
+      if (error.code === 'auth/user-not-found') {
+        setUsernameError('No se encontró ningún usuario con este nombre de usuario');
+      } else if (error.code === 'auth/wrong-password') {
+        setPasswordError('Contraseña incorrecta');
+      } else {
+        setUsernameError('Error al iniciar sesión. Por favor, intenta de nuevo.');
+      }
+    }
+  };
+
+  const handleSignUp = () => {
+    navigate('/SignUp');
+  };
+
+  return (
+    <>
+      <HeaderPrincipal2 />
+      <div className="mainContainer">
+
+        <div className="titleContainer">
+          <div>Inicio de Sesión</div>
         </div>
-    );
-};
+        <br />
+        <div className="inputContainer">
+          <input
+            type="text"
+            value={username}
+            placeholder="Ingresa tu nombre de usuario"
+            onChange={(ev) => setUsername(ev.target.value)}
+            className="inputBox"
+          />
+          {usernameError && <label className="errorLabel">{usernameError}</label>}
+        </div>
+        <br />
+        <div className="inputContainer">
+          <input
+            type="password"
+            value={password}
+            placeholder="Ingresa tu contraseña"
+            onChange={(ev) => setPassword(ev.target.value)}
+            className="inputBox"
+          />
+          {passwordError && <label className="errorLabel">{passwordError}</label>}
+        </div>
+        <br />
+        <a className="forgot" href="/password-reset">¿Olvidaste tu contraseña?</a>
+        <br />
+        <div className="buttonGroup">
+          <input className="inputButton" type="button" onClick={handleLogin} value="Iniciar Sesión" />
+          <input className="inputButton" type="button" onClick={handleSignUp} value="Registrarse" />
+        </div>
+      </div>
+    </>
 
-export default Login;
+  );
+};
