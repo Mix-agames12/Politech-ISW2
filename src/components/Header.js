@@ -1,35 +1,68 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Button, Menu, MenuItem, IconButton } from '@mui/material';
+import { AccountCircle } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import '../components/Header.css';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import Logo from '../assets/images/neologo.png';
-import { verifyPasswordResetCode } from 'firebase/auth';
 
-export const Header = () => {
+export const Header = ({ firstName, lastName }) => {
+    console.log('Header firstName:', firstName); // Verificar que las props se reciben
+    console.log('Header lastName:', lastName);
+
+    const [anchorEl, setAnchorEl] = useState(null);
+    const navigate = useNavigate();
+    const open = Boolean(anchorEl);
+
+    const handleClick = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
+
+    const handleChangePassword = () => {
+        navigate('/cambio-contrasena');
+        handleClose();
+    };
+
+    const handleUpdateProfile = () => {
+        navigate('/update-profile');
+        handleClose();
+    };
+
+    if (!firstName || !lastName) {
+        return null; // No renderizar el Header si los datos no están completos
+    }
+
     return (
-        <>
-            <nav className="navbar navbar-expand-lg bg-body- fixed-top" style={{ backgroundColor: '#061f3e', justifyContent: 'flex-end' }}>
-                <div className="container-fluid">
-                    <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation">
-                        <span className="navbar-toggler-icon"></span>
-                    </button>
-                    {/* <a className="navbar-brand" href="#">BANCO POLITECH</a> */}
-                    <img src={Logo} alt="Logo Politech" width="120" height="35" style={{ padding: '3px' }} />
-                    <div className="collapse navbar-collapse justify-content-end" id="navbarTogglerDemo03">
-                        <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-                            <li className="nav-item">
-                                <button className="nav-link active btn btn-link" aria-current="page" style={{ color: 'white' }}>Acceso a clientes</button>
-                            </li>
-                            <li className="nav-item">
-                                <button className="nav-link btn btn-link" style={{ color: 'white' }}>Abre una cuenta</button>
-                            </li>
-                        </ul>
-                        {/* <form className="d-flex" role="search">
-                            <input className="form-control me-2" type="search" placeholder="Search" aria-label="Search" />
-                            <button className="btn btn-outline-success" type="submit" style={{ color: 'white' }}>Search</button>
-                        </form> */}
-                    </div>
+        <nav className="navbar navbar-expand-lg bg-body- fixed-top" style={{ backgroundColor: '#061f3e' }}>
+            <div className="container-fluid d-flex justify-content-between align-items-center">
+                <img src={Logo} alt="Logo Politech" width="130" height="35" style={{ padding: '0' }} />
+                <div className="d-flex align-items-center">
+                    <span className="navbar-text" style={{ color: 'white', marginRight: '10px' }}>
+                        ¡Hola, {firstName} {lastName}!
+                    </span>
+                    <IconButton
+                        aria-controls="simple-menu"
+                        aria-haspopup="true"
+                        onClick={handleClick}
+                        style={{ color: 'white' }}
+                    >
+                        <AccountCircle />
+                    </IconButton>
+                    <Menu
+                        id="simple-menu"
+                        anchorEl={anchorEl}
+                        keepMounted
+                        open={open}
+                        onClose={handleClose}
+                    >
+                        <MenuItem onClick={handleChangePassword}>Cambiar contraseña</MenuItem>
+                        <MenuItem onClick={handleUpdateProfile}>Actualizar perfil</MenuItem>
+                    </Menu>
                 </div>
-            </nav>
-        </>
+            </div>
+        </nav>
     );
-}
+};

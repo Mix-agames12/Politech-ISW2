@@ -1,10 +1,17 @@
-// src/components/SignUp.js
 import React, { useState } from 'react';
 import { auth, db } from '../firebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import bcrypt from 'bcryptjs';
 import './SignUp.css';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
+import { useNavigate } from 'react-router-dom';
+import { HeaderPrincipal } from './HeaderPrincipal'; // Importar HeaderPrincipal
+
+const Alert = React.forwardRef(function Alert(props, ref) {
+    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 const SignUp = () => {
     const [firstName, setFirstName] = useState('');
@@ -22,6 +29,8 @@ const SignUp = () => {
         specialChar: false,
     });
     const [passwordsMatch, setPasswordsMatch] = useState(true);
+    const [open, setOpen] = useState(false);
+    const navigate = useNavigate();
 
     const validateInputs = () => {
         let isValid = true;
@@ -118,6 +127,10 @@ const SignUp = () => {
             });
 
             console.log('Usuario registrado:', user);
+            setOpen(true);
+            setTimeout(() => {
+                navigate('/login');
+            }, 2000); // Espera 2 segundos antes de redirigir al login
         } catch (error) {
             console.error('Error al registrarse:', error);
             let errors = {};
@@ -145,8 +158,16 @@ const SignUp = () => {
         setPasswordsMatch(value === password);
     };
 
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setOpen(false);
+    };
+
     return (
         <div className="mainContainer">
+            <HeaderPrincipal /> {/* Agregar HeaderPrincipal */}
             <div className="titleContainer">
                 <h2>Registrarse</h2>
             </div>
@@ -244,6 +265,11 @@ const SignUp = () => {
                 <input className="inputButton" type="button" onClick={handleSignUp} value="Registrarse" />
                 {error.general && <label className="errorLabel">{error.general}</label>}
             </div>
+            <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+                <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+                    ¡Registro exitoso! Redirigiendo al login...
+                </Alert>
+            </Snackbar>
         </div>
     );
 };

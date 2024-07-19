@@ -5,18 +5,20 @@ import { sendPasswordResetEmail } from 'firebase/auth';
 import './PasswordReset.css';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
+import { useNavigate } from 'react-router-dom';
+import { HeaderPrincipal } from '../components/HeaderPrincipal';
 
-const Alert = React.forwardRef(function Alert(props, ref) {
+const Alerta = React.forwardRef(function Alerta(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-const PasswordReset = () => {
+const RestablecerContrasena = () => {
     const [email, setEmail] = useState('');
     const [error, setError] = useState('');
     const [open, setOpen] = useState(false);
     const navigate = useNavigate();
 
-    const handlePasswordReset = async () => {
+    const manejarRestablecimientoContrasena = async () => {
         setError('');
         try {
             await sendPasswordResetEmail(auth, email);
@@ -31,58 +33,40 @@ const PasswordReset = () => {
         }
     };
 
-    const handleClose = (event, reason) => {
+    const manejarCerrar = (event, reason) => {
         if (reason === 'clickaway') {
             return;
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         
         setOpen(false);
     };
 
     return (
         <div className="mainContainer">
+            <HeaderPrincipal />
             <div className="titleContainer">
-                <h2>Recuperación de contraseña</h2>
+                <h2>Restablecer Contraseña</h2>
             </div>
             <div className="inputContainer">
-                <label>Email</label>
+                <label>Correo Electrónico</label>
                 <input
                     type="email"
                     className="inputBox"
-                    placeholder="Ingresa tu Email asociado"
+                    placeholder="Correo Electrónico"
                     onChange={(e) => setEmail(e.target.value)}
                 />
                 {error && <label className="errorLabel">{error}</label>}
             </div>
             <div className="buttonContainer">
-                <input className="inputButton" type="button" onClick={handlePasswordReset} value="Recuperar contraseña " />
+                <input className="inputButton" type="button" onClick={manejarRestablecimientoContrasena} value="Restablecer Contraseña" />
             </div>
-            <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
-                <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
-                    Correo de recuperación de contraseña enviado correctamente!
-                </Alert>
+            <Snackbar open={open} autoHideDuration={6000} onClose={manejarCerrar}>
+                <Alerta onClose={manejarCerrar} severity="success" sx={{ width: '100%' }}>
+                    ¡Correo de restablecimiento de contraseña enviado exitosamente!
+                </Alerta>
             </Snackbar>
         </div>
     );
 };
 
-export default PasswordReset;
+export default RestablecerContrasena;

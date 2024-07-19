@@ -5,6 +5,7 @@ import { auth, db } from '../firebaseConfig';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import '../components/Login.css';
+import { HeaderPrincipal2 } from './HeaderPrincipal2';
 
 export const Login = (props) => {
     const [username, setUsername] = useState('');
@@ -76,7 +77,10 @@ export const Login = (props) => {
     };
 
     return (
+        <>  
+        <HeaderPrincipal2 />
         <div className="mainContainer">
+            
             <div className="titleContainer">
                 <div>Inicio de Sesión</div>
             </div>
@@ -110,5 +114,7 @@ export const Login = (props) => {
                 <input className="inputButton" type="button" onClick={handleSignUp} value="Registrarse" />
             </div>
         </div>
+        </>
+        
     );
 };

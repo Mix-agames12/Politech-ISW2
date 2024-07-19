@@ -1,10 +1,10 @@
+/* src/components/Cambio contrasena.css */
 .mainContainer {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start; /* Cambiado de center a flex-start para permitir espacio para el título */
+    justify-content: center;
     height: 100vh;
-    padding-top: 80px; /* Agrega espacio para el header */
 }
 
 .titleContainer {
@@ -14,7 +14,6 @@
     font-weight: bolder;
     align-items: center;
     justify-content: center;
-    margin-bottom: 1rem; /* Asegúrate de que haya un margen inferior */
 }
 
 .inputContainer {
