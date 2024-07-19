@@ -79,7 +79,7 @@ const GestionarCuentas = () => {
                     )) : <p>No se encontraron cuentas.</p>}
                 </div>
             </div>
-        </>
+        </div>
     );
 }
 

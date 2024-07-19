@@ -52,10 +52,6 @@
 .inputContainer > .errorLabel {
   color: red;
   font-size: 12px;
-
-.inputContainer > .errorLabel {
-  color: red;
-  font-size: 12px;
 }
 
 .forgot {
@@ -72,19 +68,4 @@
   border-radius: 8px;
   border: 1px solid grey;
   padding-left: 8px;
-.forgot {
-  color: #333;
-  font-size: 16px;
-  text-align: right;
-  text-decoration: none;
 }
-
-.inputBox {
-  height: 48px;
-  width: 400px;
-  font-size: large;
-  border-radius: 8px;
-  border: 1px solid grey;
-  padding-left: 8px;
-}
-
