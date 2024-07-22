@@ -27,7 +27,7 @@ const Home = () => {
           <img src={Logo} alt="Logo Politech" />
         </div>
         <ul className="navbar-links">
-          <li><a href="#">Contactenos</a></li>
+          <li><a href="#">Contáctenos</a></li>
           <li><a href="/login">Ingresar</a></li>
           <li><a href="/signup">Registrarse</a></li>
         </ul>
