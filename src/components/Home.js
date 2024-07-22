@@ -2,11 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import './Home.css';
 import Logo from '../assets/images/neologo.png';
+import Carrusel from '../assets/images/carrusel.png';
 
 const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const images = [
-    "https://via.placeholder.com/801x400.png",
+    Carrusel,
     "https://via.placeholder.com/799x400.png",
     "https://via.placeholder.com/802x400.png"
   ];
@@ -26,9 +27,9 @@ const Home = () => {
           <img src={Logo} alt="Logo Politech" />
         </div>
         <ul className="navbar-links">
-          <li><a href="#">Contactenos</a></li>
-          <li><a href="#">Ingresar</a></li>
-          <li><a href="#">Registrarse</a></li>
+          <li><a href="#">Contáctenos</a></li>
+          <li><a href="/login">Ingresar</a></li>
+          <li><a href="/signup">Registrarse</a></li>
         </ul>
       </nav>
       {/* Carousel */}
