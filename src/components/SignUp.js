@@ -8,6 +8,8 @@ import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import { useNavigate } from 'react-router-dom';
 import { HeaderPrincipal } from './HeaderPrincipal'; // Importar HeaderPrincipal
+import eyeOpen from '../assets/images/eye-open.png'; // Ruta a tu imagen
+import eyeClosed from '../assets/images/eye-closed.png'; // Ruta a tu imagen
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -30,6 +32,8 @@ const SignUp = () => {
   });
   const [passwordsMatch, setPasswordsMatch] = useState(true);
   const [open, setOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // Estado para mostrar/ocultar la contraseña
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // Estado para mostrar/ocultar la confirmación de la contraseña
   const navigate = useNavigate();
 
   const validateInputs = () => {
@@ -223,20 +227,28 @@ const SignUp = () => {
           </div>
           <div className="inputContainer">
             <label>Contraseña</label>
-            <input
-              type="password"
-              className="inputBox"
-              placeholder="Contraseña"
-              onChange={(e) => validatePassword(e.target.value)} />
+            <div className="passwordContainer">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Contraseña"
+                onChange={(e) => validatePassword(e.target.value)} />
+              <button className="togglePasswordButton" onClick={() => setShowPassword(!showPassword)}>
+                <img src={showPassword ? eyeOpen : eyeClosed} alt="Toggle Password Visibility" />
+              </button>
+            </div>
             {error.password && <label className="errorLabel">{error.password}</label>}
-          </div>
+          </div>
           <div className="inputContainer">
             <label>Repetir contraseña</label>
-            <input
-              type="password"
-              className="inputBox"
-              placeholder="Repetir contraseña"
-              onChange={(e) => handleConfirmPassword(e.target.value)} />
+            <div className='passwordContainer'>
+              <input
+                type={ showConfirmPassword ? "text" : "password"}
+                placeholder="Repetir contraseña"
+                onChange={(e) => handleConfirmPassword(e.target.value)} />
+              <button className="togglePasswordButton" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                <img src={showConfirmPassword ? eyeOpen : eyeClosed} alt="Toggle Password Visibility" />
+              </button>
+            </div>
             {!passwordsMatch && <label className="errorLabel">Las contraseñas no coinciden</label>}
           </div>
           <div className="inputContainer">

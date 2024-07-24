@@ -6,6 +6,8 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import '../components/Login.css';
 import { HeaderPrincipal2 } from './HeaderPrincipal2';
+import eyeOpen from '../assets/images/eye-open.png'; // Ruta a tu imagen
+import eyeClosed from '../assets/images/eye-closed.png'; // Ruta a tu imagen
 
 export const Login = (props) => {
   const [username, setUsername] = useState('');
@@ -13,6 +15,7 @@ export const Login = (props) => {
   const navigate = useNavigate();
   const [usernameError, setUsernameError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // Estado para mostrar/ocultar la contraseña
 
   const validateInputs = () => {
     let isValid = true;
@@ -96,13 +99,15 @@ export const Login = (props) => {
         </div>
         <br />
         <div className="inputContainer">
-          <input
-            type="password"
-            value={password}
-            placeholder="Ingresa tu contraseña"
-            onChange={(ev) => setPassword(ev.target.value)}
-            className="inputBox"
-          />
+        <div className="passwordContainer">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Ingresa tu contraseña"
+                onChange={(e) => setPassword(e.target.value)} />
+              <button className="togglePasswordButton" onClick={() => setShowPassword(!showPassword)}>
+                <img src={showPassword ? eyeOpen : eyeClosed} alt="Toggle Password Visibility" />
+              </button>
+            </div>
           {passwordError && <label className="errorLabel">{passwordError}</label>}
         </div>
         <br />
