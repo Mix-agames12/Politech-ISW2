@@ -28,7 +28,7 @@ export const Sidebar = () => {
             </Link>
           </li>
           <li>
-            <Link to="/gestionar-cuentas">
+            <Link to="/movimientos">
               <i className='bx bx-calendar'></i>
               <span className="nav-text">
                 Movimientos
