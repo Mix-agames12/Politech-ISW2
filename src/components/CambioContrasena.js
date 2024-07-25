@@ -4,9 +4,7 @@ import { sendPasswordResetEmail } from 'firebase/auth';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import { useNavigate } from 'react-router-dom';
-import { Header } from '../components/Header';
 import { doc, getDoc } from 'firebase/firestore';
-import './CambioContrasena.css';
 import { Sidebar } from "../components/Sidebar";
 
 const Alerta = React.forwardRef(function Alerta(props, ref) {
@@ -74,9 +72,9 @@ const CambioContrasena = () => {
 
     return (
         <div className="mainContainer">
-            {user && (
+            {/* {user && (
                 <Header firstName={user.nombre} lastName={user.apellido} />
-            )}
+            )} */}
             <div className="Sidebar">
                 <Sidebar />
             </div>

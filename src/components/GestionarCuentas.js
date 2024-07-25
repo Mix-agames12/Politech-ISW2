@@ -1,10 +1,8 @@
-import '../components/GestionarCuentas.css';
 import { Sidebar } from "../components/Sidebar";
 import React, { useEffect, useState } from 'react';
 import { auth, db } from '../firebaseConfig';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
-import { Header } from './Header';
 
 const GestionarCuentas = () => {
     const [accounts, setAccounts] = useState([]);
@@ -60,9 +58,9 @@ const GestionarCuentas = () => {
 
     return (
         <div>
-            {user && (
+            {/* {user && (
                 <Header firstName={user.nombre} lastName={user.apellido} />
-            )}
+            )} */}
             <div className="Sidebar">
                 <Sidebar />
             </div>

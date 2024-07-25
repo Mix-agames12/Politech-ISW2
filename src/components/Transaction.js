@@ -2,9 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { auth, db } from '../firebaseConfig';
 import { collection, getDocs, query, where, updateDoc, doc, addDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { Sidebar } from './Sidebar';
-import './Transaction.css';
-import { Header } from './Header';
-
 import eyeOpen from '../assets/images/eye-open.png'; // Ruta a tu imagen
 import eyeClosed from '../assets/images/eye-closed.png'; // Ruta a tu imagen
 
@@ -167,9 +164,9 @@ const Transaction = () => {
 
   return (
     <div className="mainContainer">
-      {user && (
+      {/* {user && (
         <Header firstName={user.nombre} lastName={user.apellido} />
-      )}
+      )} */}
       <div className='sidebar'>
         <Sidebar />
       </div>

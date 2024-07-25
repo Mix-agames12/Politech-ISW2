@@ -15,11 +15,13 @@ import Home from './components/Home';
 function App() {
   return (
     <Router>
-      <div class="App">
+      <html class="h-full bg-white"/>
+      <body class="h-full"></body>
+      <div class="App flex justify-center items-center">
         <div class="container">
           <Routes>
             {/* Página de inicio */}
-            <Route path="/" element={<Home/>} />
+            <Route path="/home" element={<Home/>} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/password-reset" element={<PasswordReset />} />
@@ -27,6 +29,7 @@ function App() {
             <Route path="/transaction" element={<Transaction />} />
             <Route path="/gestionar-cuentas" element={<GestionarCuentas />} />
             <Route path="/cambio-contrasena" element={<CambioContrasena />} />
+            
           </Routes>
         </div>
       </div>

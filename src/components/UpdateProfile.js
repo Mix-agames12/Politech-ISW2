@@ -3,9 +3,7 @@ import { auth, db } from '../firebaseConfig';
 import { updateEmail, updatePassword, updateProfile } from 'firebase/auth';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { Sidebar } from '../components/Sidebar';
-import { Header } from '../components/Header';
 import { useNavigate } from 'react-router-dom'; // Importar useNavigate
-import './UpdateProfile.css';
 
 const UpdateProfile = () => {
   const [name, setName] = useState('');
@@ -72,9 +70,9 @@ const UpdateProfile = () => {
 
   return (
     <div className="mainContainer">
-      {user && (
+      {/* {user && (
         <Header firstName={user.nombre} lastName={user.apellido} />
-      )}
+      )} */}
       <div className='sidebar'>
         <Sidebar />
       </div>
