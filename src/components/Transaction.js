@@ -82,11 +82,14 @@ const Transaction = () => {
         const receiverData = receiverDoc.data();
 
         if (senderData.accountBalance >= Number(amount)) {
+          const updatedSenderBalance = senderData.accountBalance - Number(amount);
+          const updatedReceiverBalance = receiverData.accountBalance + Number(amount);
+
           await updateDoc(doc(db, 'cuentas', senderDoc.id), {
-            accountBalance: senderData.accountBalance - Number(amount)
+            accountBalance: updatedSenderBalance
           });
           await updateDoc(doc(db, 'cuentas', receiverDoc.id), {
-            accountBalance: receiverData.accountBalance + Number(amount)
+            accountBalance: updatedReceiverBalance
           });
 
           // Registrar la transacción
@@ -96,7 +99,8 @@ const Transaction = () => {
             cuentaDestino: receiverAccount,
             monto: Number(amount),
             fecha: serverTimestamp(),
-            descripcion: description
+            descripcion: description,
+            saldoActualizado: updatedSenderBalance // Guardar el saldo actualizado del remitente
           });
 
           console.log('Transacción completada');

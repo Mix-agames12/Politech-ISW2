@@ -1,0 +1,227 @@
+.mainContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100vh;
+  padding-top: 80px;
+}
+
+.titleContainer {
+  display: flex;
+  flex-direction: column;
+  font-size: 35px;
+  font-weight: bolder;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.inputContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.inputContainer > .errorLabel {
+  color: red;
+  font-size: 12px;
+}
+
+.inputBox {
+  height: 48px;
+  width: 400px;
+  font-size: large;
+  border-radius: 8px;
+  border: 1px solid grey;
+  padding-left: 8px;
+}
+
+.buttonContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.inputButton:hover {
+  background-color: #0f8e7d;
+  transform: scale(1.05);
+}
+
+.movementsContainer {
+  width: 80%;
+  margin-top: 20px;
+}
+
+.movementCard {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 10px;
+}
+
+.movementCard p {
+  margin: 5px 0;
+}
+
+.movementsTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 18px;
+  text-align: left;
+}
+
+.movementsTable thead tr {
+  background-color: #68b0ab;
+  color: #ffffff;
+  text-align: left;
+  font-weight: bold;
+}
+
+.movementsTable th,
+.movementsTable td {
+  padding: 12px 15px;
+}
+
+.movementsTable tbody tr {
+  border-bottom: 1px solid #dddddd;
+}
+
+.movementsTable tbody tr:nth-of-type(even) {
+  background-color: #f3f3f3;
+}
+
+.movementsTable tbody tr:last-of-type {
+  border-bottom: 2px solid #68b0ab;
+}
+
+.selectionContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  width: 60%;
+  margin-bottom: 20px;
+}
+
+.selectionContainer div {
+  margin-bottom: 10px;
+}
+
+.selectionContainer label {
+  font-weight: bold;
+}
+
+.selectionContainer select,
+.selectionContainer input[type="date"] {
+  height: 40px;
+  width: 100%;
+  font-size: 16px;
+  padding: 5px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.selectionContainer button {
+  background-color: #68b0ab;
+  color: white;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.selectionContainer button:hover {
+  background-color: #558b8b;
+}
+
+.dropdownContainer {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.dropdownButton {
+  width: 100%;
+  height: 48px;
+  background-color: #68b0ab;
+  color: white;
+  font-size: large;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  box-sizing: border-box;
+}
+
+.dropdownButton .arrow {
+  font-size: 18px;
+}
+
+.dropdownMenu {
+  position: absolute;
+  background-color: white;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  width: 100%;
+  z-index: 1;
+  max-height: 200px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.dropdownItem {
+  padding: 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdownItem:hover {
+  background-color: #f1f1f1;
+}
+
+.account-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.balance-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.balance-text {
+  flex: 1;
+}
+
+.toggleBalanceButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5em;
+}
+
+.toggleBalanceButton img {
+  width: 24px;
+  height: 24px;
+}

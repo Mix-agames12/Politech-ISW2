@@ -8,6 +8,7 @@ import UpdateProfile from './components/UpdateProfile';
 import Transaction from './components/Transaction';
 import GestionarCuentas from './components/GestionarCuentas';
 import CambioContrasena from './components/CambioContrasena';
+import Movimientos from './components/Movimientos';
 import Home from './components/Home';
 // import PantallaPrincipal from './components/PantallaPrincipal';
 
@@ -29,7 +30,7 @@ function App() {
             <Route path="/transaction" element={<Transaction />} />
             <Route path="/gestionar-cuentas" element={<GestionarCuentas />} />
             <Route path="/cambio-contrasena" element={<CambioContrasena />} />
-            
+            <Route path="/movimientos" element={<Movimientos />} />
           </Routes>
         </div>
       </div>
