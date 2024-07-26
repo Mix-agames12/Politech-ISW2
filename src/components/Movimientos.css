@@ -1,3 +1,4 @@
+/* Estilos generales */
 .mainContainer {
   display: flex;
   flex-direction: column;
@@ -224,4 +225,55 @@
 .toggleBalanceButton img {
   width: 24px;
   height: 24px;
+}
+
+.printButton {
+  background-color: #68b0ab;
+  color: white;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 20px;
+}
+
+.printButton:hover {
+  background-color: #558b8b;
+}
+
+/* Estilos de impresión */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .mainContainer,
+  .mainContainer * {
+    visibility: visible;
+  }
+
+  .mainContainer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  .printButton,
+  .dropdownButton,
+  .sidebar,
+  .selectionContainer {
+    display: none;
+  }
+
+  .movementsTable {
+    font-size: 14px;
+  }
+
+  .movementsTable th,
+  .movementsTable td {
+    padding: 8px 10px;
+  }
 }

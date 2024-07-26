@@ -10,6 +10,7 @@ import GestionarCuentas from './components/GestionarCuentas';
 import CambioContrasena from './components/CambioContrasena';
 import Movimientos from './components/Movimientos';
 import Home from './components/Home';
+import CrearCuenta from './components/CrearCuenta';
 // import PantallaPrincipal from './components/PantallaPrincipal';
 
 
@@ -29,6 +30,7 @@ function App() {
             <Route path="/gestionar-cuentas" element={<GestionarCuentas />} />
             <Route path="/cambio-contrasena" element={<CambioContrasena />} />
             <Route path="/movimientos" element={<Movimientos />} />
+            <Route path="/crear-cuenta" element={<CrearCuenta />} />
           </Routes>
         </div>
       </div>

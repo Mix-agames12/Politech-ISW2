@@ -115,7 +115,7 @@ const SignUp = () => {
         cedula: idNumber,
         accountBalance: 100,
         accountNumber,
-        tipoCuenta: 'ahorros'
+        tipoCuenta: 'Ahorros'
       });
 
       await setDoc(doc(db, 'clientes', user.uid), {

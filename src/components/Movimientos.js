@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { auth, db } from '../firebaseConfig';
 import { collection, getDocs, query, where, getDoc, doc } from 'firebase/firestore';
 import { Sidebar } from './Sidebar';
@@ -17,6 +17,7 @@ const Movimientos = () => {
   const [endDate, setEndDate] = useState('');
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [showBalance, setShowBalance] = useState(true);
+  const reportRef = useRef();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -165,6 +166,15 @@ const Movimientos = () => {
     }
   };
 
+  const handlePrint = () => {
+    const printContents = reportRef.current.innerHTML;
+    const originalContents = document.body.innerHTML;
+    document.body.innerHTML = printContents;
+    window.print();
+    document.body.innerHTML = originalContents;
+    window.location.reload();
+  };
+
   // Obtener la fecha actual en el formato adecuado para los inputs de fecha
   const getCurrentDate = () => {
     const today = new Date();
@@ -255,7 +265,7 @@ const Movimientos = () => {
         </div>
         <button onClick={fetchMovements}>Buscar Movimientos</button>
       </div>
-      <div className="movementsContainer">
+      <div className="movementsContainer" ref={reportRef}>
         {movements.length > 0 ? (
           Object.entries(
             movements.reduce((acc, movement) => {
@@ -306,6 +316,7 @@ const Movimientos = () => {
           <p>No se encontraron movimientos.</p>
         )}
       </div>
+      <button className="printButton" onClick={handlePrint}>Imprimir Reporte</button>
     </div>
   );
 };
