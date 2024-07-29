@@ -4,9 +4,10 @@ import { collection, getDocs, query, where, updateDoc, doc, addDoc, getDoc, serv
 import { Sidebar } from './Sidebar';
 import './Transaction.css';
 import { Header } from './Header';
+import { generatePDF } from '../assets/pdfs/editPDF';
 
-import eyeOpen from '../assets/images/eye-open.png'; // Ruta a tu imagen
-import eyeClosed from '../assets/images/eye-closed.png'; // Ruta a tu imagen
+import eyeOpen from '../assets/images/eye-open.png';
+import eyeClosed from '../assets/images/eye-closed.png';
 
 const Transaction = () => {
   const [senderAccount, setSenderAccount] = useState('');
@@ -15,6 +16,8 @@ const Transaction = () => {
   const [description, setDescription] = useState('');
   const [receiverName, setReceiverName] = useState('');
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [transactionData, setTransactionData] = useState(null);
   const [user, setUser] = useState(null);
   const [userAccounts, setUserAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,24 +33,18 @@ const Transaction = () => {
         return;
       }
 
-      console.log("Current User ID:", currentUser.uid);
-
       try {
-        // Fetch user data
         const userDoc = await getDoc(doc(db, 'clientes', currentUser.uid));
         if (userDoc.exists()) {
           const userData = userDoc.data();
-          console.log('User data:', userData);
+          console.log("User Data:", userData); // Depurar datos del usuario
           setUser(userData);
-        } else {
-          console.log("No such document!");
         }
 
-        // Fetch user accounts
         const q = query(collection(db, 'cuentas'), where('id', '==', currentUser.uid));
         const querySnapshot = await getDocs(q);
         const accountsList = querySnapshot.docs.map(doc => doc.data());
-        console.log('Accounts fetched:', accountsList);
+        console.log("Accounts List:", accountsList); // Depurar lista de cuentas
         setUserAccounts(accountsList);
       } catch (error) {
         console.error("Error fetching data: ", error);
@@ -61,6 +58,8 @@ const Transaction = () => {
 
   const handleTransaction = async () => {
     setError('');
+    setSuccessMessage('');
+    console.log("Handling transaction..."); // Verificar si la función se llama
     if (Number(amount) <= 0) {
       setError('El monto debe ser mayor a cero.');
       return;
@@ -75,14 +74,18 @@ const Transaction = () => {
       const senderQuery = query(accountsCollection, where('accountNumber', '==', senderAccount));
       const senderSnapshot = await getDocs(senderQuery);
       const senderDoc = senderSnapshot.docs[0];
+      console.log("Sender Doc:", senderDoc);
 
       const receiverQuery = query(accountsCollection, where('accountNumber', '==', receiverAccount));
       const receiverSnapshot = await getDocs(receiverQuery);
       const receiverDoc = receiverSnapshot.docs[0];
+      console.log("Receiver Doc:", receiverDoc);
 
       if (senderDoc && receiverDoc) {
         const senderData = senderDoc.data();
         const receiverData = receiverDoc.data();
+        console.log("Sender Data:", senderData); // Depurar datos del remitente
+        console.log("Receiver Data:", receiverData); // Depurar datos del receptor
 
         if (senderData.accountBalance >= Number(amount)) {
           const updatedSenderBalance = senderData.accountBalance - Number(amount);
@@ -91,28 +94,52 @@ const Transaction = () => {
           await updateDoc(doc(db, 'cuentas', senderDoc.id), {
             accountBalance: updatedSenderBalance
           });
-          await updateDoc(doc(db, 'cuentas', receiverDoc.id), {
-            accountBalance: updatedReceiverBalance
-          });
 
-          // Registrar la transacción
-          await addDoc(collection(db, 'transacciones'), {
+          const transaction = {
             tipo: 'transferencia',
+            tipoMovimiento: 'debito',
+            userId: senderData.id,
             cuentaOrigen: senderAccount,
             cuentaDestino: receiverAccount,
             monto: Number(amount),
             fecha: serverTimestamp(),
             descripcion: description,
-            saldoActualizado: updatedSenderBalance // Guardar el saldo actualizado del remitente
+            saldoActualizado: updatedSenderBalance
+          };
+          await addDoc(collection(db, 'transacciones'), transaction);
+
+          await updateDoc(doc(db, 'cuentas', receiverDoc.id), {
+            accountBalance: updatedReceiverBalance
+          });
+
+          await addDoc(collection(db, 'transacciones'), {
+            tipo: 'transferencia',
+            tipoMovimiento: 'credito',
+            userId: receiverData.id,
+            cuentaOrigen: senderAccount,
+            cuentaDestino: receiverAccount,
+            monto: Number(amount),
+            fecha: serverTimestamp(),
+            descripcion: description,
+            saldoActualizado: updatedReceiverBalance
+          });
+
+          setSuccessMessage('Transferencia realizada con éxito');
+          setTransactionData({
+            senderAccount: senderData.accountNumber,
+            senderName: `${user.nombre} ${user.apellido}`, // Nombre del remitente
+            receiverAccount: receiverData.accountNumber,
+            receiverName: receiverName || 'N/A', // Nombre del beneficiario, obtenido de la validación
+            amount: transaction.monto,
+            description: transaction.descripcion || 'N/A',
+            date: new Date().toLocaleDateString()
           });
 
           console.log('Transacción completada');
         } else {
-          console.error('Fondos insuficientes');
           setError('Fondos insuficientes');
         }
       } else {
-        console.error('Cuenta remitente o receptor no encontrada');
         setError('Cuenta remitente o receptor no encontrada');
       }
     } catch (error) {
@@ -146,13 +173,31 @@ const Transaction = () => {
       const receiverQuery = query(accountsCollection, where('accountNumber', '==', receiverAccount));
       const receiverSnapshot = await getDocs(receiverQuery);
       const receiverDoc = receiverSnapshot.docs[0];
-
+  
       if (receiverDoc) {
         const receiverData = receiverDoc.data();
+        console.log('Receiver Data:', receiverData); // Verifica los datos del receptor
+  
         const clienteDoc = await getDoc(doc(db, 'clientes', receiverData.id));
+        console.log('Cliente Doc:', clienteDoc);
+  
         if (clienteDoc.exists()) {
           const clienteData = clienteDoc.data();
-          setReceiverName(`${clienteData.nombre} ${clienteData.apellido}`);
+          console.log('Cliente Data:', clienteData); // Verifica los datos del cliente
+  
+          // Asegúrate de que los campos nombre y apellido existen y no están vacíos
+          if (clienteData.nombre && clienteData.apellido) {
+            const fullName = `${clienteData.nombre.trim()} ${clienteData.apellido.trim()}`;
+            console.log('Full Name:', fullName); // Verifica el nombre completo
+  
+            setReceiverName(fullName);
+            setTransactionData((prev) => ({
+              ...prev,
+              receiverName: fullName // Asigna el nombre del receptor directamente
+            }));
+          } else {
+            setError('El cliente no tiene nombre o apellido definidos.');
+          }
         } else {
           setError('Cliente no encontrado.');
         }
@@ -221,15 +266,15 @@ const Transaction = () => {
         <div className="receiverAccountContainer">
           <input
             type="text"
-            className="inputBoxSmall"
+            className="inputBox"
             placeholder="Cuenta de destino"
             value={receiverAccount}
             onChange={handleReceiverAccountChange}
           />
           <button 
             className="validateButton" 
-            onClick={validateReceiverAccount} 
-            disabled={receiverAccount.length !== 10}
+            onClick={validateReceiverAccount}
+            disabled={receiverAccount.length !== 10} // Habilitar solo si hay 10 dígitos
           >
             Validar
           </button>
@@ -237,7 +282,7 @@ const Transaction = () => {
       </div>
       {receiverName && (
         <div className="inputContainer">
-          <label>Nombre del receptor</label>
+          <label>Nombre del Beneficiario</label>
           <input
             type="text"
             className="inputBox"
@@ -249,7 +294,7 @@ const Transaction = () => {
       <div className="inputContainer">
         <label>Monto</label>
         <input
-          type="text"
+          type="number"
           className="inputBox"
           placeholder="Monto"
           value={amount}
@@ -262,13 +307,32 @@ const Transaction = () => {
           type="text"
           className="inputBox"
           placeholder="Descripción"
+          value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
       </div>
-      {error && <label className="errorLabel">{error}</label>}
       <div className="buttonContainer">
-        <input className="inputButton" type="button" onClick={handleTransaction} value="Realizar Transferencia" />
+        <button className="transferButton" onClick={handleTransaction}>
+          Realizar Transferencia
+        </button>
       </div>
+      {error && (
+        <div className="errorMessage">
+          <p>{error}</p>
+        </div>
+      )}
+      {successMessage && (
+        <div className="successMessage">
+          <p>{successMessage}</p>
+          <button className="downloadReceiptButton" onClick={() => {
+            if (transactionData) {
+              generatePDF(transactionData);
+            }
+          }}>
+            Descargar Comprobante
+          </button>
+        </div>
+      )}
     </div>
   );
 };

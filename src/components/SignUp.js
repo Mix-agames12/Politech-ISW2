@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { auth, db } from '../firebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc, Timestamp } from 'firebase/firestore';
+import { doc, setDoc, getDocs, query, collection, where, Timestamp } from 'firebase/firestore';
 import bcrypt from 'bcryptjs';
 import './SignUp.css';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import { useNavigate } from 'react-router-dom';
-import { HeaderPrincipal } from './HeaderPrincipal'; // Importar HeaderPrincipal
-import eyeOpen from '../assets/images/eye-open.png'; // Ruta a tu imagen
-import eyeClosed from '../assets/images/eye-closed.png'; // Ruta a tu imagen
+import { HeaderPrincipal } from './HeaderPrincipal';
+
+import eyeOpen from '../assets/images/eye-open.png';
+import eyeClosed from '../assets/images/eye-closed.png';
+import calendarIcon from '../assets/images/calendar.png';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -21,6 +23,7 @@ const SignUp = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [idNumber, setIdNumber] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
   const [birthdate, setBirthdate] = useState(''); // Estado para la fecha de nacimiento
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -37,7 +40,7 @@ const SignUp = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false); // Estado para mostrar/ocultar la confirmación de la contraseña
   const navigate = useNavigate();
 
-  const validateInputs = () => {
+  const validateInputs = async () => {
     let isValid = true;
     let errors = {};
 
@@ -54,6 +57,14 @@ const SignUp = () => {
     if (username === '') {
       errors.username = 'Por favor, ingresa un nombre de usuario';
       isValid = false;
+    } else {
+      // Verificar si el nombre de usuario ya existe
+      const usernameQuery = query(collection(db, 'users'), where('username', '==', username));
+      const usernameSnapshot = await getDocs(usernameQuery);
+      if (!usernameSnapshot.empty) {
+        errors.username = 'Este nombre de usuario ya está en uso';
+        isValid = false;
+      }
     }
 
     if (email === '') {
@@ -62,10 +73,37 @@ const SignUp = () => {
     } else if (!/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
       errors.email = 'Por favor, ingresa un correo electrónico válido';
       isValid = false;
+    } else {
+      // Verificar si el correo electrónico ya existe
+      const emailQuery = query(collection(db, 'users'), where('correo', '==', email));
+      const emailSnapshot = await getDocs(emailQuery);
+      if (!emailSnapshot.empty) {
+        errors.email = 'Este correo electrónico ya está en uso';
+        isValid = false;
+      }
     }
 
     if (idNumber === '') {
       errors.idNumber = 'Por favor, ingresa tu cédula';
+      isValid = false;
+    } else if (idNumber.length !== 10) {
+      errors.idNumber = 'La cédula debe tener exactamente 10 dígitos';
+      isValid = false;
+    } else {
+      // Verificar si la cédula ya existe
+      const idQuery = query(collection(db, 'clientes'), where('cedula', '==', idNumber));
+      const idSnapshot = await getDocs(idQuery);
+      if (!idSnapshot.empty) {
+        errors.idNumber = 'Esta cédula ya está en uso';
+        isValid = false;
+      }
+    }
+
+    if (dateOfBirth === '') {
+      errors.dateOfBirth = 'Por favor, ingresa tu fecha de nacimiento';
+      isValid = false;
+    } else if (!isOver18(dateOfBirth)) {
+      errors.dateOfBirth = 'Debes tener al menos 18 años para registrarte';
       isValid = false;
     }
 
@@ -106,6 +144,24 @@ const SignUp = () => {
     return isValid;
   };
 
+  const isOver18 = (dob) => {
+    const today = new Date();
+    const birthDate = new Date(dob);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const month = today.getMonth() - birthDate.getMonth();
+    if (month < 0 || (month === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age >= 18;
+  };
+
+  const handleIdNumberChange = (e) => {
+    const value = e.target.value;
+    if (/^\d{0,10}$/.test(value)) {
+      setIdNumber(value);
+    }
+  };
+
   const generateAccountNumber = () => {
     let accountNumber = '22';
     while (accountNumber.length < 10) {
@@ -115,7 +171,7 @@ const SignUp = () => {
   };
 
   const handleSignUp = async () => {
-    if (!validateInputs()) {
+    if (!await validateInputs()) {
       return;
     }
 
@@ -149,14 +205,14 @@ const SignUp = () => {
         cedula: idNumber,
         nombre: firstName,
         apellido: lastName,
-        fechaNacimiento: birthdateTimestamp // Guardar la fecha de nacimiento como timestamp
+        fechaNacimiento: dateOfBirth
       });
 
       console.log('Usuario registrado:', user);
       setOpen(true);
       setTimeout(() => {
         navigate('/login');
-      }, 2000); // Espera 2 segundos antes de redirigir al login
+      }, 2000);
     } catch (error) {
       console.error('Error al registrarse:', error);
       let errors = {};
@@ -193,7 +249,6 @@ const SignUp = () => {
 
   return (
     <div className="mainContainer">
-      {/* Agregar HeaderPrincipal */}
       <HeaderPrincipal />
       <div className="titleContainer">
         <h2>Registrarse</h2>
@@ -233,7 +288,8 @@ const SignUp = () => {
               type="text"
               className="inputBox"
               placeholder="Cédula"
-              onChange={(e) => setIdNumber(e.target.value)} />
+              value={idNumber}
+              onChange={handleIdNumberChange} />
             {error.idNumber && <label className="errorLabel">{error.idNumber}</label>}
           </div>
           {/* Se añade el campo de fecha de nacimiento para verificar que es mayor de edad */}
@@ -258,6 +314,22 @@ const SignUp = () => {
             {error.email && <label className="errorLabel">{error.email}</label>}
           </div>
           <div className="inputContainer">
+            <label>Fecha de nacimiento</label>
+            <div className="dateInputContainer">
+              <input
+                type="text"
+                className="inputBox"
+                placeholder="Fecha de nacimiento"
+                onFocus={(e) => (e.target.type = 'date')}
+                onBlur={(e) => (e.target.type = 'text')}
+                onChange={(e) => setDateOfBirth(e.target.value)} />
+              <button className="calendarButton" onClick={() => document.querySelector('input[type="date"]').focus()}>
+                <img src={calendarIcon} alt="Abrir calendario" />
+              </button>
+            </div>
+            {error.dateOfBirth && <label className="errorLabel">{error.dateOfBirth}</label>}
+          </div>
+          <div className="inputContainer">
             <label>Contraseña</label>
             <div className="passwordContainer">
               <input
@@ -268,17 +340,28 @@ const SignUp = () => {
                 <img src={showPassword ? eyeOpen : eyeClosed} alt="Toggle Password Visibility" />
               </button>
             </div>
+            <div className="passwordInputContainer">
+              <input
+                type={showPassword ? "text" : "password"}
+                className="inputBox"
+                placeholder="Contraseña"
+                onChange={(e) => validatePassword(e.target.value)} />
+              <button className="togglePasswordButton" onClick={() => setShowPassword(!showPassword)}>
+                <img src={showPassword ? eyeOpen : eyeClosed} alt="Toggle Password Visibility" />
+              </button>
+            </div>
             {error.password && <label className="errorLabel">{error.password}</label>}
           </div>
           <div className="inputContainer">
             <label>Repetir contraseña</label>
-            <div className='passwordContainer'>
+            <div className="passwordInputContainer">
               <input
-                type={ showConfirmPassword ? "text" : "password"}
+                type={showConfirmPassword ? "text" : "password"}
+                className="inputBox"
                 placeholder="Repetir contraseña"
                 onChange={(e) => handleConfirmPassword(e.target.value)} />
               <button className="togglePasswordButton" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-                <img src={showConfirmPassword ? eyeOpen : eyeClosed} alt="Toggle Password Visibility" />
+                <img src={showConfirmPassword ? eyeOpen : eyeClosed} alt="Toggle Confirm Password Visibility" />
               </button>
             </div>
             {!passwordsMatch && <label className="errorLabel">Las contraseñas no coinciden</label>}

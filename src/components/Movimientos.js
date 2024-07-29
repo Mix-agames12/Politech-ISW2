@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { auth, db } from '../firebaseConfig';
 import { collection, getDocs, query, where, getDoc, doc } from 'firebase/firestore';
 import { Sidebar } from './Sidebar';
@@ -6,10 +7,12 @@ import './Movimientos.css';
 import { Header } from './Header';
 import eyeOpen from '../assets/images/eye-open.png';
 import eyeClosed from '../assets/images/eye-closed.png';
+import { generateMovementsPDF } from '../assets/pdfs/generateMovementsPDF';
 
 const Movimientos = () => {
+  const location = useLocation();
   const [movements, setMovements] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [user, setUser] = useState(null);
   const [accounts, setAccounts] = useState([]);
   const [selectedAccount, setSelectedAccount] = useState('');
@@ -17,6 +20,7 @@ const Movimientos = () => {
   const [endDate, setEndDate] = useState('');
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [showBalance, setShowBalance] = useState(true);
+  const reportRef = useRef();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -24,36 +28,34 @@ const Movimientos = () => {
 
       if (!currentUser) {
         console.error("No user is currently logged in.");
-        setLoading(false);
         return;
       }
-
-      console.log("Current User ID:", currentUser.uid);
 
       try {
         const userDoc = await getDoc(doc(db, 'clientes', currentUser.uid));
         if (userDoc.exists()) {
           const userData = userDoc.data();
-          console.log('User data:', userData);
           setUser(userData);
 
           const accountsQuery = query(collection(db, 'cuentas'), where('id', '==', currentUser.uid));
           const accountsSnapshot = await getDocs(accountsQuery);
           const userAccounts = accountsSnapshot.docs.map(doc => doc.data());
-
           setAccounts(userAccounts);
-        } else {
-          console.log("No such document!");
+
+          // Verifica si hay un account en la URL
+          const params = new URLSearchParams(location.search);
+          const account = params.get('account');
+          if (account) {
+            setSelectedAccount(userAccounts.find(acc => acc.accountNumber === account));
+          }
         }
       } catch (error) {
         console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchUserData();
-  }, []);
+  }, [location]);
 
   const fetchMovements = async () => {
     if (!selectedAccount || !startDate || !endDate) {
@@ -61,65 +63,52 @@ const Movimientos = () => {
       return;
     }
 
-    // Clear previous movements
     setMovements([]);
     setLoading(true);
 
     try {
-      let allMovementsSet = new Set();
-
       const transaccionesCollection = collection(db, 'transacciones');
-      const q = query(transaccionesCollection, where('cuentaOrigen', '==', selectedAccount.accountNumber));
-      const q2 = query(transaccionesCollection, where('cuentaDestino', '==', selectedAccount.accountNumber));
+      const q1 = query(
+        transaccionesCollection,
+        where('cuentaOrigen', '==', selectedAccount.accountNumber),
+        where('tipoMovimiento', '==', 'debito')
+      );
+      const q2 = query(
+        transaccionesCollection,
+        where('cuentaDestino', '==', selectedAccount.accountNumber),
+        where('tipoMovimiento', '==', 'credito')
+      );
 
-      const [querySnapshot1, querySnapshot2] = await Promise.all([getDocs(q), getDocs(q2)]);
+      const [querySnapshot1, querySnapshot2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+
+      let movementsArray = [];
 
       querySnapshot1.forEach((doc) => {
         const data = doc.data();
-        console.log('Debito movement:', data);
         if (data.fecha && data.fecha.toDate) {
           data.fecha = data.fecha.toDate();
         } else if (data.fecha && typeof data.fecha === 'string') {
           data.fecha = new Date(data.fecha);
         }
-        allMovementsSet.add(JSON.stringify({ ...data, id: doc.id, tipoMovimiento: 'debito' }));
+        if (data.tipoMovimiento === 'debito') {
+          movementsArray.push({ ...data, id: doc.id });
+        }
       });
 
       querySnapshot2.forEach((doc) => {
         const data = doc.data();
-        console.log('Credito movement:', data);
         if (data.fecha && data.fecha.toDate) {
           data.fecha = data.fecha.toDate();
         } else if (data.fecha && typeof data.fecha === 'string') {
           data.fecha = new Date(data.fecha);
         }
-        allMovementsSet.add(JSON.stringify({ ...data, id: doc.id, tipoMovimiento: 'credito' }));
+        if (data.tipoMovimiento === 'credito') {
+          movementsArray.push({ ...data, id: doc.id });
+        }
       });
 
-      const allMovements = Array.from(allMovementsSet).map(item => JSON.parse(item));
-      console.log('All movements:', allMovements);
-
-      // Ensure startDate and endDate are correctly interpreted as Date objects
-      const startDateObj = new Date(startDate + 'T00:00:00');
-      const endDateObj = new Date(endDate + 'T23:59:59');
-
-      console.log('Start date:', startDateObj);
-      console.log('End date adjusted:', endDateObj);
-
-      // Filter movements by date on the client side
-      const filteredMovements = allMovements.filter(movement => {
-        const movementDate = movement.fecha instanceof Date ? movement.fecha : new Date(movement.fecha);
-        console.log('Movement date:', movementDate);
-        console.log('Movement date timestamp:', movementDate.getTime());
-        console.log('Start date timestamp:', startDateObj.getTime());
-        console.log('End date timestamp:', endDateObj.getTime());
-        return movementDate >= startDateObj && movementDate <= endDateObj;
-      });
-
-      console.log('Filtered movements:', filteredMovements);
-
-      // Fetch names for each movement
-      for (const movement of filteredMovements) {
+      // Asignación de nombres de usuario de origen y destino
+      for (const movement of movementsArray) {
         if (movement.tipoMovimiento === 'debito') {
           const receiverAccountQuery = query(collection(db, 'cuentas'), where('accountNumber', '==', movement.cuentaDestino));
           const receiverAccountSnapshot = await getDocs(receiverAccountQuery);
@@ -129,7 +118,11 @@ const Movimientos = () => {
             if (receiverUserDoc.exists()) {
               const receiverData = receiverUserDoc.data();
               movement.nombreDestino = `${receiverData.nombre} ${receiverData.apellido}`;
+            } else {
+              movement.nombreDestino = 'Usuario desconocido';
             }
+          } else {
+            movement.nombreDestino = 'Cuenta desconocida';
           }
         } else if (movement.tipoMovimiento === 'credito') {
           const senderAccountQuery = query(collection(db, 'cuentas'), where('accountNumber', '==', movement.cuentaOrigen));
@@ -140,12 +133,19 @@ const Movimientos = () => {
             if (senderUserDoc.exists()) {
               const senderData = senderUserDoc.data();
               movement.nombreOrigen = `${senderData.nombre} ${senderData.apellido}`;
+            } else {
+              movement.nombreOrigen = 'Usuario desconocido';
             }
+          } else {
+            movement.nombreOrigen = 'Cuenta desconocida';
           }
         }
       }
 
-      setMovements(filteredMovements);
+      // Ordenar por fecha
+      const sortedMovements = movementsArray.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+      setMovements(sortedMovements);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -165,7 +165,14 @@ const Movimientos = () => {
     }
   };
 
-  // Obtener la fecha actual en el formato adecuado para los inputs de fecha
+  const handleGeneratePDF = async () => {
+    if (user && selectedAccount && movements.length > 0) {
+      await generateMovementsPDF(user, selectedAccount, movements);
+    } else {
+      console.error("Información insuficiente para generar el PDF.");
+    }
+  };
+
   const getCurrentDate = () => {
     const today = new Date();
     const year = today.getFullYear();
@@ -176,17 +183,11 @@ const Movimientos = () => {
 
   const maxDate = getCurrentDate();
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!user) {
-    return (
-      <div>
-        <p>No user is currently logged in.</p>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (selectedAccount) {
+      fetchMovements();
+    }
+  }, [selectedAccount]);
 
   return (
     <div className="mainContainer">
@@ -255,57 +256,62 @@ const Movimientos = () => {
         </div>
         <button onClick={fetchMovements}>Buscar Movimientos</button>
       </div>
-      <div className="movementsContainer">
-        {movements.length > 0 ? (
-          Object.entries(
-            movements.reduce((acc, movement) => {
-              const dateStr = formatDate(movement.fecha);
-              if (!acc[dateStr]) acc[dateStr] = [];
-              acc[dateStr].push(movement);
-              return acc;
-            }, {})
-          ).map(([date, movements], index) => (
-            <div key={index}>
-              <h3>{date}</h3>
-              <table className="movementsTable">
-                <thead>
-                  <tr>
-                    <th>Descripción</th>
-                    <th>Cuenta Origen</th>
-                    <th>Cuenta Destino</th>
-                    <th>Monto</th>
-                    <th>Saldo Actualizado</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {movements.map((movement, index) => (
-                    <tr key={index}>
-                      <td>
-                        {movement.tipoMovimiento === 'debito' ?
-                          `Transferencia a ${movement.nombreDestino}` :
-                          `Transferencia de ${movement.nombreOrigen}`}
-                      </td>
-                      <td>{`******${movement.cuentaOrigen.slice(-4)}`}</td>
-                      <td>{`******${movement.cuentaDestino.slice(-4)}`}</td>
-                      <td style={{ color: movement.tipoMovimiento === 'credito' ? 'green' : 'red' }}>
-                        {movement.monto !== undefined ?
-                          (movement.tipoMovimiento === 'credito' ?
-                            `+${movement.monto.toFixed(2)}` :
-                            `-${movement.monto.toFixed(2)}`
-                          ) : 'N/A'
-                        }
-                      </td>
-                      <td>{movement.saldoActualizado !== undefined ? `$${movement.saldoActualizado.toFixed(2)}` : 'N/A'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ))
+      <div className="movementsContainer" ref={reportRef}>
+        {loading ? (
+          <p>Buscando movimientos...</p>
         ) : (
-          <p>No se encontraron movimientos.</p>
+          movements.length > 0 ? (
+            Object.entries(
+              movements.reduce((acc, movement) => {
+                const dateStr = formatDate(movement.fecha);
+                if (!acc[dateStr]) acc[dateStr] = [];
+                acc[dateStr].push(movement);
+                return acc;
+              }, {})
+            ).map(([date, movements], index) => (
+              <div key={index}>
+                <h3>{date}</h3>
+                <table className="movementsTable">
+                  <thead>
+                    <tr>
+                      <th>Descripción</th>
+                      <th>Cuenta Origen</th>
+                      <th>Cuenta Destino</th>
+                      <th>Monto</th>
+                      <th>Saldo Actualizado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {movements.map((movement, index) => (
+                      <tr key={index}>
+                        <td>
+                          {movement.tipoMovimiento === 'debito' ?
+                            `Transferencia a ${movement.nombreDestino || 'Desconocido'}` :
+                            `Transferencia de ${movement.nombreOrigen || 'Desconocido'}`}
+                        </td>
+                        <td>{`******${movement.cuentaOrigen.slice(-4)}`}</td>
+                        <td>{`******${movement.cuentaDestino.slice(-4)}`}</td>
+                        <td style={{ color: movement.tipoMovimiento === 'credito' ? 'green' : 'red' }}>
+                          {movement.monto !== undefined ?
+                            (movement.tipoMovimiento === 'credito' ?
+                              `+${movement.monto.toFixed(2)}` :
+                              `-${movement.monto.toFixed(2)}`
+                            ) : 'N/A'
+                          }
+                        </td>
+                        <td>{movement.saldoActualizado !== undefined ? `$${movement.saldoActualizado.toFixed(2)}` : 'N/A'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ))
+          ) : (
+            <p>No se encontraron movimientos.</p>
+          )
         )}
       </div>
+      <button className="generatePDFButton" onClick={handleGeneratePDF}>Generar PDF</button>
     </div>
   );
 };

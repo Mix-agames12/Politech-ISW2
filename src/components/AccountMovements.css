@@ -1,0 +1,171 @@
+/* AccountMovements.css */
+
+/* Estilos generales */
+.account-movements-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding: 100px 60px 0; /* Aumentar el padding superior para más espacio arriba */
+    background-color: #F2FDFB; /* Fondo blanco */
+    align-items: center; /* Centrar horizontalmente */
+  }
+  
+  .movements-content {
+    flex-grow: 1;
+    margin: 20px auto;
+    max-width: 1000px;
+    background-color: #f9f9f9; /* Fondo ligero para diferenciar del fondo principal */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+  }
+  
+  .movements-content h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+  }
+  
+  .movements-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 18px;
+    text-align: left;
+  }
+  
+  .movements-table thead tr {
+    background-color: #68b0ab;
+    color: #ffffff;
+    text-align: left;
+    font-weight: bold;
+  }
+  
+  .movements-table th,
+  .movements-table td {
+    padding: 12px 15px;
+  }
+  
+  .movements-table tbody tr {
+    border-bottom: 1px solid #dddddd;
+  }
+  
+  .movements-table tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+  }
+  
+  .movements-table tbody tr:last-of-type {
+    border-bottom: 2px solid #68b0ab;
+  }
+  
+  .movements-table tbody td {
+    color: #555;
+  }
+  
+  .loading {
+    text-align: center;
+    padding: 10px;
+    font-size: 18px;
+    color: #333;
+  }
+  
+  /* Tarjeta de cuenta */
+  .accountCard {
+    padding: 20px;
+    width: 350px; /* Ancho fijo */
+    background-color: #e0f7fa;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-left: auto; /* Centrar horizontalmente */
+    margin-right: auto; /* Centrar horizontalmente */
+  }
+  
+  .accountCard h2 {
+    margin: 0 0 10px;
+    color: #00796b;
+  }
+  
+  .accountCard p {
+    margin: 5px 0;
+    color: #004d40;
+  }
+  
+  /* Información de saldo con icono de ojo */
+  .balance-info {
+    display: flex;
+    align-items: center;
+  }
+  
+  .balance-info p {
+    margin: 0;
+    color: #004d40;
+    font-weight: bold;
+  }
+  
+  .toggleBalanceButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-left: 10px;
+  }
+  
+  .toggleBalanceButton img {
+    width: 20px;
+    height: 20px;
+  }
+  
+  /* Botón de Filtrar por fechas */
+  .filterButton {
+    display: inline-block;
+    padding: 5px 10px; /* Ajuste del padding */
+    font-size: 14px; /* Tamaño de fuente reducido */
+    font-weight: bold;
+    color: #fff;
+    background-color: #00796b;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin: 20px auto; /* Centrado horizontal */
+    text-align: center;
+    text-decoration: none;
+    width: 150px; /* Ancho fijo */
+    max-width: 100%; /* Asegura que el botón no se expanda más allá de su contenido */
+  }
+  
+  .filterButton:hover {
+    background-color: #004d40;
+  }
+  
+  /* Estilos de impresión */
+  @media print {
+    body * {
+      visibility: hidden;
+    }
+  
+    .movements-content,
+    .movements-content * {
+      visibility: visible;
+    }
+  
+    .movements-content {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+    }
+  
+    .movements-table {
+      font-size: 14px;
+    }
+  
+    .movements-table th,
+    .movements-table td {
+      padding: 8px 10px;
+    }
+  }
+  

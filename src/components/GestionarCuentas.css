@@ -1,84 +1,101 @@
-/* Estilos para el contenido principal */
+/* Estilos generales */
 html, body {
   height: 100%;
   width: 100%;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #F2FDFB;
 }
 
 .main-content {
   margin: auto;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;
+  justify-content: flex-start;
   min-height: 100vh;
-  width: auto;
-  background-color: #f0fdfa;
-  /* Estirar el fondo a toda la pantalla */
-  height: 100vh;
-}
-.main-content {
-  margin: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* Centrado horizontal */
-  justify-content: center; /* Centrado vertical */
-  height: 100vh; /* Asegura que el contenedor ocupe toda la altura del viewport */
-  width: auto;
-  background-color: #f0fdfa; /* Color de fondo celeste */
+  width: 80%;
+  padding: 20px;
+  position: relative;
 }
 
 .main-content h2 {
   color: #333;
   font-weight: bold;
-  text-align: left; /* Alineación a la izquierda */
-  margin-bottom: 0.1rem; /* Espacio debajo del título principal */
+  margin-bottom: 1rem;
+  text-align: left;
 }
 
 .main-content h3 {
   color: #333;
   font-weight: normal;
-  font-size: 20px;
-  text-align: left; /* Alineación a la izquierda */
-  margin-bottom: 2rem; /* Espacio debajo del subtítulo */
+  font-size: 22px;
+  margin-bottom: 1rem;
+  text-align: left;
 }
 
-.main-content .account-cards {
+.account-cards {
   display: flex;
-  /* flex-direction: column; */
-  gap: 2rem;
-  cursor: pointer;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: flex-start;
+  width: 100%;
 }
 
-.main-content .account-card {
-  background-image: linear-gradient(to bottom, #74d6c3, #0d9488);
+.account-card {
+  background: linear-gradient(135deg, #74d6c3, #0d9488); /* Degradado de verde a turquesa */
   color: white;
-  padding: 1rem;
+  padding: 20px;
   border-radius: 8px;
-  width: 300px;
-  text-align: center;
+  width: 280px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+  cursor: pointer;
+  text-align: left;
 }
 
-.main-content .account-card h4 {
+.account-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.account-card h4 {
+  font-size: 20px;
+  margin-bottom: 0.5rem;
   color: white;
-  margin-top: 1px;
-  margin-left: 1px;
-  width: 300px;
-  font-size: 18px;
-  text-align: left;
-}
-.main-content .account-card p {
-  color: #e1e1e1;
-  font-weight: bold;
-  margin-left: 1px;
-  width: 300px;
-  font-size: 18px;
-  text-align: left;
-  margin-bottom: 0; /* Remove interline spacing */
 }
 
-.main-content .account-card:hover {
-  background-color: #0f8e7d;
+.account-card p {
+  font-size: 16px;
+  margin: 0.3rem 0;
+  color: #e1e1e1;
+}
+
+.new-account-button {
+  position: absolute;
+  top: 80px; /* Ajuste para que no se superponga con el header */
+  right: 20px;
+  background: #74d6c3; /* Fondo verde claro */
+  color: white;
+  font-size: 1rem;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.3s;
+}
+
+.new-account-button:hover {
+  background: #5ec2b1;
   transform: scale(1.05);
 }
 
-
+.section-title {
+  width: 100%;
+  text-align: left;
+  padding: 10px 0;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+  color: #333;
+  border-bottom: 2px solid #ddd;
+}
