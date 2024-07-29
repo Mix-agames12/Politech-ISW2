@@ -59,7 +59,7 @@ export const Header = ({ firstName, lastName }) => {
                         onClose={handleClose}
                     >
                         <MenuItem onClick={handleChangePassword}>Cambiar contraseña</MenuItem>
-                        <MenuItem onClick={handleUpdateProfile}>Actualizar perfil</MenuItem>
+                        <MenuItem onClick={handleUpdateProfile}>Ver perfil</MenuItem>
                     </Menu>
                 </div>
             </div>

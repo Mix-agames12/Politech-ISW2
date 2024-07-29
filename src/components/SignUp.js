@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { auth, db } from '../firebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, Timestamp } from 'firebase/firestore';
 import bcrypt from 'bcryptjs';
 import './SignUp.css';
 import Snackbar from '@mui/material/Snackbar';
@@ -21,6 +21,7 @@ const SignUp = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [idNumber, setIdNumber] = useState('');
+  const [birthdate, setBirthdate] = useState(''); // Estado para la fecha de nacimiento
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState({});
@@ -68,6 +69,23 @@ const SignUp = () => {
       isValid = false;
     }
 
+    if (birthdate === '') {
+      errors.birthdate = 'Por favor, ingresa tu fecha de nacimiento';
+      isValid = false;
+    } else {
+      const today = new Date();
+      const birthDate = new Date(birthdate);
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const monthDifference = today.getMonth() - birthDate.getMonth();
+      if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      if (age < 18) {
+        errors.birthdate = 'Debes ser mayor de 18 años para registrarte';
+        isValid = false;
+      }
+    }
+
     if (password === '') {
       errors.password = 'Por favor, ingresa una contraseña';
       isValid = false;
@@ -107,6 +125,9 @@ const SignUp = () => {
       const user = userCredential.user;
       const accountNumber = generateAccountNumber();
 
+      const birthdateTimestamp = Timestamp.fromDate(new Date(birthdate)); // Convertir la fecha de nacimiento a Timestamp
+
+
       await setDoc(doc(db, 'users', user.uid), {
         id: user.uid,
         correo: email,
@@ -127,7 +148,8 @@ const SignUp = () => {
         correo: email,
         cedula: idNumber,
         nombre: firstName,
-        apellido: lastName
+        apellido: lastName,
+        fechaNacimiento: birthdateTimestamp // Guardar la fecha de nacimiento como timestamp
       });
 
       console.log('Usuario registrado:', user);
@@ -214,8 +236,18 @@ const SignUp = () => {
               onChange={(e) => setIdNumber(e.target.value)} />
             {error.idNumber && <label className="errorLabel">{error.idNumber}</label>}
           </div>
+          {/* Se añade el campo de fecha de nacimiento para verificar que es mayor de edad */}
+          <div className="inputContainer">
+            <label>Fecha de nacimiento</label>
+            <input
+              type="date"
+              className="inputBox"
+              onChange={(e) => setBirthdate(e.target.value)} />
+            {error.birthdate && <label className="errorLabel">{error.birthdate}</label>}
+          </div>
         </div>
         <div className="column">
+          
           <div className="inputContainer">
             <label>Correo electrónico</label>
             <input
