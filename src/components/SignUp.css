@@ -130,8 +130,7 @@
   position: relative;
 }
 
-.togglePasswordButton,
-.calendarButton {
+.togglePasswordButton{
   position: absolute;
   right: 10px; /* Asegura que los botones estén a la derecha */
   top: 50%;
@@ -146,8 +145,4 @@
 .calendarButton img {
   width: 20px;
   height: 20px;
-}
-
-input[type="date"]::-webkit-calendar-picker-indicator {
-  display: none;
 }

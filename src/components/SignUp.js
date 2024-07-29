@@ -271,31 +271,12 @@ const SignUp = () => {
               onChange={handleIdNumberChange} />
             {error.idNumber && <label className="errorLabel">{error.idNumber}</label>}
           </div>
-        </div>
-        <div className="column">
-          <div className="inputContainer">
-            <label>Correo electrónico</label>
-            <input
-              type="email"
-              className="inputBox"
-              placeholder="Correo electrónico"
-              onChange={(e) => setEmail(e.target.value)} />
-            {error.email && <label className="errorLabel">{error.email}</label>}
-          </div>
           <div className="inputContainer">
             <label>Fecha de nacimiento</label>
-            <div className="dateInputContainer">
-              <input
-                type="text"
-                className="inputBox"
-                placeholder="Fecha de nacimiento"
-                onFocus={(e) => (e.target.type = 'date')}
-                onBlur={(e) => (e.target.type = 'text')}
-                onChange={(e) => setDateOfBirth(e.target.value)} />
-              <button className="calendarButton" onClick={() => document.querySelector('input[type="date"]').focus()}>
-                <img src={calendarIcon} alt="Abrir calendario" />
-              </button>
-            </div>
+            <input
+              type="date"
+              className="inputBox"
+              onChange={(e) => setDateOfBirth(e.target.value)} />
             {error.dateOfBirth && <label className="errorLabel">{error.dateOfBirth}</label>}
           </div>
         </div>
@@ -309,7 +290,6 @@ const SignUp = () => {
               onChange={(e) => setEmail(e.target.value)} />
             {error.email && <label className="errorLabel">{error.email}</label>}
           </div>
-          
           <div className="inputContainer">
             <label>Contraseña</label>
             <div className="passwordInputContainer">

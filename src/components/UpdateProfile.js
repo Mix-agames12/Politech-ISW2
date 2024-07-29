@@ -17,8 +17,8 @@ const UpdateProfile = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate(); // Usar useNavigate
-  const [editableUsername, editUsername] = useState(true); // Estado para editar nombre de usuario
-  const [editableMail, editMail] = useState(true); // Estado para editar correo electronico
+  const [editableUsername, setEditableUsername] = useState(true); // Estado para editar nombre de usuario
+  const [editableMail, setEditableMail] = useState(true); // Estado para editar correo electrónico
 
 
   useEffect(() => {
@@ -34,7 +34,7 @@ const UpdateProfile = () => {
         if (userDoc.exists()) {
           const userData = userDoc.data();
           setUser(userData);
-          setName(userData. || '');
+          setName(userData.nombre || '');
           setEmail(userData.correo || '');
         }
       } catch (error) {
@@ -50,19 +50,15 @@ const UpdateProfile = () => {
   const handleUpdate = async () => {
     setError('');
     setSuccess('');
-    const user = auth.currentUser;
-    if (user) {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
       try {
-        if (name) {
-          await updateProfile(user, { displayName: name });
-          await updateDoc(doc(db, 'clientes', user.uid), { nombre: name });
-        }
         if (email) {
-          await updateEmail(user, email);
-          await updateDoc(doc(db, 'clientes', user.uid), { correo: email });
+          await updateEmail(currentUser, email);
+          await updateDoc(doc(db, 'clientes', currentUser.uid), { correo: email });
         }
         if (password) {
-          await updatePassword(user, password);
+          await updatePassword(currentUser, password);
         }
         setSuccess('Perfil actualizado correctamente');
       } catch (error) {
@@ -92,9 +88,8 @@ const UpdateProfile = () => {
         <input
           type="text"
           className="inputBox"
-          placeholder="Nombre"
           disabled="true"
-          onChange={(e) => setName(e.target.value)}
+          value={user.nombre}
         />
       </div>
       <div className="inputContainer">
@@ -102,9 +97,8 @@ const UpdateProfile = () => {
         <input
           type="text"
           className="inputBox"
-          placeholder="Nombre"
           disabled="true"
-          onChange={(e) => setName(e.target.value)}
+          value={user.apellido}
         />
       </div>
       <div className="inputContainer">
@@ -112,19 +106,17 @@ const UpdateProfile = () => {
         <input
           type="text"
           className="inputBox"
-          placeholder="Cédula"
           disabled="true"
-          onChange={(e) => setEmail(e.target.value)}
+          value={user.cedula}
         />
       </div>
       <div className="inputContainer">
         <label>Fecha de nacimiento</label>
         <input
-          type="text"
+          type="date"
           className="inputBox"
-          placeholder="Fecha de nacimiento"
           disabled="true"
-          onChange={(e) => setEmail(e.target.value)}
+          value={user.fechaNacimiento}
         />
       </div>
       <div className="inputContainer">
@@ -132,12 +124,11 @@ const UpdateProfile = () => {
         <input
           type="text"
           className="inputBox"
-          placeholder="Nombre de usuario"
           disabled={editableUsername}
           onChange={(e) => setEmail(e.target.value)}
         />
-        <button onClick={() => editUsername(!editableUsername)}>
-          <img src={edit} />
+        <button onClick={() => setEditableUsername(!editableUsername)}>
+          <img src={edit} alt="Edit"/>
         </button>
       </div>
       <div className="inputContainer">
@@ -145,11 +136,11 @@ const UpdateProfile = () => {
         <input
           type="email"
           className="inputBox"
-          placeholder="Correo Electrónico"
+          placeholder={user.correo}
           disabled={editableMail}
           onChange={(e) => setEmail(e.target.value)}
         />
-        <button onClick={() => editMail(!editableMail)}>
+        <button onClick={() => setEditableMail(!editableMail)}>
           <img src={edit} />
         </button>
       </div>
