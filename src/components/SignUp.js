@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { auth, db } from '../firebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc, getDocs, query, collection, where, Timestamp } from 'firebase/firestore';
+import { doc, setDoc, getDocs, query, collection, where } from 'firebase/firestore';
 import bcrypt from 'bcryptjs';
 import './SignUp.css';
 import Snackbar from '@mui/material/Snackbar';
@@ -24,7 +24,6 @@ const SignUp = () => {
   const [email, setEmail] = useState('');
   const [idNumber, setIdNumber] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
-  const [birthdate, setBirthdate] = useState(''); // Estado para la fecha de nacimiento
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState({});
@@ -36,8 +35,8 @@ const SignUp = () => {
   });
   const [passwordsMatch, setPasswordsMatch] = useState(true);
   const [open, setOpen] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // Estado para mostrar/ocultar la contraseña
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // Estado para mostrar/ocultar la confirmación de la contraseña
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
   const validateInputs = async () => {
@@ -107,23 +106,6 @@ const SignUp = () => {
       isValid = false;
     }
 
-    if (birthdate === '') {
-      errors.birthdate = 'Por favor, ingresa tu fecha de nacimiento';
-      isValid = false;
-    } else {
-      const today = new Date();
-      const birthDate = new Date(birthdate);
-      const age = today.getFullYear() - birthDate.getFullYear();
-      const monthDifference = today.getMonth() - birthDate.getMonth();
-      if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
-      }
-      if (age < 18) {
-        errors.birthdate = 'Debes ser mayor de 18 años para registrarte';
-        isValid = false;
-      }
-    }
-
     if (password === '') {
       errors.password = 'Por favor, ingresa una contraseña';
       isValid = false;
@@ -180,9 +162,6 @@ const SignUp = () => {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       const accountNumber = generateAccountNumber();
-
-      const birthdateTimestamp = Timestamp.fromDate(new Date(birthdate)); // Convertir la fecha de nacimiento a Timestamp
-
 
       await setDoc(doc(db, 'users', user.uid), {
         id: user.uid,
@@ -292,18 +271,8 @@ const SignUp = () => {
               onChange={handleIdNumberChange} />
             {error.idNumber && <label className="errorLabel">{error.idNumber}</label>}
           </div>
-          {/* Se añade el campo de fecha de nacimiento para verificar que es mayor de edad */}
-          <div className="inputContainer">
-            <label>Fecha de nacimiento</label>
-            <input
-              type="date"
-              className="inputBox"
-              onChange={(e) => setBirthdate(e.target.value)} />
-            {error.birthdate && <label className="errorLabel">{error.birthdate}</label>}
-          </div>
         </div>
         <div className="column">
-          
           <div className="inputContainer">
             <label>Correo electrónico</label>
             <input
@@ -331,15 +300,6 @@ const SignUp = () => {
           </div>
           <div className="inputContainer">
             <label>Contraseña</label>
-            <div className="passwordContainer">
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Contraseña"
-                onChange={(e) => validatePassword(e.target.value)} />
-              <button className="togglePasswordButton" onClick={() => setShowPassword(!showPassword)}>
-                <img src={showPassword ? eyeOpen : eyeClosed} alt="Toggle Password Visibility" />
-              </button>
-            </div>
             <div className="passwordInputContainer">
               <input
                 type={showPassword ? "text" : "password"}
@@ -351,7 +311,7 @@ const SignUp = () => {
               </button>
             </div>
             {error.password && <label className="errorLabel">{error.password}</label>}
-          </div>
+          </div>
           <div className="inputContainer">
             <label>Repetir contraseña</label>
             <div className="passwordInputContainer">
