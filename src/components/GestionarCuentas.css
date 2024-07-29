@@ -1,12 +1,10 @@
-/* GestionarCuentas.css */
-
 /* Estilos generales */
 html, body {
   height: 100%;
   width: 100%;
   margin: 0;
   font-family: Arial, sans-serif;
-  background-color: #f8f9fa;
+  background-color: #F2FDFB;
 }
 
 .main-content {
@@ -79,7 +77,7 @@ html, body {
   right: 20px;
   background: #74d6c3; /* Fondo verde claro */
   color: white;
-  font-size: 0.9rem;
+  font-size: 1rem;
   padding: 10px 20px;
   border: none;
   border-radius: 5px;

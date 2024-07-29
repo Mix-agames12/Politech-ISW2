@@ -63,6 +63,10 @@ const GestionarCuentas = () => {
         return lastFourDigits; // Default case, in case the type is neither
     };
 
+    const handleAccountClick = (accountNumber) => {
+        navigate(`/movimientos/${accountNumber}`);
+    };
+
     return (
         <div>
             {user && (
@@ -79,10 +83,10 @@ const GestionarCuentas = () => {
                 <h3 className="section-title">Cuentas de ahorros</h3>
                 <div className="account-cards">
                     {savingsAccounts.length > 0 ? savingsAccounts.map((account, index) => (
-                        <div className="account-card" key={index}>
+                        <div className="account-card" key={index} onClick={() => handleAccountClick(account.accountNumber)}>
                             <h4 className="account-display">{getAccountDisplay(account.accountNumber, account.tipoCuenta)}</h4>
                             <p>Número de Cuenta: {account.accountNumber}</p>
-                            <p>Saldo Disponible: ${account.accountBalance ? account.accountBalance.toFixed(2) : 'N/A'}</p>
+                            <p>Saldo Disponible: ${account.accountBalance ? account.accountBalance.toFixed(2) : '0.00'}</p>
                         </div>
                     )) : <p>No se encontraron cuentas de ahorros.</p>}
                 </div>
@@ -90,10 +94,10 @@ const GestionarCuentas = () => {
                 <h3 className="section-title">Cuentas corrientes</h3>
                 <div className="account-cards">
                     {currentAccounts.length > 0 ? currentAccounts.map((account, index) => (
-                        <div className="account-card" key={index}>
+                        <div className="account-card" key={index} onClick={() => handleAccountClick(account.accountNumber)}>
                             <h4 className="account-display">{getAccountDisplay(account.accountNumber, account.tipoCuenta)}</h4>
                             <p>Número de Cuenta: {account.accountNumber}</p>
-                            <p>Saldo Disponible: ${account.accountBalance ? account.accountBalance.toFixed(2) : 'N/A'}</p>
+                            <p>Saldo Disponible: ${account.accountBalance ? account.accountBalance.toFixed(2) : '0.00'}</p>
                         </div>
                     )) : <p>No se encontraron cuentas corrientes.</p>}
                 </div>

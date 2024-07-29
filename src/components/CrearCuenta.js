@@ -171,7 +171,7 @@ const CrearCuenta = () => {
                             </span>
                         )}
                         {!validEmail && emailErrorMessage && (
-                            <p style={{ color: 'red' }}>{emailErrorMessage}</p>
+                            <p className="error-message">{emailErrorMessage}</p>
                         )}
                     </div>
                     <select

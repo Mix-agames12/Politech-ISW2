@@ -1,57 +1,202 @@
-/* CrearCuenta.css */
-
-/* Estilos generales */
-html, body {
-  height: 100%;
-  width: 100%;
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #f8f9fa;
-}
-
-.main-content {
-  margin: auto;
+/* Estilo general para el contenedor principal */
+.mainContainer {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  width: auto;
+  justify-content: flex-start;
+  height: 100vh;
   padding: 20px;
+  background-color: #F2FDFB; /* Color de fondo ajustado */
 }
 
-.main-content h2 {
-  color: #333;
+/* Contenedor para el título */
+.titleContainer {
+  font-size: 2rem;
   font-weight: bold;
+  margin-bottom: 2rem;
+  text-align: center;
+  color: #333;
+}
+
+/* Contenedor para cada conjunto de entradas */
+.inputContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 500px;
   margin-bottom: 1rem;
 }
 
-.new-account-form {
+/* Estilo para etiquetas */
+.inputContainer label {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+/* Estilo para entradas de texto y botones */
+.inputBox,
+.dropdownButton,
+.receiverAccountContainer input,
+.beneficiaryNameInput {
+  width: 100%;
+  height: 40px;
+  font-size: 1rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  padding: 0 10px;
+  box-sizing: border-box;
+  margin-bottom: 0.5rem;
+}
+
+/* Ajuste del contenedor para Cuenta de Destino y el botón de Validar */
+.receiverAccountContainer {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.receiverAccountContainer input {
+  flex: 1; /* Permite que el campo de entrada ocupe todo el espacio disponible */
+}
+
+/* Estilo para el botón de validación */
+.validateButton {
+  background-color: #6ca39c;
+  color: white;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 15px;
+  margin-left: 10px; /* Espacio entre el campo de entrada y el botón */
+  transition: background-color 0.3s, transform 0.3s;
+  text-align: center;
+}
+
+.validateButton:hover {
+  background-color: #548d87;
+  transform: scale(1.05);
+}
+
+/* Contenedor para los botones de acción */
+.buttonContainer {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  width: 300px;
+  align-items: center;
+  width: 100%;
 }
 
-.new-account-form input {
-  padding: 0.5rem;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  font-size: 1rem;
-  box-sizing: border-box;
-}
-
-.new-account-form button {
-  padding: 0.5rem;
-  border-radius: 5px;
+/* Estilo para los botones de acción */
+.transferButton,
+.downloadReceiptButton {
+  width: 100%;
+  max-width: 500px;
+  padding: 15px 0;
+  border-radius: 8px;
   border: none;
-  background-color: #007bff;
+  background-color: #6ca39c;
   color: white;
   font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.3s, transform 0.3s;
+  margin-bottom: 15px;
+  text-align: center;
 }
 
-.new-account-form button:hover {
-  background-color: #0056b3;
+.transferButton:hover,
+.downloadReceiptButton:hover {
+  background-color: #548d87;
+  transform: scale(1.05);
+}
+
+/* Estilo para mensajes de éxito o error */
+.errorMessage, .successMessage {
+  width: 100%;
+  max-width: 500px;
+  font-size: 1rem;
+  text-align: center;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.errorMessage {
+  background-color: #dc3545;
+  color: white;
+}
+
+.successMessage {
+  background-color: #F2FDFB; /* Fondo neutro */
+  color: #28a745; /* Texto verde */
+}
+
+/* Estilo para el Dropdown de selección de cuenta */
+.dropdownContainer {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  margin-bottom: 1rem;
+}
+
+.dropdownButton {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #6ca39c;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0 10px;
+  height: 40px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.dropdownButton:hover {
+  background-color: #548d87;
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: white;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  z-index: 1000;
+}
+
+.dropdownItem {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.dropdownItem:hover {
+  background-color: #f1f1f1;
+}
+
+.account-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.balance-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.toggleBalanceButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.toggleBalanceButton img {
+  width: 24px;
+  height: 24px;
 }
