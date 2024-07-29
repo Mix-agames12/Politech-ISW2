@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom'; // Asegúrate de importar useLocation
+import { useLocation } from 'react-router-dom';
 import { auth, db } from '../firebaseConfig';
 import { collection, getDocs, query, where, getDoc, doc } from 'firebase/firestore';
 import { Sidebar } from './Sidebar';
@@ -7,9 +7,10 @@ import './Movimientos.css';
 import { Header } from './Header';
 import eyeOpen from '../assets/images/eye-open.png';
 import eyeClosed from '../assets/images/eye-closed.png';
+import { generateMovementsPDF } from '../assets/pdfs/generateMovementsPDF';
 
 const Movimientos = () => {
-  const location = useLocation(); // Hook para acceder a la ubicación actual
+  const location = useLocation();
   const [movements, setMovements] = useState([]);
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState(null);
@@ -164,13 +165,12 @@ const Movimientos = () => {
     }
   };
 
-  const handlePrint = () => {
-    const printContents = reportRef.current.innerHTML;
-    const originalContents = document.body.innerHTML;
-    document.body.innerHTML = printContents;
-    window.print();
-    document.body.innerHTML = originalContents;
-    window.location.reload();
+  const handleGeneratePDF = async () => {
+    if (user && selectedAccount && movements.length > 0) {
+      await generateMovementsPDF(user, selectedAccount, movements);
+    } else {
+      console.error("Información insuficiente para generar el PDF.");
+    }
   };
 
   const getCurrentDate = () => {
@@ -311,7 +311,7 @@ const Movimientos = () => {
           )
         )}
       </div>
-      <button className="printButton" onClick={handlePrint}>Imprimir Reporte</button>
+      <button className="generatePDFButton" onClick={handleGeneratePDF}>Generar PDF</button>
     </div>
   );
 };
