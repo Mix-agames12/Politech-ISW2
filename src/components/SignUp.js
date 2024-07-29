@@ -298,6 +298,18 @@ const SignUp = () => {
             </div>
             {error.dateOfBirth && <label className="errorLabel">{error.dateOfBirth}</label>}
           </div>
+        </div>
+        <div className="column">
+          <div className="inputContainer">
+            <label>Correo electrónico</label>
+            <input
+              type="email"
+              className="inputBox"
+              placeholder="Correo electrónico"
+              onChange={(e) => setEmail(e.target.value)} />
+            {error.email && <label className="errorLabel">{error.email}</label>}
+          </div>
+          
           <div className="inputContainer">
             <label>Contraseña</label>
             <div className="passwordInputContainer">
