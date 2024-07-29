@@ -97,6 +97,32 @@
   transform: scale(1.05);
 }
 
+.passwordContainer {
+  height: 48px;
+  width: 400px;
+}
+
+.passwordContainer input {
+  height: 48px;
+  width: 370px;
+  font-size: large;
+  border: none;
+  border-radius: 8px;
+  padding-left: 8px;
+  border: 1px solid grey;
+}
+
+.passwordContainer button{
+  border: none;
+  background: none;
+}
+
+.passwordContainer button img {
+  width: 30px;
+  height: 30px;
+  padding: 3px;
+}
+
 .passwordInputContainer,
 .dateInputContainer {
   display: flex;
@@ -104,8 +130,7 @@
   position: relative;
 }
 
-.togglePasswordButton,
-.calendarButton {
+.togglePasswordButton{
   position: absolute;
   right: 10px; /* Asegura que los botones estén a la derecha */
   top: 50%;
@@ -120,8 +145,4 @@
 .calendarButton img {
   width: 20px;
   height: 20px;
-}
-
-input[type="date"]::-webkit-calendar-picker-indicator {
-  display: none;
 }

@@ -11,11 +11,15 @@ export const generateMovementsPDF = async (user, selectedAccount, movements) => 
     const pages = pdfDoc.getPages();
     let page = pages[0];
     let yPosition = 700;
+    const marginLeft = 50;
+    const cellPadding = 5;
+    const tableWidth = 500;
+    const fontSize = 10;
 
     // Fecha de impresión en la esquina superior derecha
     const currentDate = new Date().toLocaleDateString();
     page.drawText(`Fecha: ${currentDate}`, {
-      x: page.getWidth() - 100,
+      x: page.getWidth() - 150,
       y: 730,
       size: 12,
       font,
@@ -36,9 +40,10 @@ export const generateMovementsPDF = async (user, selectedAccount, movements) => 
     });
 
     // Información de la cuenta
+    yPosition = 670;
     page.drawText(`Cuenta: ${selectedAccount.accountNumber} - ${selectedAccount.tipoCuenta}`, {
-      x: 70,
-      y: 670,
+      x: marginLeft,
+      y: yPosition,
       size: 12,
       font,
       color: textColor,
@@ -47,97 +52,103 @@ export const generateMovementsPDF = async (user, selectedAccount, movements) => 
     // Salto de línea
     yPosition -= 30;
 
-    // Detalle en negrita
-    page.drawText('Detalle de Movimientos', {
-      x: 70,
-      y: yPosition,
-      size: 12,
-      fontBold,
-      color: textColor,
-    });
+    // Agrupación por fecha
+    const groupedMovements = movements.reduce((acc, movement) => {
+      const dateStr = new Date(movement.fecha).toLocaleDateString();
+      if (!acc[dateStr]) acc[dateStr] = [];
+      acc[dateStr].push(movement);
+      return acc;
+    }, {});
 
     // Encabezados de tabla
-    yPosition -= 20;
-    page.drawText('Fecha', {
-      x: 70,
-      y: yPosition,
-      size: 12,
-      fontBold,
-      color: textColor,
-    });
-    page.drawText('Descripción', {
-      x: 130,
-      y: yPosition,
-      size: 12,
-      fontBold,
-      color: textColor,
-    });
-    page.drawText('Monto', {
-      x: 320,
-      y: yPosition,
-      size: 12,
-      fontBold,
-      color: textColor,
-    });
-    page.drawText('Saldo', {
-      x: 400,
-      y: yPosition,
-      size: 12,
-      fontBold,
-      color: textColor,
-    });
+    const headers = ['Descripción', 'Cuenta Origen', 'Cuenta Destino', 'Monto', 'Saldo'];
+    const colWidths = [200, 100, 100, 50, 50]; // Ajuste del ancho de las columnas
+    const lineHeight = 15;
 
-    // Detalles de los movimientos
-    yPosition -= 20;
-    const lineHeight = 15; // Espacio entre líneas
-    for (const movement of movements) {
-      if (yPosition < 50) {
+    // Renderizado de movimientos agrupados por fecha
+    Object.entries(groupedMovements).forEach(([date, movements], groupIndex) => {
+      if (yPosition < 70) {
         page = pdfDoc.addPage([595, 842]);
         yPosition = 800;
       }
 
-      const movementDate = new Date(movement.fecha).toLocaleDateString();
-      const description = movement.tipoMovimiento === 'debito'
-        ? `Transferencia a ${movement.nombreDestino || 'Desconocido'}`
-        : `Transferencia de ${movement.nombreOrigen || 'Desconocido'}`;
-      const amount = movement.tipoMovimiento === 'credito'
-        ? `+${movement.monto.toFixed(2)}`
-        : `-${movement.monto.toFixed(2)}`;
-      const balance = movement.saldoActualizado !== undefined
-        ? `$${movement.saldoActualizado.toFixed(2)}`
-        : 'N/A';
+      // Fecha
+      page.drawText(date, {
+        x: marginLeft,
+        y: yPosition,
+        size: 12,
+        fontBold,
+        color: textColor,
+      });
+      yPosition -= 20;
 
-      page.drawText(movementDate, {
-        x: 70,
-        y: yPosition,
-        size: 12,
-        font,
-        color: textColor,
+      // Encabezados de la tabla
+      let xPosition = marginLeft;
+      headers.forEach((header, i) => {
+        page.drawText(header, {
+          x: xPosition + cellPadding,
+          y: yPosition,
+          size: fontSize,
+          fontBold,
+          color: textColor,
+        });
+        xPosition += colWidths[i];
       });
-      page.drawText(description, {
-        x: 130,
-        y: yPosition,
-        size: 12,
-        font,
-        color: textColor,
-      });
-      page.drawText(amount, {
-        x: 320,
-        y: yPosition,
-        size: 12,
-        font,
-        color: textColor,
-      });
-      page.drawText(balance, {
-        x: 400,
-        y: yPosition,
-        size: 12,
-        font,
+
+      // Línea horizontal debajo de los encabezados
+      page.drawLine({
+        start: { x: marginLeft, y: yPosition - 2 },
+        end: { x: marginLeft + colWidths.reduce((a, b) => a + b), y: yPosition - 2 },
+        thickness: 1,
         color: textColor,
       });
 
       yPosition -= lineHeight;
-    }
+
+      // Filas de movimientos
+      movements.forEach((movement) => {
+        if (yPosition < 50) {
+          page = pdfDoc.addPage([595, 842]);
+          yPosition = 800;
+        }
+
+        const description = movement.tipoMovimiento === 'debito'
+          ? `Transferencia a ${movement.nombreDestino || 'Desconocido'}`
+          : `Transferencia de ${movement.nombreOrigen || 'Desconocido'}`;
+        const amount = movement.tipoMovimiento === 'credito'
+          ? `+${movement.monto.toFixed(2)}`
+          : `-${movement.monto.toFixed(2)}`;
+        const balance = movement.saldoActualizado !== undefined
+          ? `$${movement.saldoActualizado.toFixed(2)}`
+          : 'N/A';
+
+        const rowData = [description, movement.cuentaOrigen, movement.cuentaDestino, amount, balance];
+        xPosition = marginLeft;
+
+        rowData.forEach((data, i) => {
+          page.drawText(data, {
+            x: xPosition + cellPadding,
+            y: yPosition,
+            size: fontSize,
+            font,
+            color: textColor,
+          });
+          xPosition += colWidths[i];
+        });
+
+        // Línea horizontal debajo de cada fila de movimientos
+        page.drawLine({
+          start: { x: marginLeft, y: yPosition - 2 },
+          end: { x: marginLeft + colWidths.reduce((a, b) => a + b), y: yPosition - 2 },
+          thickness: 0.5,
+          color: textColor,
+        });
+
+        yPosition -= lineHeight;
+      });
+
+      yPosition -= 20; // Espacio adicional entre fechas diferentes
+    });
 
     // Agradecimiento
     if (yPosition < 50) {
@@ -146,21 +157,21 @@ export const generateMovementsPDF = async (user, selectedAccount, movements) => 
     }
 
     page.drawText('Gracias por utilizar nuestros servicios.', {
-      x: 70,
+      x: marginLeft,
       y: yPosition - 20,
       size: 12,
       font,
       color: textColor,
     });
     page.drawText('Atentamente,', {
-      x: 70,
+      x: marginLeft,
       y: yPosition - 40,
       size: 12,
       font,
       color: textColor,
     });
     page.drawText('Banco Politech', {
-      x: 70,
+      x: marginLeft,
       y: yPosition - 60,
       size: 12,
       fontBold,
