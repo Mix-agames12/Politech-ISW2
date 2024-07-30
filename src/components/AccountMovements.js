@@ -131,7 +131,8 @@ const AccountMovements = () => {
         return movement;
       }));
 
-      setMovements(movementsWithNames.sort((a, b) => b.fecha - a.fecha));
+      // Mostrar solo los últimos 10 movimientos
+      setMovements(movementsWithNames.sort((a, b) => b.fecha - a.fecha).slice(0, 10));
     } catch (error) {
       console.error("Error fetching movements:", error);
     } finally {
@@ -250,6 +251,7 @@ const AccountMovements = () => {
           </div>
         </div>
       )}
+      <h4 className="movements-title">Tus últimos movimientos</h4>
       <div className="movements-content">
         {movementsContent}
       </div>
