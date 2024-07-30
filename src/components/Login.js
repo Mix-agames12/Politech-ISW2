@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebaseConfig';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { HeaderDashboard } from './HeaderDashboard';
 import Buho from '../assets/images/buho.png';
+import { HeaderLogin } from './HeaderLogin';
 
 export const Login = (props) => {
   const [username, setUsername] = useState('');
@@ -71,25 +71,20 @@ export const Login = (props) => {
     }
   };
 
-  // const handleSignUp = () => {
-  //   navigate('/SignUp');
-  // };
-
   return (
     <>
-      <HeaderDashboard />
-      <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-          <img className="mx-auto h-10 w-auto" 
-          src={Buho}
-          alt="Your Company" />
-          <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">Inicio de Sesión</h2>
-        </div>
-
-        <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-          <form className="space-y-6" onSubmit={handleLogin}>
+      <HeaderLogin />
+      <div className="min-w-full min-h-screen absolute flex-col items-center justify-center bg-gray-100">
+        <div className="w-full max-w-sm mx-auto flex flex-col items-center p-5 my-28 bg-white shadow-lg rounded-lg">
+          <img className="h-20 w-auto mb-6" src={Buho} alt="Your Company" />
+          <h2 className="text-center text-2xl font-bold leading-9 tracking-tight text-gray-900 mb-6">
+            Inicio de Sesión
+          </h2>
+          <form className="space-y-6 w-full" onSubmit={handleLogin}>
             <div>
-              <label htmlFor="username" className="block text-sm font-medium leading-6 text-gray-900">Nombre de usuario</label>
+              <label htmlFor="username" className="block text-sm font-medium leading-6 text-gray-900">
+                Nombre de usuario
+              </label>
               <div className="mt-2">
                 <input
                   id="username"
@@ -107,9 +102,13 @@ export const Login = (props) => {
 
             <div>
               <div className="flex items-center justify-between">
-                <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">Contraseña</label>
+                <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">
+                  Contraseña
+                </label>
                 <div className="text-sm">
-                  <a href="/password-reset" className="font-semibold text-indigo-600 hover:text-indigo-500">¿Olvidaste tu contraseña?</a>
+                  <a href="/password-reset" className="font-semibold text-sky-500 hover:text-indigo-500">
+                    ¿Olvidaste tu contraseña?
+                  </a>
                 </div>
               </div>
               <div className="mt-2">
@@ -130,7 +129,7 @@ export const Login = (props) => {
             <div>
               <button
                 type="submit"
-                className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                className="flex w-full justify-center rounded-md bg-sky-900 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-sky-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
                 Iniciar Sesión
               </button>
@@ -139,11 +138,13 @@ export const Login = (props) => {
 
           <p className="mt-10 text-center text-sm text-gray-500">
             ¿No tienes una cuenta?{' '}
-            <a href="/SignUp" className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500">Registrarse</a>
+            <a href="/SignUp" className="font-semibold leading-6 text-sky-500 hover:text-indigo-500">
+              Registrarse
+            </a>
           </p>
         </div>
       </div>
     </>
-  );
+  );  
 };
 

@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { auth, db } from '../firebaseConfig';
 import { collection, getDocs, query, where, getDoc, doc } from 'firebase/firestore';
 import { Sidebar } from './Sidebar';
-import './Movimientos.css';
-import { Header } from './Header';
 import eyeOpen from '../assets/images/eye-open.png';
 import eyeClosed from '../assets/images/eye-closed.png';
+import { HeaderDashboard } from './HeaderDashboard';
 
 const Movimientos = () => {
   const [movements, setMovements] = useState([]);
@@ -191,7 +190,7 @@ const Movimientos = () => {
   return (
     <div className="mainContainer">
       {user && (
-        <Header firstName={user.nombre} lastName={user.apellido} />
+        <HeaderDashboard firstName={user.nombre} lastName={user.apellido} />
       )}
       <div className='sidebar'>
         <Sidebar />

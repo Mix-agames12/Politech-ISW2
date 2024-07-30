@@ -4,6 +4,7 @@ import { collection, getDocs, query, where, updateDoc, doc, addDoc, getDoc, serv
 import { Sidebar } from './Sidebar';
 import eyeOpen from '../assets/images/eye-open.png'; // Ruta a tu imagen
 import eyeClosed from '../assets/images/eye-closed.png'; // Ruta a tu imagen
+import { HeaderDashboard } from './HeaderDashboard';
 
 const Transaction = () => {
   const [senderAccount, setSenderAccount] = useState('');
@@ -167,104 +168,125 @@ const Transaction = () => {
   }
 
   return (
-    <div className="mainContainer">
-      {/* {user && (
-        <Header firstName={user.nombre} lastName={user.apellido} />
-      )} */}
-      <div className='sidebar'>
-        <Sidebar />
-      </div>
-      <div className="titleContainer">
-        <h2>Transferencia</h2>
-      </div>
-      <div className="inputContainer">
-        <label>Cuenta de origen</label>
-        <div className="dropdownContainer">
-          <button className="dropdownButton" onClick={() => setDropdownVisible(!dropdownVisible)}>
-            {senderAccount ? `${senderAccount}` : 'Seleccione una cuenta'}
-            <span className="arrow">{dropdownVisible ? '▲' : '▼'}</span>
-          </button>
-          {dropdownVisible && (
-            <div className="dropdownMenu">
-              {userAccounts.map((account, index) => (
-                <div 
-                  key={index} 
-                  className="dropdownItem" 
-                  onClick={() => {
-                    setSenderAccount(account.accountNumber);
-                    setDropdownVisible(false);
-                  }}>
-                  <div className="account-info">
-                    <h4 className="account-number">{account.accountNumber}</h4>
-                    <p>Tipo de Cuenta: {account.tipoCuenta}</p>
-                    <div className="balance-info">
-                      <p>Saldo Disponible: {showBalance ? `$${account.accountBalance ? account.accountBalance.toFixed(2) : 'N/A'}` : '***'}</p>
-                      <button className="toggleBalanceButton" onClick={(e) => {
-                        e.stopPropagation();
-                        setShowBalance(!showBalance);
-                      }}>
-                        <img src={showBalance ? eyeOpen : eyeClosed} alt="Toggle Balance Visibility" />
-                      </button>
+    <div className="min-h-screen min-w-auto flex flex-col bg-gray-100">
+      <HeaderDashboard />
+      <Sidebar />
+      <div className="flex flex-grow">
+        <div className="w-3/4 p-8">
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-gray-900">Transferencia</h2>
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Cuenta de origen</label>
+            <div className="relative">
+              <button
+                className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                onClick={() => setDropdownVisible(!dropdownVisible)}
+              >
+                {senderAccount ? `${senderAccount}` : 'Seleccione una cuenta'}
+                <span className="float-right">{dropdownVisible ? '▲' : '▼'}</span>
+              </button>
+              {dropdownVisible && (
+                <div className="absolute z-10 mt-2 w-full bg-white border border-gray-300 rounded-md shadow-lg">
+                  {userAccounts.map((account, index) => (
+                    <div
+                      key={index}
+                      className="px-4 py-2 cursor-pointer hover:bg-gray-200"
+                      onClick={() => {
+                        setSenderAccount(account.accountNumber);
+                        setDropdownVisible(false);
+                      }}
+                    >
+                      <div>
+                        <h4 className="text-sm font-bold">{account.accountNumber}</h4>
+                        <p className="text-sm text-gray-500">Tipo de Cuenta: {account.tipoCuenta}</p>
+                        <div className="flex items-center">
+                          <p className="text-sm text-gray-500 mr-2">
+                            Saldo Disponible: {showBalance ? `$${account.accountBalance ? account.accountBalance.toFixed(2) : 'N/A'}` : '***'}
+                          </p>
+                          <button
+                            className="text-indigo-500"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowBalance(!showBalance);
+                            }}
+                          >
+                            <img src={showBalance ? eyeOpen : eyeClosed} alt="Toggle Balance Visibility" />
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
+              )}
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Cuenta de destino</label>
+            <div className="flex items-center">
+              <input
+                type="text"
+                className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="Cuenta de destino"
+                value={receiverAccount}
+                onChange={handleReceiverAccountChange}
+              />
+              <button
+                className="ml-2 bg-indigo-600 text-white px-3 py-2 rounded-md shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                onClick={validateReceiverAccount}
+                disabled={receiverAccount.length !== 10}
+              >
+                Validar
+              </button>
+            </div>
+          </div>
+
+          {receiverName && (
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Nombre del receptor</label>
+              <input
+                type="text"
+                className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                value={receiverName}
+                readOnly
+              />
             </div>
           )}
+
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Monto</label>
+            <input
+              type="text"
+              className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="Monto"
+              value={amount}
+              onChange={handleAmountChange}
+            />
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+            <input
+              type="text"
+              className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="Descripción"
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+
+          {error && <label className="block text-red-600 mb-4">{error}</label>}
+
+          <div className="text-center">
+            <input
+              className="bg-indigo-600 text-white px-4 py-2 rounded-md shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              type="button"
+              onClick={handleTransaction}
+              value="Realizar Transferencia"
+            />
+          </div>
         </div>
-      </div>
-      <div className="inputContainer">
-        <label>Cuenta de destino</label>
-        <div className="receiverAccountContainer">
-          <input
-            type="text"
-            className="inputBoxSmall"
-            placeholder="Cuenta de destino"
-            value={receiverAccount}
-            onChange={handleReceiverAccountChange}
-          />
-          <button 
-            className="validateButton" 
-            onClick={validateReceiverAccount} 
-            disabled={receiverAccount.length !== 10}
-          >
-            Validar
-          </button>
-        </div>
-      </div>
-      {receiverName && (
-        <div className="inputContainer">
-          <label>Nombre del receptor</label>
-          <input
-            type="text"
-            className="inputBox"
-            value={receiverName}
-            readOnly
-          />
-        </div>
-      )}
-      <div className="inputContainer">
-        <label>Monto</label>
-        <input
-          type="text"
-          className="inputBox"
-          placeholder="Monto"
-          value={amount}
-          onChange={handleAmountChange}
-        />
-      </div>
-      <div className="inputContainer">
-        <label>Descripción</label>
-        <input
-          type="text"
-          className="inputBox"
-          placeholder="Descripción"
-          onChange={(e) => setDescription(e.target.value)}
-        />
-      </div>
-      {error && <label className="errorLabel">{error}</label>}
-      <div className="buttonContainer">
-        <input className="inputButton" type="button" onClick={handleTransaction} value="Realizar Transferencia" />
       </div>
     </div>
   );

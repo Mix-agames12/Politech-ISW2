@@ -18,11 +18,11 @@ function App() {
     <Router>
       <html class="h-full bg-white"/>
       <body class="h-full"></body>
-      <div class="App flex justify-center items-center">
+      <div class="App w-100 h-auto">
         <div class="container">
           <Routes>
             {/* Página de inicio */}
-            <Route path="/home" element={<Home/>} />
+            <Route path="/" element={<Home/>} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/password-reset" element={<PasswordReset />} />

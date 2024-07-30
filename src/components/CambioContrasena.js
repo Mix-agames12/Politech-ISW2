@@ -6,6 +6,7 @@ import MuiAlert from '@mui/material/Alert';
 import { useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { Sidebar } from "../components/Sidebar";
+import { HeaderDashboard } from './HeaderDashboard';
 
 const Alerta = React.forwardRef(function Alerta(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -72,9 +73,7 @@ const CambioContrasena = () => {
 
     return (
         <div className="mainContainer">
-            {/* {user && (
-                <Header firstName={user.nombre} lastName={user.apellido} />
-            )} */}
+            <HeaderDashboard/>
             <div className="Sidebar">
                 <Sidebar />
             </div>
