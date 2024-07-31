@@ -18,7 +18,9 @@ import AccountMovements from './components/AccountMovements';
 function App() {
   return (
     <Router>
-      <div class="App">
+      <html class="h-full bg-white"/>
+      <body class="h-full"></body>
+      <div class="App w-100 h-auto">
         <div class="container">
           <Routes>
             {/* Página de inicio */}

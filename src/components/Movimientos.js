@@ -3,10 +3,9 @@ import { useLocation } from 'react-router-dom';
 import { auth, db } from '../firebaseConfig';
 import { collection, getDocs, query, where, getDoc, doc } from 'firebase/firestore';
 import { Sidebar } from './Sidebar';
-import './Movimientos.css';
-import { Header } from './Header';
 import eyeOpen from '../assets/images/eye-open.png';
 import eyeClosed from '../assets/images/eye-closed.png';
+import { HeaderDashboard } from './HeaderDashboard';
 import { generateMovementsPDF } from '../assets/pdfs/generateMovementsPDF';
 
 const Movimientos = () => {
@@ -192,7 +191,7 @@ const Movimientos = () => {
   return (
     <div className="mainContainer">
       {user && (
-        <Header firstName={user.nombre} lastName={user.apellido} />
+        <HeaderDashboard firstName={user.nombre} lastName={user.apellido} />
       )}
       <div className='sidebar'>
         <Sidebar />
