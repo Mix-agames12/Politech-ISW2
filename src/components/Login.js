@@ -5,11 +5,14 @@ import { auth, db } from '../firebaseConfig';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import Buho from '../assets/images/buho.png';
+import EyeOpenIcon from '../assets/images/eye-open.png'; // Asegúrate de que esta ruta sea correcta
+import EyeClosedIcon from '../assets/images/eye-closed.png'; // Asegúrate de que esta ruta sea correcta
 import { HeaderLogin } from './HeaderLogin';
 
 export const Login = (props) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // Inicializa como false para empezar con el ojo cerrado
   const navigate = useNavigate();
   const [usernameError, setUsernameError] = useState('');
   const [passwordError, setPasswordError] = useState('');
@@ -42,7 +45,6 @@ export const Login = (props) => {
     }
 
     try {
-      // Buscar el correo electrónico correspondiente al nombre de usuario
       const usersCollection = collection(db, 'users');
       const userQuery = query(usersCollection, where('username', '==', username));
       const userSnapshot = await getDocs(userQuery);
@@ -55,7 +57,6 @@ export const Login = (props) => {
       const userDoc = userSnapshot.docs[0];
       const userEmail = userDoc.data().correo;
 
-      // Intentar iniciar sesión con el correo electrónico obtenido
       await signInWithEmailAndPassword(auth, userEmail, password);
       console.log('User logged in');
       navigate('/gestionar-cuentas');
@@ -111,17 +112,26 @@ export const Login = (props) => {
                   </a>
                 </div>
               </div>
-              <div className="mt-2">
+              <div className="mt-2 relative">
                 <input
                   id="password"
                   name="password"
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(ev) => setPassword(ev.target.value)}
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   placeholder="Ingresa tu contraseña"
                   required
                 />
+                {password && (
+                  <img
+                    src={showPassword ? EyeOpenIcon : EyeClosedIcon}
+                    alt={showPassword ? "Hide password" : "Show password"}
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-2 top-5  transform -translate-y-1/2 cursor-pointer"
+                    style={{ height: '24px', width: '24px' }}
+                  />
+                )}
                 {passwordError && <p className="mt-2 text-sm text-red-600">{passwordError}</p>}
               </div>
             </div>
@@ -147,4 +157,3 @@ export const Login = (props) => {
     </>
   );  
 };
-
