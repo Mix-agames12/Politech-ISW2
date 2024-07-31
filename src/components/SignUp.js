@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { auth, db } from '../firebaseConfig';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { doc, setDoc, getDocs, query, collection, where } from 'firebase/firestore';
 import bcrypt from 'bcryptjs';
 import './SignUp.css';
@@ -187,7 +187,9 @@ const SignUp = () => {
         fechaNacimiento: dateOfBirth
       });
 
-      console.log('Usuario registrado:', user);
+      await sendEmailVerification(user); // Envía el correo de verificación
+
+      console.log('Usuario registrado y correo de verificación enviado:', user);
       setOpen(true);
       setTimeout(() => {
         navigate('/login');
@@ -340,7 +342,7 @@ const SignUp = () => {
       </div>
       <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
         <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
-          ¡Registro exitoso! Redirigiendo al login...
+          ¡Registro exitoso! Por favor, verifica tu correo electrónico.
         </Alert>
       </Snackbar>
     </div>
