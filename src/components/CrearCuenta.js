@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebaseConfig';
 import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
 import { Sidebar } from "../components/Sidebar";
-import { Header } from './Header';
+import { HeaderDashboard } from './HeaderDashboard';
 import '../components/CrearCuenta.css';
 
 const CrearCuenta = () => {
@@ -142,7 +142,7 @@ const CrearCuenta = () => {
     return (
         <div>
             {user && (
-                <Header firstName={user.nombre} lastName={user.apellido} />
+                <HeaderDashboard firstName={user.nombre} lastName={user.apellido} />
             )}
             <div className="Sidebar">
                 <Sidebar />

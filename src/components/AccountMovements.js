@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebaseConfig';
 import { collection, getDocs, query, where, getDoc, doc } from 'firebase/firestore';
 import { Sidebar } from '../components/Sidebar';
-import { Header } from './Header';
+import { HeaderDashboard } from './HeaderDashboard';
 import eyeOpen from '../assets/images/eye-open.png';
 import eyeClosed from '../assets/images/eye-closed.png';
 import './AccountMovements.css';
@@ -234,7 +234,7 @@ const AccountMovements = () => {
   return (
     <div className="account-movements-container">
       {user && (
-        <Header firstName={user.nombre} lastName={user.apellido} />
+        <HeaderDashboard firstName={user.nombre} lastName={user.apellido} />
       )}
       <div className='sidebar'>
         <Sidebar />

@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Sidebar } from "../components/Sidebar";
-import { Header } from './Header';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebaseConfig';
 import { collection, query, where, getDocs, doc, getDoc, updateDoc } from 'firebase/firestore';
-import { useNavigate } from 'react-router-dom';
 import { HeaderDashboard } from "./HeaderDashboard";
 import EyeOpenIcon from '../assets/images/eye-open.png';
 import EyeClosedIcon from '../assets/images/eye-closed.png';
