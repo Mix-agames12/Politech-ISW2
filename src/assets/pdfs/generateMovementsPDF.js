@@ -13,7 +13,6 @@ export const generateMovementsPDF = async (user, selectedAccount, movements) => 
     let yPosition = 700;
     const marginLeft = 50;
     const cellPadding = 5;
-    const tableWidth = 500;
     const fontSize = 10;
 
     // Fecha de impresión en la esquina superior derecha

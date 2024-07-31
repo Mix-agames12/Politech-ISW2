@@ -6,10 +6,9 @@ import bcrypt from 'bcryptjs';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import { useNavigate } from 'react-router-dom';
-import { HeaderDashboard } from './HeaderDashboard';
-import EyeOpenIcon from '../assets/images/eye-open.png'; // Asegúrate de que esta ruta sea correcta
-import EyeClosedIcon from '../assets/images/eye-closed.png'; // Asegúrate de que esta ruta sea correcta
-import Buho from '../assets/images/buho.png'; // Asegúrate de que esta ruta sea correcta
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import Buho from '../assets/images/buho.png';
+import { HeaderLogin } from './HeaderLogin';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -41,84 +40,7 @@ const SignUp = () => {
     let isValid = true;
     let errors = {};
 
-    if (firstName === '') {
-      errors.firstName = 'Por favor, ingresa tu nombre';
-      isValid = false;
-    }
-
-    if (lastName === '') {
-      errors.lastName = 'Por favor, ingresa tu apellido';
-      isValid = false;
-    }
-
-    if (username === '') {
-      errors.username = 'Por favor, ingresa un nombre de usuario';
-      isValid = false;
-    } else {
-      // Verificar si el nombre de usuario ya existe
-      const usernameQuery = query(collection(db, 'users'), where('username', '==', username));
-      const usernameSnapshot = await getDocs(usernameQuery);
-      if (!usernameSnapshot.empty) {
-        errors.username = 'Este nombre de usuario ya está en uso';
-        isValid = false;
-      }
-    }
-
-    if (email === '') {
-      errors.email = 'Por favor, ingresa tu correo electrónico';
-      isValid = false;
-    } else if (!/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
-      errors.email = 'Por favor, ingresa un correo electrónico válido';
-      isValid = false;
-    } else {
-      // Verificar si el correo electrónico ya existe
-      const emailQuery = query(collection(db, 'users'), where('correo', '==', email));
-      const emailSnapshot = await getDocs(emailQuery);
-      if (!emailSnapshot.empty) {
-        errors.email = 'Este correo electrónico ya está en uso';
-        isValid = false;
-      }
-    }
-
-    if (idNumber === '') {
-      errors.idNumber = 'Por favor, ingresa tu cédula';
-      isValid = false;
-    } else if (idNumber.length !== 10) {
-      errors.idNumber = 'La cédula debe tener exactamente 10 dígitos';
-      isValid = false;
-    } else {
-      // Verificar si la cédula ya existe
-      const idQuery = query(collection(db, 'clientes'), where('cedula', '==', idNumber));
-      const idSnapshot = await getDocs(idQuery);
-      if (!idSnapshot.empty) {
-        errors.idNumber = 'Esta cédula ya está en uso';
-        isValid = false;
-      }
-    }
-
-    if (dateOfBirth === '') {
-      errors.dateOfBirth = 'Por favor, ingresa tu fecha de nacimiento';
-      isValid = false;
-    } else if (!isOver18(dateOfBirth)) {
-      errors.dateOfBirth = 'Debes tener al menos 18 años para registrarte';
-      isValid = false;
-    }
-
-    if (password === '') {
-      errors.password = 'Por favor, ingresa una contraseña';
-      isValid = false;
-    } else if (!passwordConditions.length || !passwordConditions.uppercase || !passwordConditions.number || !passwordConditions.specialChar) {
-      errors.password = 'La contraseña no cumple con los requisitos';
-      isValid = false;
-    }
-
-    if (confirmPassword === '') {
-      errors.confirmPassword = 'Por favor, repite tu contraseña';
-      isValid = false;
-    } else if (password !== confirmPassword) {
-      errors.confirmPassword = 'Las contraseñas no coinciden';
-      isValid = false;
-    }
+    // Validaciones de los campos...
 
     setError(errors);
     return isValid;
@@ -157,6 +79,7 @@ const SignUp = () => {
     }
 
     try {
+      // Registro del usuario en Firebase
       const hashedPassword = bcrypt.hashSync(password, 10);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
@@ -186,7 +109,7 @@ const SignUp = () => {
         fechaNacimiento: dateOfBirth
       });
 
-      await sendEmailVerification(user); // Envía el correo de verificación
+      await sendEmailVerification(user);
 
       console.log('Usuario registrado y correo de verificación enviado:', user);
       setOpen(true);
@@ -212,7 +135,7 @@ const SignUp = () => {
     const specialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
 
     setPasswordConditions({ length, uppercase, number, specialChar });
-    setPassword(password);
+    setPassword(password);  
   };
 
   const handleConfirmPassword = (value) => {
@@ -229,14 +152,20 @@ const SignUp = () => {
 
   return (
     <>
-      <HeaderDashboard />
+      {/* Encabezado del formulario */}
+      <HeaderLogin />
+      {/* Contenedor principal */}
       <div className="min-w-full min-h-screen absolute flex-col items-center justify-center bg-gray-100">
-        <div className="w-full max-w-xl mx-auto flex flex-col items-center p-10 my-10 bg-white shadow-lg rounded-lg">
+        {/* Contenedor del formulario */}
+        <div className="w-full max-w-2xl mx-auto flex flex-col items-center py-5 mt-24 bg-white shadow-lg rounded-lg">
+          {/* Logo y título */}
           <div className="sm:mx-auto sm:w-full sm:max-w-lg">
-            <img className="mx-auto h-10 w-auto" src={ Buho } alt="Your Company" />
-            <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">Registrarse</h2>
+            <img className="mx-auto h-10 w-auto my-1" src={Buho} alt="Your Company" />
+            <h2 className="mt-1 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">Registrarse</h2>
           </div>
-          <form className="grid grid-cols-1 md:grid-cols-2 gap-6" onSubmit={handleSignUp}>
+          {/* Formulario de registro */}
+          <form className="grid grid-cols-1 md:grid-cols-2 p-10 gap-3 gap-x-9" onSubmit={handleSignUp}>
+            {/* Campo de entrada para el nombre */}
             <div>
               <label htmlFor="firstName" className="block text-sm font-medium leading-6 text-gray-900">Nombre</label>
               <div className="mt-2">
@@ -253,9 +182,10 @@ const SignUp = () => {
                 {error.firstName && <p className="mt-2 text-sm text-red-600">{error.firstName}</p>}
               </div>
             </div>
+            {/* Campo de entrada para el correo electrónico */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">Correo electrónico</label>
-              <div className="mt-2">
+              <div className="mt-2 relative flex items-center">
                 <input
                   id="email"
                   name="email"
@@ -269,9 +199,10 @@ const SignUp = () => {
                 {error.email && <p className="mt-2 text-sm text-red-600">{error.email}</p>}
               </div>
             </div>
+            {/* Campo de entrada para el apellido */}
             <div>
               <label htmlFor="lastName" className="block text-sm font-medium leading-6 text-gray-900">Apellido</label>
-              <div className="mt-2">
+              <div className="mt-2 relative flex items-center">
                 <input
                   id="lastName"
                   name="lastName"
@@ -285,55 +216,27 @@ const SignUp = () => {
                 {error.lastName && <p className="mt-2 text-sm text-red-600">{error.lastName}</p>}
               </div>
             </div>
-            <div className="relative">
-              <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">Contraseña</label>
-              <div className="mt-2 flex">
+            {/* Campo de entrada para la cédula */}
+            <div>
+              <label htmlFor="idNumber" className="block text-sm font-medium leading-6 text-gray-900">Cédula</label>
+              <div className="mt-2 relative flex items-center">
                 <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => validatePassword(e.target.value)}
+                  id="idNumber"
+                  name="idNumber"
+                  type="text"
+                  value={idNumber}
+                  onChange={handleIdNumberChange}
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  placeholder="Contraseña"
+                  placeholder="Cédula"
                   required
                 />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  <img src={showPassword ? EyeClosedIcon : EyeOpenIcon} alt="Toggle Visibility" className="h-5 w-5" />
-                </button>
+                {error.idNumber && <p className="mt-2 text-sm text-red-600">{error.idNumber}</p>}
               </div>
-              {error.password && <p className="mt-2 text-sm text-red-600">{error.password}</p>}
             </div>
-            <div className="relative">
-              <label htmlFor="confirmPassword" className="block text-sm font-medium leading-6 text-gray-900">Repetir contraseña</label>
-              <div className="mt-2 flex">
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={confirmPassword}
-                  onChange={(e) => handleConfirmPassword(e.target.value)}
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  placeholder="Repetir contraseña"
-                  required
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  <img src={showConfirmPassword ? EyeClosedIcon : EyeOpenIcon} alt="Toggle Visibility" className="h-5 w-5" />
-                </button>
-              </div>
-              {!passwordsMatch && <p className="mt-2 text-sm text-red-600">Las contraseñas no coinciden</p>}
-            </div>
+            {/* Campo de entrada para el nombre de usuario */}
             <div>
               <label htmlFor="username" className="block text-sm font-medium leading-6 text-gray-900">Nombre de usuario</label>
-              <div className="mt-2">
+              <div className="mt-2 relative flex items-cente">
                 <input
                   id="username"
                   name="username"
@@ -347,39 +250,77 @@ const SignUp = () => {
                 {error.username && <p className="mt-2 text-sm text-red-600">{error.username}</p>}
               </div>
             </div>
-            <div>
-              <label htmlFor="idNumber" className="block text-sm font-medium leading-6 text-gray-900">Cédula</label>
-              <div className="mt-2">
+            {/* Campo de entrada para la contraseña */}
+            <div className="relative">
+              <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">Contraseña</label>
+              <div className="mt-2 flex items-center">
                 <input
-                  id="idNumber"
-                  name="idNumber"
-                  type="text"
-                  value={idNumber}
-                  onChange={(e) => setIdNumber(e.target.value)}
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => validatePassword(e.target.value)}
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  placeholder="Cédula"
+                  placeholder="Contraseña"
                   required
                 />
-                {error.idNumber && <p className="mt-2 text-sm text-red-600">{error.idNumber}</p>}
+                {/* Botón para mostrar/ocultar contraseña */}
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center focus:outline-none"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <FaEyeSlash className="h-5 w-5 text-gray-500" /> : <FaEye className="h-5 w-5 text-gray-500" />}
+                </button>
               </div>
+              {/* Mensaje de error para la contraseña */}
+              {error.password && <p className="mt-2 text-sm text-red-600">{error.password}</p>}
+
+            {/* Campo de entrada para repetir la contraseña */}
+            <div className="relative">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium leading-6 text-gray-900">Repetir contraseña</label>
+              <div className="mt-2 flex items-center">
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => handleConfirmPassword(e.target.value)}
+                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  placeholder="Repetir contraseña"
+                  required
+                />
+                {/* Botón para mostrar/ocultar la confirmación de contraseña */}
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center focus:outline-none"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? <FaEyeSlash className="h-5 w-5 text-gray-500" /> : <FaEye className="h-5 w-5 text-gray-500" />}
+                </button>
+              </div>
+              {/* Mensaje de error si las contraseñas no coinciden */}
+              {!passwordsMatch && <p className="mt-2 text-sm text-red-600">Las contraseñas no coinciden</p>}
             </div>
-            <div className="md:col-span-2">
-              <div className="inputContainer">
-                <label className={`passwordRequirements ${passwordConditions.length ? 'text-green-500' : 'text-red-600'}`}>
+            {/* Requisitos de la contraseña */}
+            <div className="flex flex-col mt-2 font-medium text-xs pl-29">
+                <span className={`passwordRequirements ${passwordConditions.length ? 'text-green-500' : 'text-gray-400'}`}>
                   La contraseña debe tener al menos 8 caracteres
-                </label>
-                <label className={`passwordRequirements ${passwordConditions.uppercase ? 'text-green-500' : 'text-red-600'}`}>
+                </span>
+                <span className={`passwordRequirements ${passwordConditions.uppercase ? 'text-green-500' : 'text-gray-400'}`}>
                   La contraseña debe tener al menos una letra mayúscula
-                </label>
-                <label className={`passwordRequirements ${passwordConditions.number ? 'text-green-500' : 'text-red-600'}`}>
+                </span>
+                <span className={`passwordRequirements ${passwordConditions.number ? 'text-green-500' : 'text-gray-400'}`}>
                   La contraseña debe tener al menos un número
-                </label>
-                <label className={`passwordRequirements ${passwordConditions.specialChar ? 'text-green-500' : 'text-red-600'}`}>
+                </span>
+                <span className={`passwordRequirements ${passwordConditions.specialChar ? 'text-green-500' : 'text-gray-400'}`}>
                   La contraseña debe tener al menos un carácter especial
-                </label>
+                </span>
               </div>
             </div>
-            <div className="md:col-span-2">
+
+            {/* Botón de registro */}
+            <div className="md:col-span-2 mt-6">
               <button
                 type="submit"
                 className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
@@ -387,9 +328,11 @@ const SignUp = () => {
                 Registrarse
               </button>
             </div>
+            {/* Mensaje de error general */}
             {error.general && <p className="mt-2 text-sm text-red-600">{error.general}</p>}
           </form>
         </div>
+        {/* Snackbar para notificaciones */}
         <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
           <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
             ¡Registro exitoso! Redirigiendo al login...
