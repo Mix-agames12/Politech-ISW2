@@ -79,6 +79,15 @@ const GestionarCuentas = () => {
         }));
     };
 
+    const formatAccountNumber = (accountNumber, showFull) => {
+        if (showFull) {
+            return accountNumber;
+        }
+        const visibleDigits = accountNumber.slice(-4); // Últimos 4 dígitos
+        const maskedDigits = '*'.repeat(accountNumber.length - 4); // Asteriscos para el resto
+        return `${maskedDigits}${visibleDigits}`;
+    };
+
     if (loading) {
         return null; // No renderizar nada hasta que los datos estén listos
     }
@@ -100,15 +109,19 @@ const GestionarCuentas = () => {
                         <h3 className="text-xl font-semibold mb-4 text-left">Cuentas de Ahorros</h3>
                         <div className="account-cards grid gap-5 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                             {savingsAccounts.length > 0 ? savingsAccounts.map((account, index) => (
-                                <div key={index} className="account-card bg-white shadow-md rounded-lg p-4 hover:scale-105 transition-transform duration-300 cursor-pointer border border-gray-300">
+                                <div key={index} className="account-card bg-sky-50 shadow-md rounded-lg p-4 hover:scale-105 transition-transform duration-300 cursor-pointer border border-gray-300">
                                     <h4 className="account-number font-bold text-lg">{account.accountName || generateAccountName(account.tipoCuenta, account.accountNumber)}</h4>
-                                    <div className="flex items-center">
-                                        <p className={`mr-2 ${showAccountNumbers[account.id] ? '' : 'hidden'}`}>{account.accountNumber}</p>
+                                    <div className="flex items-center justify-between">
+                                        <p className="mr-2">
+                                            {formatAccountNumber(account.accountNumber, showAccountNumbers[account.id])}
+                                        </p>
                                         <button onClick={() => toggleAccountNumberVisibility(account.id)}>
-                                            <img src={showAccountNumbers[account.id] ? EyeClosedIcon : EyeOpenIcon} alt="Toggle Visibility" className="h-5 w-5" />
+                                            <img src={showAccountNumbers[account.id] ? EyeOpenIcon : EyeClosedIcon} alt="Toggle Visibility" className="h-5 w-5" />
                                         </button>
                                     </div>
-                                    <p>Saldo Disponible: ${account.accountBalance ? account.accountBalance.toFixed(2) : '0.00'}</p>
+                                    <p>
+                                        Saldo Disponible: {showAccountNumbers[account.id] ? `$${account.accountBalance ? account.accountBalance.toFixed(2) : '0.00'}` : '*****'}
+                                    </p>
                                 </div>
                             )) : <p>No se encontraron cuentas de ahorros.</p>}
                         </div>
@@ -116,15 +129,19 @@ const GestionarCuentas = () => {
                         <h3 className="text-xl font-semibold mb-4 mt-8 text-left">Cuentas Corrientes</h3>
                         <div className="account-cards grid gap-5 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                             {currentAccounts.length > 0 ? currentAccounts.map((account, index) => (
-                                <div key={index} className="account-card bg-white shadow-md rounded-lg p-4 hover:scale-105 transition-transform duration-300 cursor-pointer border border-gray-300">
+                                <div key={index} className="account-card bg-sky-50 shadow-md rounded-lg p-4 hover:scale-105 transition-transform duration-300 cursor-pointer border border-gray-300">
                                     <h4 className="account-number font-bold text-lg">{account.accountName || generateAccountName(account.tipoCuenta, account.accountNumber)}</h4>
-                                    <div className="flex items-center">
-                                        <p className={`mr-2 ${showAccountNumbers[account.id] ? '' : 'hidden'}`}>{account.accountNumber}</p>
+                                    <div className="flex items-center justify-between">
+                                        <p className="mr-2">
+                                            {formatAccountNumber(account.accountNumber, showAccountNumbers[account.id])}
+                                        </p>
                                         <button onClick={() => toggleAccountNumberVisibility(account.id)}>
-                                            <img src={showAccountNumbers[account.id] ? EyeClosedIcon : EyeOpenIcon} alt="Toggle Visibility" className="h-5 w-5" />
+                                            <img src={showAccountNumbers[account.id] ? EyeOpenIcon : EyeClosedIcon} alt="Toggle Visibility" className="h-5 w-5" />
                                         </button>
                                     </div>
-                                    <p>Saldo Disponible: ${account.accountBalance ? account.accountBalance.toFixed(2) : '0.00'}</p>
+                                    <p>
+                                        Saldo Disponible: {showAccountNumbers[account.id] ? `$${account.accountBalance ? account.accountBalance.toFixed(2) : '0.00'}` : '*****'}
+                                    </p>
                                 </div>
                             )) : <p>No se encontraron cuentas corrientes.</p>}
                         </div>

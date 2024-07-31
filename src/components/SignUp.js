@@ -1,4 +1,3 @@
-// src/components/SignUp.js
 import React, { useState } from 'react';
 import { auth, db } from '../firebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
@@ -8,6 +7,9 @@ import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import { useNavigate } from 'react-router-dom';
 import { HeaderDashboard } from './HeaderDashboard';
+import EyeOpenIcon from '../assets/images/eye-open.png'; // Asegúrate de que esta ruta sea correcta
+import EyeClosedIcon from '../assets/images/eye-closed.png'; // Asegúrate de que esta ruta sea correcta
+import Buho from '../assets/images/buho.png'; // Asegúrate de que esta ruta sea correcta
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -30,6 +32,8 @@ const SignUp = () => {
   });
   const [passwordsMatch, setPasswordsMatch] = useState(true);
   const [open, setOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
   const validateInputs = () => {
@@ -169,14 +173,13 @@ const SignUp = () => {
   return (
     <>
       <HeaderDashboard />
-      <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-          <img className="mx-auto h-10 w-auto" src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600" alt="Your Company" />
-          <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">Registrarse</h2>
-        </div>
-
-        <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-          <form className="space-y-6" onSubmit={handleSignUp}>
+      <div className="min-w-full min-h-screen absolute flex-col items-center justify-center bg-gray-100">
+        <div className="w-full max-w-xl mx-auto flex flex-col items-center p-10 my-10 bg-white shadow-lg rounded-lg">
+          <div className="sm:mx-auto sm:w-full sm:max-w-lg">
+            <img className="mx-auto h-10 w-auto" src={ Buho } alt="Your Company" />
+            <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">Registrarse</h2>
+          </div>
+          <form className="grid grid-cols-1 md:grid-cols-2 gap-6" onSubmit={handleSignUp}>
             <div>
               <label htmlFor="firstName" className="block text-sm font-medium leading-6 text-gray-900">Nombre</label>
               <div className="mt-2">
@@ -194,6 +197,22 @@ const SignUp = () => {
               </div>
             </div>
             <div>
+              <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">Correo electrónico</label>
+              <div className="mt-2">
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  placeholder="Correo electrónico"
+                  required
+                />
+                {error.email && <p className="mt-2 text-sm text-red-600">{error.email}</p>}
+              </div>
+            </div>
+            <div>
               <label htmlFor="lastName" className="block text-sm font-medium leading-6 text-gray-900">Apellido</label>
               <div className="mt-2">
                 <input
@@ -208,6 +227,52 @@ const SignUp = () => {
                 />
                 {error.lastName && <p className="mt-2 text-sm text-red-600">{error.lastName}</p>}
               </div>
+            </div>
+            <div className="relative">
+              <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">Contraseña</label>
+              <div className="mt-2 flex">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => validatePassword(e.target.value)}
+                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  placeholder="Contraseña"
+                  required
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  <img src={showPassword ? EyeClosedIcon : EyeOpenIcon} alt="Toggle Visibility" className="h-5 w-5" />
+                </button>
+              </div>
+              {error.password && <p className="mt-2 text-sm text-red-600">{error.password}</p>}
+            </div>
+            <div className="relative">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium leading-6 text-gray-900">Repetir contraseña</label>
+              <div className="mt-2 flex">
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => handleConfirmPassword(e.target.value)}
+                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  placeholder="Repetir contraseña"
+                  required
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  <img src={showConfirmPassword ? EyeClosedIcon : EyeOpenIcon} alt="Toggle Visibility" className="h-5 w-5" />
+                </button>
+              </div>
+              {!passwordsMatch && <p className="mt-2 text-sm text-red-600">Las contraseñas no coinciden</p>}
             </div>
             <div>
               <label htmlFor="username" className="block text-sm font-medium leading-6 text-gray-900">Nombre de usuario</label>
@@ -241,70 +306,23 @@ const SignUp = () => {
                 {error.idNumber && <p className="mt-2 text-sm text-red-600">{error.idNumber}</p>}
               </div>
             </div>
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">Correo electrónico</label>
-              <div className="mt-2">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  placeholder="Correo electrónico"
-                  required
-                />
-                {error.email && <p className="mt-2 text-sm text-red-600">{error.email}</p>}
+            <div className="md:col-span-2">
+              <div className="inputContainer">
+                <label className={`passwordRequirements ${passwordConditions.length ? 'text-green-500' : 'text-red-600'}`}>
+                  La contraseña debe tener al menos 8 caracteres
+                </label>
+                <label className={`passwordRequirements ${passwordConditions.uppercase ? 'text-green-500' : 'text-red-600'}`}>
+                  La contraseña debe tener al menos una letra mayúscula
+                </label>
+                <label className={`passwordRequirements ${passwordConditions.number ? 'text-green-500' : 'text-red-600'}`}>
+                  La contraseña debe tener al menos un número
+                </label>
+                <label className={`passwordRequirements ${passwordConditions.specialChar ? 'text-green-500' : 'text-red-600'}`}>
+                  La contraseña debe tener al menos un carácter especial
+                </label>
               </div>
             </div>
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">Contraseña</label>
-              <div className="mt-2">
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => validatePassword(e.target.value)}
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  placeholder="Contraseña"
-                  required
-                />
-                {error.password && <p className="mt-2 text-sm text-red-600">{error.password}</p>}
-              </div>
-            </div>
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium leading-6 text-gray-900">Repetir contraseña</label>
-              <div className="mt-2">
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => handleConfirmPassword(e.target.value)}
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  placeholder="Repetir contraseña"
-                  required
-                />
-                {!passwordsMatch && <p className="mt-2 text-sm text-red-600">Las contraseñas no coinciden</p>}
-              </div>
-            </div>
-            <div className="inputContainer">
-              <label className={`passwordRequirements ${passwordConditions.length ? 'text-green-500' : 'text-red-600'}`}>
-                La contraseña debe tener al menos 8 caracteres
-              </label>
-              <label className={`passwordRequirements ${passwordConditions.uppercase ? 'text-green-500' : 'text-red-600'}`}>
-                La contraseña debe tener al menos una letra mayúscula
-              </label>
-              <label className={`passwordRequirements ${passwordConditions.number ? 'text-green-500' : 'text-red-600'}`}>
-                La contraseña debe tener al menos un número
-              </label>
-              <label className={`passwordRequirements ${passwordConditions.specialChar ? 'text-green-500' : 'text-red-600'}`}>
-                La contraseña debe tener al menos un carácter especial
-              </label>
-            </div>
-
-            <div>
+            <div className="md:col-span-2">
               <button
                 type="submit"
                 className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
