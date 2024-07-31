@@ -1,7 +1,6 @@
 import React from 'react';
-import './App.css';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { Login } from './components/Login';
+import Login  from './components/Login';
 import SignUp from './components/SignUp';
 import PasswordReset from './components/PasswordReset';
 import UpdateProfile from './components/UpdateProfile';
@@ -12,16 +11,12 @@ import Movimientos from './components/Movimientos';
 import Home from './components/Home';
 import CrearCuenta from './components/CrearCuenta';
 import AccountMovements from './components/AccountMovements';
-// import PantallaPrincipal from './components/PantallaPrincipal';
-
 
 function App() {
   return (
     <Router>
-      <html class="h-full bg-white"/>
-      <body class="h-full"></body>
-      <div class="App w-100 h-auto">
-        <div class="container">
+      <div className="App w-full h-auto">
+        <div className="container">
           <Routes>
             {/* Página de inicio */}
             <Route path="/" element={<Home/>} />

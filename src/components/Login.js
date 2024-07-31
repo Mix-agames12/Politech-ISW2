@@ -7,7 +7,7 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import Buho from '../assets/images/buho.png';
 import { HeaderLogin } from './HeaderLogin';
 
-export const Login = (props) => {
+const Login = (props) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
@@ -148,3 +148,4 @@ export const Login = (props) => {
   );  
 };
 
+export default Login;

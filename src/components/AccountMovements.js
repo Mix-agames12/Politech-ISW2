@@ -6,7 +6,6 @@ import { Sidebar } from '../components/Sidebar';
 import { HeaderDashboard } from './HeaderDashboard';
 import eyeOpen from '../assets/images/eye-open.png';
 import eyeClosed from '../assets/images/eye-closed.png';
-import './AccountMovements.css';
 
 const AccountMovements = () => {
   const { accountNumber } = useParams();
