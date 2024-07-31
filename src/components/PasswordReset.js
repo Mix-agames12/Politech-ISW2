@@ -2,10 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../firebaseConfig';
 import { sendPasswordResetEmail } from 'firebase/auth';
-import './PasswordReset.css';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
-import { HeaderPrincipal } from '../components/HeaderPrincipal';
 
 const Alerta = React.forwardRef(function Alerta(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -41,7 +39,6 @@ const RestablecerContrasena = () => {
 
   return (
     <div className="mainContainer">
-      <HeaderPrincipal />
       <div className="titleContainer">
         <h2>Restablecer Contraseña</h2>
       </div>

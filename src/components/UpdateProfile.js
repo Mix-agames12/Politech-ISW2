@@ -3,9 +3,8 @@ import { auth, db } from '../firebaseConfig';
 import { updateEmail, updatePassword, updateProfile } from 'firebase/auth';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { Sidebar } from '../components/Sidebar';
-import { Header } from '../components/Header';
 import { useNavigate } from 'react-router-dom'; // Importar useNavigate
-import './UpdateProfile.css';
+import { HeaderDashboard } from './HeaderDashboard';
 
 const UpdateProfile = () => {
   const [name, setName] = useState('');
@@ -71,47 +70,53 @@ const UpdateProfile = () => {
   }
 
   return (
-    <div className="mainContainer">
-      {user && (
-        <Header firstName={user.nombre} lastName={user.apellido} />
-      )}
-      <div className='sidebar'>
-        <Sidebar />
-      </div>
-      <div className="titleContainer">
-        <h2>Actualizar Perfil</h2>
-      </div>
-      <div className="inputContainer">
-        <label>Nombre</label>
-        <input
-          type="text"
-          className="inputBox"
-          placeholder="Nombre"
-          onChange={(e) => setName(e.target.value)}
-        />
-      </div>
-      <div className="inputContainer">
-        <label>Correo Electrónico</label>
-        <input
-          type="email"
-          className="inputBox"
-          placeholder="Correo Electrónico"
-          onChange={(e) => setEmail(e.target.value)}
-        />
-      </div>
-      <div className="inputContainer">
-        <label>Contraseña</label>
-        <input
-          type="password"
-          className="inputBox"
-          placeholder="Contraseña"
-          onChange={(e) => setPassword(e.target.value)}
-        />
-      </div>
-      {error && <label className="errorLabel">{error}</label>}
-      {success && <label className="successLabel">{success}</label>}
-      <div className="buttonContainer">
-        <input className="inputButton" type="button" onClick={handleUpdate} value="Actualizar Perfil" />
+    <div className="min-h-screen flex flex-col">
+      <HeaderDashboard />
+      <Sidebar />
+      <div className="flex flex-grow">
+        <div className="w-1/4 bg-gray-100"></div>
+        <div className="w-3/4 p-8 bg-gray-100">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900">Actualizar Perfil</h2>
+          </div>
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
+            <input
+              type="text"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              placeholder="Nombre"
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Correo Electrónico</label>
+            <input
+              type="email"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              placeholder="Correo Electrónico"
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
+            <input
+              type="password"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              placeholder="Contraseña"
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          {error && <label className="block text-red-600 mb-4">{error}</label>}
+          {success && <label className="block text-green-600 mb-4">{success}</label>}
+          <div className="text-center">
+            <input
+              className="bg-indigo-600 text-white px-4 py-2 rounded-md shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              type="button"
+              onClick={handleUpdate}
+              value="Actualizar Perfil"
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

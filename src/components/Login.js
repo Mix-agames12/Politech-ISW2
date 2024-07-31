@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebaseConfig';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import '../components/Login.css';
-import { HeaderPrincipal2 } from './HeaderPrincipal2';
+import Buho from '../assets/images/buho.png';
+import { HeaderLogin } from './HeaderLogin';
 
 export const Login = (props) => {
   const [username, setUsername] = useState('');
@@ -71,49 +71,80 @@ export const Login = (props) => {
     }
   };
 
-  const handleSignUp = () => {
-    navigate('/SignUp');
-  };
-
   return (
     <>
-      <HeaderPrincipal2 />
-      <div className="mainContainer">
+      <HeaderLogin />
+      <div className="min-w-full min-h-screen absolute flex-col items-center justify-center bg-gray-100">
+        <div className="w-full max-w-sm mx-auto flex flex-col items-center p-5 my-28 bg-white shadow-lg rounded-lg">
+          <img className="h-20 w-auto mb-6" src={Buho} alt="Your Company" />
+          <h2 className="text-center text-2xl font-bold leading-9 tracking-tight text-gray-900 mb-6">
+            Inicio de Sesión
+          </h2>
+          <form className="space-y-6 w-full" onSubmit={handleLogin}>
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium leading-6 text-gray-900">
+                Nombre de usuario
+              </label>
+              <div className="mt-2">
+                <input
+                  id="username"
+                  name="username"
+                  type="text"
+                  value={username}
+                  onChange={(ev) => setUsername(ev.target.value)}
+                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  placeholder="Ingresa tu nombre de usuario"
+                  required
+                />
+                {usernameError && <p className="mt-2 text-sm text-red-600">{usernameError}</p>}
+              </div>
+            </div>
 
-        <div className="titleContainer">
-          <div>Inicio de Sesión</div>
-        </div>
-        <br />
-        <div className="inputContainer">
-          <input
-            type="text"
-            value={username}
-            placeholder="Ingresa tu nombre de usuario"
-            onChange={(ev) => setUsername(ev.target.value)}
-            className="inputBox"
-          />
-          {usernameError && <label className="errorLabel">{usernameError}</label>}
-        </div>
-        <br />
-        <div className="inputContainer">
-          <input
-            type="password"
-            value={password}
-            placeholder="Ingresa tu contraseña"
-            onChange={(ev) => setPassword(ev.target.value)}
-            className="inputBox"
-          />
-          {passwordError && <label className="errorLabel">{passwordError}</label>}
-        </div>
-        <br />
-        <a className="forgot" href="/password-reset">¿Olvidaste tu contraseña?</a>
-        <br />
-        <div className="buttonGroup">
-          <input className="inputButton" type="button" onClick={handleLogin} value="Iniciar Sesión" />
-          <input className="inputButton" type="button" onClick={handleSignUp} value="Registrarse" />
+            <div>
+              <div className="flex items-center justify-between">
+                <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">
+                  Contraseña
+                </label>
+                <div className="text-sm">
+                  <a href="/password-reset" className="font-semibold text-sky-500 hover:text-indigo-500">
+                    ¿Olvidaste tu contraseña?
+                  </a>
+                </div>
+              </div>
+              <div className="mt-2">
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  value={password}
+                  onChange={(ev) => setPassword(ev.target.value)}
+                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  placeholder="Ingresa tu contraseña"
+                  required
+                />
+                {passwordError && <p className="mt-2 text-sm text-red-600">{passwordError}</p>}
+              </div>
+            </div>
+
+            <div>
+              <button
+                type="submit"
+                className="flex w-full justify-center rounded-md bg-sky-900 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-sky-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              >
+                Iniciar Sesión
+              </button>
+            </div>
+          </form>
+
+          <p className="mt-10 text-center text-sm text-gray-500">
+            ¿No tienes una cuenta?{' '}
+            <a href="/SignUp" className="font-semibold leading-6 text-sky-500 hover:text-indigo-500">
+              Registrarse
+            </a>
+          </p>
         </div>
       </div>
     </>
-
-  );
+  );  
 };
+
