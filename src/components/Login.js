@@ -1,21 +1,23 @@
 // src/components/Login.js
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebaseConfig';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { signInWithEmailAndPassword, setPersistence, browserLocalPersistence } from 'firebase/auth';
+import { collection, query, where, getDocs, getDoc, doc } from 'firebase/firestore';
 import Buho from '../assets/images/buho.png';
-import EyeOpenIcon from '../assets/images/eye-open.png'; // Asegúrate de que esta ruta sea correcta
-import EyeClosedIcon from '../assets/images/eye-closed.png'; // Asegúrate de que esta ruta sea correcta
+import EyeOpenIcon from '../assets/images/eye-open.png';
+import EyeClosedIcon from '../assets/images/eye-closed.png';
 import { HeaderLogin } from './HeaderLogin';
+import { AuthContext } from '../context/AuthContext';
 
-export const Login = (props) => {
+export const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false); // Inicializa como false para empezar con el ojo cerrado
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const [usernameError, setUsernameError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const { setUser } = useContext(AuthContext);
 
   const validateInputs = () => {
     let isValid = true;
@@ -45,6 +47,8 @@ export const Login = (props) => {
     }
 
     try {
+      await setPersistence(auth, browserLocalPersistence);
+
       const usersCollection = collection(db, 'users');
       const userQuery = query(usersCollection, where('username', '==', username));
       const userSnapshot = await getDocs(userQuery);
@@ -57,8 +61,17 @@ export const Login = (props) => {
       const userDoc = userSnapshot.docs[0];
       const userEmail = userDoc.data().correo;
 
-      await signInWithEmailAndPassword(auth, userEmail, password);
-      console.log('User logged in');
+      const userCredential = await signInWithEmailAndPassword(auth, userEmail, password);
+      const firebaseUser = userCredential.user;
+
+      const clientDoc = await getDoc(doc(db, 'clientes', firebaseUser.uid));
+      if (clientDoc.exists()) {
+        const clientData = clientDoc.data();
+        setUser({ ...firebaseUser, ...clientData });
+      } else {
+        setUser(firebaseUser);
+      }
+
       navigate('/gestionar-cuentas');
     } catch (error) {
       console.error('Error logging in:', error);
@@ -128,7 +141,7 @@ export const Login = (props) => {
                     src={showPassword ? EyeOpenIcon : EyeClosedIcon}
                     alt={showPassword ? "Hide password" : "Show password"}
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-2 top-5  transform -translate-y-1/2 cursor-pointer"
+                    className="absolute right-2 top-5 transform -translate-y-1/2 cursor-pointer"
                     style={{ height: '24px', width: '24px' }}
                   />
                 )}

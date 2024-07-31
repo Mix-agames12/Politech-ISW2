@@ -1,4 +1,3 @@
-// src/index.js o App.js
 import React from 'react';
 import ReactDOM from 'react-dom/client'; // Importa desde 'react-dom/client' en lugar de 'react-dom'
 import './index.css';
@@ -12,6 +11,5 @@ root.render(
     <AuthProvider>
       <App />
     </AuthProvider>
-  </React.StrictMode>,
-  document.getElementById('root')
+  </React.StrictMode>
 );

@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { auth, db } from '../firebaseConfig';
+import React, { useState, useEffect, useContext } from 'react';
+import { db } from '../firebaseConfig';
 import { collection, getDocs, query, where, updateDoc, doc, addDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { Sidebar } from './Sidebar';
-import { generatePDF } from '../assets/pdfs/editPDF';
-import eyeOpen from '../assets/images/eye-open.png'; // Ruta a tu imagen
-import eyeClosed from '../assets/images/eye-closed.png'; // Ruta a tu imagen
 import { HeaderDashboard } from './HeaderDashboard';
+import { generatePDF } from '../assets/pdfs/editPDF';
+import { AuthContext } from '../context/AuthContext';
 
 const Transaction = () => {
+  const { user } = useContext(AuthContext);
   const [senderAccount, setSenderAccount] = useState('');
   const [receiverAccount, setReceiverAccount] = useState('');
   const [amount, setAmount] = useState('');
@@ -16,33 +16,26 @@ const Transaction = () => {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [transactionData, setTransactionData] = useState(null);
-  const [user, setUser] = useState(null);
   const [userAccounts, setUserAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dropdownVisible, setDropdownVisible] = useState(false);
-  const [showBalance, setShowBalance] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const currentUser = auth.currentUser;
-      if (!currentUser) {
-        console.error("No user is currently logged in.");
-        setLoading(false);
-        return;
-      }
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
+    const fetchData = async () => {
       try {
-        const userDoc = await getDoc(doc(db, 'clientes', currentUser.uid));
+        const userDoc = await getDoc(doc(db, 'clientes', user.uid));
         if (userDoc.exists()) {
           const userData = userDoc.data();
-          console.log("User Data:", userData); // Depurar datos del usuario
-          setUser(userData);
         }
 
-        const q = query(collection(db, 'cuentas'), where('id', '==', currentUser.uid));
+        const q = query(collection(db, 'cuentas'), where('id', '==', user.uid));
         const querySnapshot = await getDocs(q);
         const accountsList = querySnapshot.docs.map(doc => doc.data());
-        console.log("Accounts List:", accountsList); // Depurar lista de cuentas
         setUserAccounts(accountsList);
       } catch (error) {
         console.error("Error fetching data: ", error);
@@ -52,12 +45,21 @@ const Transaction = () => {
     };
 
     fetchData();
-  }, []);
+  }, [user]);
+
+  const generateAccountName = (tipoCuenta, accountNumber) => {
+    const suffix = accountNumber.slice(-4);
+    if (tipoCuenta.toLowerCase() === 'ahorros') {
+      return `AHO${suffix}`;
+    } else if (tipoCuenta.toLowerCase() === 'corriente') {
+      return `CORR${suffix}`;
+    }
+    return `CUENTA${suffix}`;
+  };
 
   const handleTransaction = async () => {
     setError('');
     setSuccessMessage('');
-    console.log("Handling transaction..."); // Verificar si la función se llama
     if (Number(amount) <= 0) {
       setError('El monto debe ser mayor a cero.');
       return;
@@ -72,18 +74,14 @@ const Transaction = () => {
       const senderQuery = query(accountsCollection, where('accountNumber', '==', senderAccount));
       const senderSnapshot = await getDocs(senderQuery);
       const senderDoc = senderSnapshot.docs[0];
-      console.log("Sender Doc:", senderDoc);
 
       const receiverQuery = query(accountsCollection, where('accountNumber', '==', receiverAccount));
       const receiverSnapshot = await getDocs(receiverQuery);
       const receiverDoc = receiverSnapshot.docs[0];
-      console.log("Receiver Doc:", receiverDoc);
 
       if (senderDoc && receiverDoc) {
         const senderData = senderDoc.data();
         const receiverData = receiverDoc.data();
-        console.log("Sender Data:", senderData); // Depurar datos del remitente
-        console.log("Receiver Data:", receiverData); // Depurar datos del receptor
 
         if (senderData.accountBalance >= Number(amount)) {
           const updatedSenderBalance = senderData.accountBalance - Number(amount);
@@ -125,15 +123,13 @@ const Transaction = () => {
           setSuccessMessage('Transferencia realizada con éxito');
           setTransactionData({
             senderAccount: senderData.accountNumber,
-            senderName: `${user.nombre} ${user.apellido}`, // Nombre del remitente
+            senderName: `${user.nombre} ${user.apellido}`,
             receiverAccount: receiverData.accountNumber,
-            receiverName: receiverName || 'N/A', // Nombre del beneficiario, obtenido de la validación
+            receiverName: receiverName || 'N/A',
             amount: transaction.monto,
             description: transaction.descripcion || 'N/A',
             date: new Date().toLocaleDateString()
           });
-
-          console.log('Transacción completada');
         } else {
           setError('Fondos insuficientes');
         }
@@ -171,27 +167,22 @@ const Transaction = () => {
       const receiverQuery = query(accountsCollection, where('accountNumber', '==', receiverAccount));
       const receiverSnapshot = await getDocs(receiverQuery);
       const receiverDoc = receiverSnapshot.docs[0];
-  
+
       if (receiverDoc) {
         const receiverData = receiverDoc.data();
-        console.log('Receiver Data:', receiverData); // Verifica los datos del receptor
-  
+
         const clienteDoc = await getDoc(doc(db, 'clientes', receiverData.id));
-        console.log('Cliente Doc:', clienteDoc);
-  
+
         if (clienteDoc.exists()) {
           const clienteData = clienteDoc.data();
-          console.log('Cliente Data:', clienteData); // Verifica los datos del cliente
-  
-          // Asegúrate de que los campos nombre y apellido existen y no están vacíos
+
           if (clienteData.nombre && clienteData.apellido) {
             const fullName = `${clienteData.nombre.trim()} ${clienteData.apellido.trim()}`;
-            console.log('Full Name:', fullName); // Verifica el nombre completo
-  
+
             setReceiverName(fullName);
             setTransactionData((prev) => ({
               ...prev,
-              receiverName: fullName // Asigna el nombre del receptor directamente
+              receiverName: fullName
             }));
           } else {
             setError('El cliente no tiene nombre o apellido definidos.');
@@ -209,20 +200,20 @@ const Transaction = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>; // Mostrar mensaje de carga mientras se obtienen los datos
+    return <div>Loading...</div>;
   }
 
   return (
-    <div className="min-h-screen min-w-auto flex flex-col bg-gray-100">
+    <div className="min-h-screen flex flex-col">
       <HeaderDashboard />
-      <Sidebar />
       <div className="flex flex-grow">
-        <div className="w-3/4 p-8">
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-gray-900">Transferencia</h2>
-          </div>
-
-          <div className="mb-6">
+        <div className="w-1/4">
+          <Sidebar />
+        </div>
+        <div className="main-content p-6 mx-auto w-3/4 flex flex-col items-center justify-center">
+          <h2 className="text-2xl font-bold mb-4">Realizar Transferencia</h2>
+          
+          <div className="w-full mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">Cuenta de origen</label>
             <div className="relative">
               <button
@@ -244,22 +235,11 @@ const Transaction = () => {
                       }}
                     >
                       <div>
-                        <h4 className="text-sm font-bold">{account.accountNumber}</h4>
-                        <p className="text-sm text-gray-500">Tipo de Cuenta: {account.tipoCuenta}</p>
-                        <div className="flex items-center">
-                          <p className="text-sm text-gray-500 mr-2">
-                            Saldo Disponible: {showBalance ? `$${account.accountBalance ? account.accountBalance.toFixed(2) : 'N/A'}` : '***'}
-                          </p>
-                          <button
-                            className="text-indigo-500"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setShowBalance(!showBalance);
-                            }}
-                          >
-                            <img src={showBalance ? eyeOpen : eyeClosed} alt="Toggle Balance Visibility" />
-                          </button>
-                        </div>
+                        <h4 className="text-sm font-bold">{generateAccountName(account.tipoCuenta, account.accountNumber)}</h4>
+                        <p className="text-sm text-gray-500">Número de cuenta: {account.accountNumber}</p>
+                        <p className="text-sm text-gray-500">
+                          Saldo Disponible: ${account.accountBalance ? account.accountBalance.toFixed(2) : '0.00'}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -268,7 +248,7 @@ const Transaction = () => {
             </div>
           </div>
 
-          <div className="mb-6">
+          <div className="w-full mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">Cuenta de destino</label>
             <div className="flex items-center">
               <input
@@ -289,7 +269,7 @@ const Transaction = () => {
           </div>
 
           {receiverName && (
-            <div className="mb-6">
+            <div className="w-full mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">Nombre del receptor</label>
               <input
                 type="text"
@@ -300,7 +280,7 @@ const Transaction = () => {
             </div>
           )}
 
-          <div className="mb-6">
+          <div className="w-full mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">Monto</label>
             <input
               type="text"
@@ -311,7 +291,7 @@ const Transaction = () => {
             />
           </div>
 
-          <div className="mb-6">
+          <div className="w-full mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
             <input
               type="text"
@@ -331,25 +311,33 @@ const Transaction = () => {
               value="Realizar Transferencia"
             />
           </div>
+
+          {successMessage && (
+            <div className="w-full mt-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+              <span className="block sm:inline">{successMessage}</span>
+              <button
+                className="absolute top-0 bottom-0 right-0 px-4 py-3"
+                onClick={() => setSuccessMessage('')}
+              >
+                <svg className="fill-current h-6 w-6 text-green-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                  <title>Close</title>
+                  <path d="M14.348 5.652a1 1 0 10-1.414-1.414L10 7.172 7.066 4.238a1 1 0 10-1.414 1.414L8.586 9l-2.934 2.934a1 1 0 101.414 1.414L10 10.828l2.934 2.934a1 1 0 001.414-1.414L11.414 9l2.934-2.934z" />
+                </svg>
+              </button>
+              <button
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2"
+                onClick={() => {
+                  if (transactionData) {
+                    generatePDF(transactionData);
+                  }
+                }}
+              >
+                Descargar Comprobante
+              </button>
+            </div>
+          )}
         </div>
       </div>
-      {error && (
-        <div className="errorMessage">
-          <p>{error}</p>
-        </div>
-      )}
-      {successMessage && (
-        <div className="successMessage">
-          <p>{successMessage}</p>
-          <button className="downloadReceiptButton" onClick={() => {
-            if (transactionData) {
-              generatePDF(transactionData);
-            }
-          }}>
-            Descargar Comprobante
-          </button>
-        </div>
-      )}
     </div>
   );
 };
