@@ -242,7 +242,7 @@ const Movimientos = () => {
 
           <div className="text-center">
             <button
-              className="bg-indigo-600 text-white px-4 py-2 rounded-md shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
               onClick={fetchMovements}
             >
               Buscar Movimientos
@@ -302,7 +302,7 @@ const Movimientos = () => {
 
           <div className="text-center mt-4">
             <button
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
               onClick={handleGeneratePDF}
             >
               Generar PDF

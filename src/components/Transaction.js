@@ -259,7 +259,7 @@ const Transaction = () => {
                 onChange={handleReceiverAccountChange}
               />
               <button
-                className="ml-2 bg-purple-600 text-white px-3 py-2 rounded-md shadow-sm hover:bg-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="ml-2 bg-sky-900 text-white px-3 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
                 onClick={validateReceiverAccount}
                 disabled={receiverAccount.length !== 10}
               >
@@ -305,7 +305,7 @@ const Transaction = () => {
 
           <div className="text-center">
             <input
-              className="bg-indigo-600 text-white px-4 py-2 rounded-md shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
               type="button"
               onClick={handleTransaction}
               value="Realizar Transferencia"
