@@ -1,26 +1,52 @@
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { saveAs } from 'file-saver';
 
-const splitTextIntoLines = (text, maxWidth, font, fontSize) => {
-  const words = text.split(' ');
-  const lines = [];
-  let currentLine = '';
+// Función para calcular el tamaño de fuente adecuado
+const calculateFontSize = (text, maxWidth, font, initialFontSize) => {
+  let fontSize = initialFontSize;
+  while (font.widthOfTextAtSize(text, fontSize) > maxWidth && fontSize > 5) {
+    fontSize -= 0.5;
+  }
+  return fontSize;
+};
 
-  words.forEach(word => {
-    const width = font.widthOfTextAtSize(currentLine + word, fontSize);
-    if (width < maxWidth) {
-      currentLine += word + ' ';
-    } else {
-      lines.push(currentLine.trim());
-      currentLine = word + ' ';
-    }
+// Función para dibujar el encabezado en una página
+const drawHeader = (page, font, fontBold, user, selectedAccount) => {
+  const textColor = rgb(0, 0, 0);
+
+  // Fecha de impresión en la esquina superior derecha
+  const currentDate = new Date().toLocaleDateString();
+  page.drawText(`Fecha: ${currentDate}`, {
+    x: page.getWidth() - 150,
+    y: 730,
+    size: 12,
+    font,
+    color: textColor,
   });
 
-  if (currentLine.length > 0) {
-    lines.push(currentLine.trim());
-  }
+  // Centrar el título "Reporte de Movimientos"
+  const title = 'Reporte de Movimientos';
+  const titleWidth = fontBold.widthOfTextAtSize(title, 14);
+  const titleX = (page.getWidth() - titleWidth) / 2;
 
-  return lines;
+  page.drawText(title, {
+    x: titleX,
+    y: 700,
+    size: 14,
+    font: fontBold,
+    color: textColor,
+  });
+
+  // Información de la cuenta
+  page.drawText(`Cuenta: ${selectedAccount.accountNumber} - ${selectedAccount.tipoCuenta}`, {
+    x: 50,
+    y: 670,
+    size: 12,
+    font,
+    color: textColor,
+  });
+
+  return 640; // Devolver la posición Y para empezar el contenido
 };
 
 export const generateMovementsPDF = async (user, selectedAccount, movements) => {
@@ -30,50 +56,13 @@ export const generateMovementsPDF = async (user, selectedAccount, movements) => 
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
     const textColor = rgb(0, 0, 0);
-    const pages = pdfDoc.getPages();
-    let page = pages[0];
-    let yPosition = 700;
+
+    let page = pdfDoc.getPages()[0];
+    let yPosition = drawHeader(page, font, fontBold, user, selectedAccount); // Dibujar encabezado en la primera página
     const marginLeft = 50;
     const cellPadding = 5;
-    const tableWidth = 500;
-    const fontSize = 10;
-    const maxTextWidth = 80; // Ancho máximo para el texto en la celda
-
-    // Fecha de impresión en la esquina superior derecha
-    const currentDate = new Date().toLocaleDateString();
-    page.drawText(`Fecha: ${currentDate}`, {
-      x: page.getWidth() - 150,
-      y: 730,
-      size: 12,
-      font,
-      color: textColor,
-    });
-
-    // Centrar el título "Reporte de Movimientos"
-    const title = 'Reporte de Movimientos';
-    const titleWidth = fontBold.widthOfTextAtSize(title, 14);
-    const titleX = (page.getWidth() - titleWidth) / 2;
-
-    page.drawText(title, {
-      x: titleX,
-      y: 700,
-      size: 14,
-      font: fontBold,
-      color: textColor,
-    });
-
-    // Información de la cuenta
-    yPosition = 670;
-    page.drawText(`Cuenta: ${selectedAccount.accountNumber} - ${selectedAccount.tipoCuenta}`, {
-      x: marginLeft,
-      y: yPosition,
-      size: 12,
-      font,
-      color: textColor,
-    });
-
-    // Salto de línea
-    yPosition -= 30;
+    const initialFontSize = 10;
+    const lineHeight = 15;
 
     // Agrupación por fecha
     const groupedMovements = movements.reduce((acc, movement) => {
@@ -85,14 +74,13 @@ export const generateMovementsPDF = async (user, selectedAccount, movements) => 
 
     // Encabezados de tabla
     const headers = ['Descripción', 'Cuenta Origen', 'Cuenta Destino', 'Tipo', 'Monto', 'Saldo'];
-    const colWidths = [150, 80, 80, 50, 50, 50]; // Ajuste del ancho de las columnas
-    const lineHeight = 15;
+    const colWidths = [200, 70, 80, 50, 50, 50]; // Ajuste del ancho de las columnas
 
     // Renderizado de movimientos agrupados por fecha
     Object.entries(groupedMovements).forEach(([date, movements], groupIndex) => {
       if (yPosition < 70) {
         page = pdfDoc.addPage([595, 842]);
-        yPosition = 800;
+        yPosition = 800; // Iniciar en una posición adecuada para el nuevo contenido
       }
 
       // Fecha
@@ -111,7 +99,7 @@ export const generateMovementsPDF = async (user, selectedAccount, movements) => 
         page.drawText(header, {
           x: xPosition + cellPadding,
           y: yPosition,
-          size: fontSize,
+          size: initialFontSize,
           fontBold,
           color: textColor,
         });
@@ -132,7 +120,7 @@ export const generateMovementsPDF = async (user, selectedAccount, movements) => 
       movements.forEach((movement) => {
         if (yPosition < 50) {
           page = pdfDoc.addPage([595, 842]);
-          yPosition = 800;
+          yPosition = 800; // Iniciar en una posición adecuada para el nuevo contenido
         }
 
         const description = movement.tipoMovimiento === 'debito'
@@ -145,38 +133,27 @@ export const generateMovementsPDF = async (user, selectedAccount, movements) => 
         const rowData = [description, movement.cuentaOrigen, movement.cuentaDestino, tipo, amount, balance];
         xPosition = marginLeft;
 
-        const maxLines = rowData.reduce((max, data, i) => {
-          const lines = splitTextIntoLines(data, colWidths[i] - cellPadding * 2, font, fontSize);
-          return Math.max(max, lines.length);
-        }, 1);
-
-        for (let lineIndex = 0; lineIndex < maxLines; lineIndex++) {
-          xPosition = marginLeft;
-          rowData.forEach((data, i) => {
-            const textLines = splitTextIntoLines(data, colWidths[i] - cellPadding * 2, font, fontSize);
-            const line = textLines[lineIndex] || '';
-            page.drawText(line, {
-              x: xPosition + cellPadding,
-              y: yPosition,
-              size: fontSize,
-              font,
-              color: textColor,
-            });
-            xPosition += colWidths[i];
+        rowData.forEach((data, i) => {
+          const adjustedFontSize = calculateFontSize(data, colWidths[i] - cellPadding * 2, font, initialFontSize);
+          page.drawText(data, {
+            x: xPosition + cellPadding,
+            y: yPosition,
+            size: adjustedFontSize,
+            font,
+            color: textColor,
           });
-
-          yPosition -= lineHeight;
-        }
+          xPosition += colWidths[i];
+        });
 
         // Línea horizontal debajo de cada fila de movimientos
         page.drawLine({
-          start: { x: marginLeft, y: yPosition + 2 },
-          end: { x: marginLeft + colWidths.reduce((a, b) => a + b), y: yPosition + 2 },
+          start: { x: marginLeft, y: yPosition - 2 },
+          end: { x: marginLeft + colWidths.reduce((a, b) => a + b), y: yPosition - 2 },
           thickness: 0.5,
           color: textColor,
         });
 
-        yPosition -= 2; // Espacio adicional para la línea
+        yPosition -= lineHeight;
       });
 
       yPosition -= 20; // Espacio adicional entre fechas diferentes
@@ -185,7 +162,7 @@ export const generateMovementsPDF = async (user, selectedAccount, movements) => 
     // Agradecimiento
     if (yPosition < 50) {
       page = pdfDoc.addPage([595, 842]);
-      yPosition = 800;
+      yPosition = 800; // Iniciar en una posición adecuada para el nuevo contenido
     }
 
     page.drawText('Gracias por utilizar nuestros servicios.', {

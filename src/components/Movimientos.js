@@ -9,7 +9,7 @@ import { AuthContext } from '../context/AuthContext';
 
 const Movimientos = () => {
   const location = useLocation();
-  const { user } = useContext(AuthContext); // Obtener el usuario del contexto
+  const { user } = useContext(AuthContext);
   const [movements, setMovements] = useState([]);
   const [loading, setLoading] = useState(false);
   const [accounts, setAccounts] = useState([]);
@@ -20,7 +20,7 @@ const Movimientos = () => {
   const reportRef = useRef();
 
   useEffect(() => {
-    const fetchUserData = async () => {
+    const fetchData = async () => {
       if (!user) {
         console.error("No user is currently logged in.");
         return;
@@ -48,7 +48,7 @@ const Movimientos = () => {
       }
     };
 
-    fetchUserData();
+    fetchData();
   }, [location, user]);
 
   const fetchMovements = async () => {
@@ -101,7 +101,6 @@ const Movimientos = () => {
         }
       });
 
-      // Asignación de nombres de usuario de origen y destino
       for (const movement of movementsArray) {
         if (movement.tipoMovimiento === 'debito') {
           const receiverAccountQuery = query(collection(db, 'cuentas'), where('accountNumber', '==', movement.cuentaDestino));
@@ -136,7 +135,6 @@ const Movimientos = () => {
         }
       }
 
-      // Ordenar por fecha
       const sortedMovements = movementsArray.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
       setMovements(sortedMovements);

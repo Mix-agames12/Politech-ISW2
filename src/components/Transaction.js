@@ -17,12 +17,10 @@ const Transaction = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [transactionData, setTransactionData] = useState(null);
   const [userAccounts, setUserAccounts] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [dropdownVisible, setDropdownVisible] = useState(false);
 
   useEffect(() => {
     if (!user) {
-      setLoading(false);
       return;
     }
 
@@ -39,8 +37,6 @@ const Transaction = () => {
         setUserAccounts(accountsList);
       } catch (error) {
         console.error("Error fetching data: ", error);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -198,10 +194,6 @@ const Transaction = () => {
       setError('Error al validar la cuenta de destino.');
     }
   };
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <div className="min-h-screen flex flex-col">
