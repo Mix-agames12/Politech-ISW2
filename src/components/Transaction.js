@@ -210,7 +210,7 @@ const Transaction = () => {
         <div className="w-1/4">
           <Sidebar />
         </div>
-        <div className="main-content p-6 mx-auto w-3/4 flex flex-col items-center justify-center">
+        <div className="main-content p-6 mx-auto w-3/4 flex flex-col items-center justify-center pt-16">
           <h2 className="text-2xl font-bold mb-4">Realizar Transferencia</h2>
           
           <div className="w-full mb-6">
@@ -259,7 +259,7 @@ const Transaction = () => {
                 onChange={handleReceiverAccountChange}
               />
               <button
-                className="ml-2 bg-indigo-600 text-white px-3 py-2 rounded-md shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="ml-2 bg-purple-600 text-white px-3 py-2 rounded-md shadow-sm hover:bg-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
                 onClick={validateReceiverAccount}
                 disabled={receiverAccount.length !== 10}
               >
@@ -313,28 +313,23 @@ const Transaction = () => {
           </div>
 
           {successMessage && (
-            <div className="w-full mt-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-              <span className="block sm:inline">{successMessage}</span>
-              <button
-                className="absolute top-0 bottom-0 right-0 px-4 py-3"
-                onClick={() => setSuccessMessage('')}
-              >
-                <svg className="fill-current h-6 w-6 text-green-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                  <title>Close</title>
-                  <path d="M14.348 5.652a1 1 0 10-1.414-1.414L10 7.172 7.066 4.238a1 1 0 10-1.414 1.414L8.586 9l-2.934 2.934a1 1 0 101.414 1.414L10 10.828l2.934 2.934a1 1 0 001.414-1.414L11.414 9l2.934-2.934z" />
-                </svg>
-              </button>
-              <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2"
-                onClick={() => {
-                  if (transactionData) {
-                    generatePDF(transactionData);
-                  }
-                }}
-              >
-                Descargar Comprobante
-              </button>
-            </div>
+            <>
+              <div className="w-full mt-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                <span className="block sm:inline">{successMessage}</span>
+              </div>
+              <div className="text-center mt-4">
+                <button
+                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                  onClick={() => {
+                    if (transactionData) {
+                      generatePDF(transactionData);
+                    }
+                  }}
+                >
+                  Descargar Comprobante
+                </button>
+              </div>
+            </>
           )}
         </div>
       </div>

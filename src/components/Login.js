@@ -74,7 +74,6 @@ export const Login = () => {
 
       navigate('/gestionar-cuentas');
     } catch (error) {
-      console.error('Error logging in:', error);
       if (error.code === 'auth/user-not-found') {
         setUsernameError('No se encontró ningún usuario con este nombre de usuario');
       } else if (error.code === 'auth/wrong-password') {
@@ -168,5 +167,5 @@ export const Login = () => {
         </div>
       </div>
     </>
-  );  
+  );
 };

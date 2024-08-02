@@ -1,6 +1,28 @@
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { saveAs } from 'file-saver';
 
+const splitTextIntoLines = (text, maxWidth, font, fontSize) => {
+  const words = text.split(' ');
+  const lines = [];
+  let currentLine = '';
+
+  words.forEach(word => {
+    const width = font.widthOfTextAtSize(currentLine + word, fontSize);
+    if (width < maxWidth) {
+      currentLine += word + ' ';
+    } else {
+      lines.push(currentLine.trim());
+      currentLine = word + ' ';
+    }
+  });
+
+  if (currentLine.length > 0) {
+    lines.push(currentLine.trim());
+  }
+
+  return lines;
+};
+
 export const generateMovementsPDF = async (user, selectedAccount, movements) => {
   try {
     const existingPdfBytes = await fetch('/assets/pdfs/comprobante.pdf').then(res => res.arrayBuffer());
@@ -15,6 +37,7 @@ export const generateMovementsPDF = async (user, selectedAccount, movements) => 
     const cellPadding = 5;
     const tableWidth = 500;
     const fontSize = 10;
+    const maxTextWidth = 80; // Ancho máximo para el texto en la celda
 
     // Fecha de impresión en la esquina superior derecha
     const currentDate = new Date().toLocaleDateString();
@@ -61,8 +84,8 @@ export const generateMovementsPDF = async (user, selectedAccount, movements) => 
     }, {});
 
     // Encabezados de tabla
-    const headers = ['Descripción', 'Cuenta Origen', 'Cuenta Destino', 'Monto', 'Saldo'];
-    const colWidths = [200, 100, 100, 50, 50]; // Ajuste del ancho de las columnas
+    const headers = ['Descripción', 'Cuenta Origen', 'Cuenta Destino', 'Tipo', 'Monto', 'Saldo'];
+    const colWidths = [150, 80, 80, 50, 50, 50]; // Ajuste del ancho de las columnas
     const lineHeight = 15;
 
     // Renderizado de movimientos agrupados por fecha
@@ -115,36 +138,45 @@ export const generateMovementsPDF = async (user, selectedAccount, movements) => 
         const description = movement.tipoMovimiento === 'debito'
           ? `Transferencia a ${movement.nombreDestino || 'Desconocido'}`
           : `Transferencia de ${movement.nombreOrigen || 'Desconocido'}`;
-        const amount = movement.tipoMovimiento === 'credito'
-          ? `+${movement.monto.toFixed(2)}`
-          : `-${movement.monto.toFixed(2)}`;
-        const balance = movement.saldoActualizado !== undefined
-          ? `$${movement.saldoActualizado.toFixed(2)}`
-          : 'N/A';
+        const tipo = movement.tipoMovimiento === 'credito' ? 'Crédito' : 'Débito';
+        const amount = movement.monto !== undefined ? movement.monto.toFixed(2) : 'N/A';
+        const balance = movement.saldoActualizado !== undefined ? `$${movement.saldoActualizado.toFixed(2)}` : 'N/A';
 
-        const rowData = [description, movement.cuentaOrigen, movement.cuentaDestino, amount, balance];
+        const rowData = [description, movement.cuentaOrigen, movement.cuentaDestino, tipo, amount, balance];
         xPosition = marginLeft;
 
-        rowData.forEach((data, i) => {
-          page.drawText(data, {
-            x: xPosition + cellPadding,
-            y: yPosition,
-            size: fontSize,
-            font,
-            color: textColor,
+        const maxLines = rowData.reduce((max, data, i) => {
+          const lines = splitTextIntoLines(data, colWidths[i] - cellPadding * 2, font, fontSize);
+          return Math.max(max, lines.length);
+        }, 1);
+
+        for (let lineIndex = 0; lineIndex < maxLines; lineIndex++) {
+          xPosition = marginLeft;
+          rowData.forEach((data, i) => {
+            const textLines = splitTextIntoLines(data, colWidths[i] - cellPadding * 2, font, fontSize);
+            const line = textLines[lineIndex] || '';
+            page.drawText(line, {
+              x: xPosition + cellPadding,
+              y: yPosition,
+              size: fontSize,
+              font,
+              color: textColor,
+            });
+            xPosition += colWidths[i];
           });
-          xPosition += colWidths[i];
-        });
+
+          yPosition -= lineHeight;
+        }
 
         // Línea horizontal debajo de cada fila de movimientos
         page.drawLine({
-          start: { x: marginLeft, y: yPosition - 2 },
-          end: { x: marginLeft + colWidths.reduce((a, b) => a + b), y: yPosition - 2 },
+          start: { x: marginLeft, y: yPosition + 2 },
+          end: { x: marginLeft + colWidths.reduce((a, b) => a + b), y: yPosition + 2 },
           thickness: 0.5,
           color: textColor,
         });
 
-        yPosition -= lineHeight;
+        yPosition -= 2; // Espacio adicional para la línea
       });
 
       yPosition -= 20; // Espacio adicional entre fechas diferentes
