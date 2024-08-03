@@ -14,10 +14,12 @@ const Transaction = () => {
   const [description, setDescription] = useState('');
   const [receiverName, setReceiverName] = useState('');
   const [error, setError] = useState('');
+  const [receiverError, setReceiverError] = useState(''); // Estado específico para el error de cuenta de destino
   const [successMessage, setSuccessMessage] = useState('');
   const [transactionData, setTransactionData] = useState(null);
   const [userAccounts, setUserAccounts] = useState([]);
   const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [hasClickedSubmit, setHasClickedSubmit] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -28,7 +30,7 @@ const Transaction = () => {
       try {
         const userDoc = await getDoc(doc(db, 'clientes', user.uid));
         if (userDoc.exists()) {
-          const userData = userDoc.data();
+          // No necesitas usar `userData`, así que elimínalo
         }
 
         const q = query(collection(db, 'cuentas'), where('id', '==', user.uid));
@@ -54,16 +56,16 @@ const Transaction = () => {
   };
 
   const handleTransaction = async () => {
+    setHasClickedSubmit(true);
     setError('');
+    setReceiverError('');
     setSuccessMessage('');
-    if (Number(amount) <= 0) {
-      setError('El monto debe ser mayor a cero.');
+
+    if (!senderAccount || !receiverAccount || !amount || receiverAccount.length !== 10 || Number(amount) <= 0) {
+      setError('Por favor, complete todos los campos correctamente.');
       return;
     }
-    if (receiverAccount.length !== 10) {
-      setError('La cuenta de destino debe tener exactamente 10 dígitos.');
-      return;
-    }
+
     try {
       const accountsCollection = collection(db, 'cuentas');
 
@@ -142,6 +144,7 @@ const Transaction = () => {
     const value = e.target.value;
     if (/^\d*$/.test(value) && value.length <= 10) {
       setReceiverAccount(value);
+      setReceiverError(''); // Limpiar el error al cambiar la cuenta
     }
   };
 
@@ -154,8 +157,9 @@ const Transaction = () => {
 
   const validateReceiverAccount = async () => {
     setError('');
+    setReceiverError('');
     if (receiverAccount.length !== 10) {
-      setError('La cuenta de destino debe tener exactamente 10 dígitos.');
+      setReceiverError('La cuenta de destino debe tener exactamente 10 dígitos.');
       return;
     }
     try {
@@ -181,17 +185,17 @@ const Transaction = () => {
               receiverName: fullName
             }));
           } else {
-            setError('El cliente no tiene nombre o apellido definidos.');
+            setReceiverError('El cliente no tiene nombre o apellido definidos.');
           }
         } else {
-          setError('Cliente no encontrado.');
+          setReceiverError('Cliente no encontrado.');
         }
       } else {
-        setError('Cuenta de destino no encontrada.');
+        setReceiverError('Cuenta de destino no encontrada.');
       }
     } catch (error) {
       console.error('Error al validar la cuenta de destino:', error);
-      setError('Error al validar la cuenta de destino.');
+      setReceiverError('Error al validar la cuenta de destino.');
     }
   };
 
@@ -238,6 +242,7 @@ const Transaction = () => {
                 </div>
               )}
             </div>
+            {hasClickedSubmit && !senderAccount && <p className="text-red-600 text-xs mt-1">Debe seleccionar una cuenta de origen.</p>}
           </div>
 
           <div className="w-full mb-6">
@@ -251,13 +256,15 @@ const Transaction = () => {
                 onChange={handleReceiverAccountChange}
               />
               <button
-                className="ml-2 bg-sky-900 text-white px-3 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                className={`ml-2 px-3 py-2 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-600 ${receiverAccount.length !== 10 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-sky-900 text-white hover:bg-sky-600 cursor-pointer'}`}
                 onClick={validateReceiverAccount}
                 disabled={receiverAccount.length !== 10}
               >
                 Validar
               </button>
             </div>
+            {hasClickedSubmit && (!receiverAccount || receiverAccount.length !== 10) && <p className="text-red-600 text-xs mt-1">Debe ingresar una cuenta de destino.</p>}
+            {receiverError && <p className="text-red-600 text-xs mt-1">{receiverError}</p>}
           </div>
 
           {receiverName && (
@@ -281,6 +288,7 @@ const Transaction = () => {
               value={amount}
               onChange={handleAmountChange}
             />
+            {hasClickedSubmit && (!amount || Number(amount) <= 0) && <p className="text-red-600 text-xs mt-1">Debe ingresar un monto a transferir.</p>}
           </div>
 
           <div className="w-full mb-6">

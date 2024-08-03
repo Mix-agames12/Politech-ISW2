@@ -17,7 +17,12 @@ const Movimientos = () => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [accountError, setAccountError] = useState('');
+  const [startDateError, setStartDateError] = useState('');
+  const [endDateError, setEndDateError] = useState('');
   const reportRef = useRef();
+  const [searchPerformed, setSearchPerformed] = useState(false);
+  const [hasClickedSearch, setHasClickedSearch] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -29,8 +34,6 @@ const Movimientos = () => {
       try {
         const userDoc = await getDoc(doc(db, 'clientes', user.uid));
         if (userDoc.exists()) {
-          const userData = userDoc.data();
-
           const accountsQuery = query(collection(db, 'cuentas'), where('id', '==', user.uid));
           const accountsSnapshot = await getDocs(accountsQuery);
           const userAccounts = accountsSnapshot.docs.map(doc => doc.data());
@@ -52,13 +55,35 @@ const Movimientos = () => {
   }, [location, user]);
 
   const fetchMovements = async () => {
-    console.log("Start Date:", startDate);
-    console.log("End Date:", endDate);
+    setAccountError('');
+    setStartDateError('');
+    setEndDateError('');
+    setSearchPerformed(false);
+    setHasClickedSearch(true);
 
-    if (!selectedAccount || !startDate || !endDate) {
-      console.error("All fields must be filled");
+    let hasError = false;
+
+    if (!selectedAccount) {
+      setAccountError('Debe seleccionar una cuenta.');
+      hasError = true;
+    }
+
+    if (!startDate) {
+      setStartDateError('Debe ingresar la fecha de inicio.');
+      hasError = true;
+    }
+
+    if (!endDate) {
+      setEndDateError('Debe ingresar la fecha de fin.');
+      hasError = true;
+    }
+
+    if (hasError) {
       return;
     }
+
+    console.log("Start Date:", startDate);
+    console.log("End Date:", endDate);
 
     setMovements([]);
     setLoading(true);
@@ -68,40 +93,34 @@ const Movimientos = () => {
       const q1 = query(
         transaccionesCollection,
         where('cuentaOrigen', '==', selectedAccount.accountNumber),
-        where('tipoMovimiento', '==', 'debito')
+        where('tipoMovimiento', '==', 'debito'),
+        where('fecha', '>=', new Date(startDate)),
+        where('fecha', '<=', new Date(`${endDate}T23:59:59`))
       );
       const q2 = query(
         transaccionesCollection,
         where('cuentaDestino', '==', selectedAccount.accountNumber),
-        where('tipoMovimiento', '==', 'credito')
+        where('tipoMovimiento', '==', 'credito'),
+        where('fecha', '>=', new Date(startDate)),
+        where('fecha', '<=', new Date(`${endDate}T23:59:59`))
       );
 
       const [querySnapshot1, querySnapshot2] = await Promise.all([getDocs(q1), getDocs(q2)]);
 
       let movementsArray = [];
 
-      const start = new Date(`${startDate}T00:00:00`);
-      console.log("Start:", start);
-      const end = new Date(`${endDate}T23:59:59`);
-      console.log("End:", end);
-
       querySnapshot1.forEach((doc) => {
         const data = doc.data();
-        const movementDate = data.fecha.toDate();
-        if (movementDate >= start && movementDate <= end) {
-          movementsArray.push({ ...data, id: doc.id, fecha: movementDate });
-        }
+        movementsArray.push({ ...data, id: doc.id, fecha: data.fecha.toDate() });
       });
 
       querySnapshot2.forEach((doc) => {
         const data = doc.data();
-        const movementDate = data.fecha.toDate();
-        if (movementDate >= start && movementDate <= end) {
-          movementsArray.push({ ...data, id: doc.id, fecha: movementDate });
-        }
+        movementsArray.push({ ...data, id: doc.id, fecha: data.fecha.toDate() });
       });
 
-      for (const movement of movementsArray) {
+      // Parallellize the fetching of user details
+      const fetchUserDetails = async (movement) => {
         if (movement.tipoMovimiento === 'debito') {
           const receiverAccountQuery = query(collection(db, 'cuentas'), where('accountNumber', '==', movement.cuentaDestino));
           const receiverAccountSnapshot = await getDocs(receiverAccountQuery);
@@ -133,12 +152,15 @@ const Movimientos = () => {
             movement.nombreOrigen = 'Cuenta desconocida';
           }
         }
-      }
+      };
+
+      await Promise.all(movementsArray.map(movement => fetchUserDetails(movement)));
 
       const sortedMovements = movementsArray.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
       setMovements(sortedMovements);
       console.log("Movements:", sortedMovements);
+      setSearchPerformed(true);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -170,9 +192,21 @@ const Movimientos = () => {
 
   useEffect(() => {
     if (selectedAccount) {
-      fetchMovements();
+      setAccountError('');
     }
   }, [selectedAccount]);
+
+  useEffect(() => {
+    if (startDate) {
+      setStartDateError('');
+    }
+  }, [startDate]);
+
+  useEffect(() => {
+    if (endDate) {
+      setEndDateError('');
+    }
+  }, [endDate]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -214,6 +248,7 @@ const Movimientos = () => {
                 </div>
               )}
             </div>
+            {hasClickedSearch && accountError && <p className="text-red-600 text-xs mt-1">{accountError}</p>}
           </div>
 
           <div className="w-full mb-6">
@@ -225,6 +260,7 @@ const Movimientos = () => {
               onChange={(e) => setStartDate(e.target.value)}
               max={maxDate}
             />
+            {hasClickedSearch && startDateError && <p className="text-red-600 text-xs mt-1">{startDateError}</p>}
           </div>
 
           <div className="w-full mb-6">
@@ -236,14 +272,22 @@ const Movimientos = () => {
               onChange={(e) => setEndDate(e.target.value)}
               max={maxDate}
             />
+            {hasClickedSearch && endDateError && <p className="text-red-600 text-xs mt-1">{endDateError}</p>}
           </div>
 
-          <div className="text-center">
+          <div className="flex w-full justify-center space-x-4 mt-4">
             <button
               className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
               onClick={fetchMovements}
             >
               Buscar Movimientos
+            </button>
+            <button
+              className={`px-4 py-2 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-600 ${searchPerformed ? 'bg-sky-900 text-white hover:bg-sky-600 cursor-pointer' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+              onClick={handleGeneratePDF}
+              disabled={!searchPerformed}
+            >
+              <i className={`fas fa-print ${searchPerformed ? 'text-white' : 'text-gray-500'}`}></i>
             </button>
           </div>
 
@@ -300,8 +344,9 @@ const Movimientos = () => {
 
           <div className="text-center mt-4">
             <button
-              className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+              className={`px-4 py-2 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-600 ${searchPerformed ? 'bg-sky-900 text-white hover:bg-sky-600 cursor-pointer' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
               onClick={handleGeneratePDF}
+              disabled={!searchPerformed}
             >
               Generar PDF
             </button>
