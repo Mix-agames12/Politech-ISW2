@@ -6,11 +6,16 @@ import Logo from '../assets/images/neologo.png';
 
 const userNavigation = [
   { name: 'Actualizar perfil', href: '/update-profile' },
-  { name: 'Cerrar sesión', href: '/login' },
+  { name: 'Cerrar sesión', href: '#' },
 ];
 
 export const HeaderDashboard = () => {
-  const { user } = useContext(AuthContext);
+  const { user, loading, logout } = useContext(AuthContext);
+
+  const handleLogout = (e) => {
+    e.preventDefault();
+    logout();
+  };
 
   return (
     <div className="min-h-full">
@@ -23,7 +28,7 @@ export const HeaderDashboard = () => {
               </a>
             </div>
             <div className="hidden md:flex items-center ml-6">
-              {user && (
+              {!loading && user && (
                 <span className="text-white mr-4">Hola, {user.nombre} {user.apellido}</span>
               )}
               <Menu as="div" className="relative">
@@ -51,6 +56,7 @@ export const HeaderDashboard = () => {
                           <a
                             href={item.href}
                             className={`block px-4 py-2 text-sm text-gray-700 ${active ? 'bg-gray-100' : ''}`}
+                            onClick={item.name === 'Cerrar sesión' ? handleLogout : undefined}
                           >
                             {item.name}
                           </a>

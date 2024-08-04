@@ -241,7 +241,7 @@ const Movimientos = () => {
                       <div>
                         <h4 className="text-sm font-bold">{account.accountNumber}</h4>
                         <p>Tipo de Cuenta: {account.tipoCuenta}</p>
-                        <p>Saldo Disponible: ${account.accountBalance ? account.accountBalance.toFixed(2) : 'N/A'}</p>
+                        <p>Saldo Disponible: ${account.accountBalance ? account.accountBalance.toFixed(2) : '0.00'}</p>
                       </div>
                     </div>
                   ))}
@@ -327,7 +327,7 @@ const Movimientos = () => {
                             <td className="border-t border-gray-300 py-2">{`******${movement.cuentaOrigen.slice(-4)}`}</td>
                             <td className="border-t border-gray-300 py-2">{`******${movement.cuentaDestino.slice(-4)}`}</td>
                             <td className="border-t border-gray-300 py-2" style={{ color: movement.tipoMovimiento === 'credito' ? '#228B22' : 'red' }}>
-                              {movement.monto !== undefined ? `${movement.monto.toFixed(2)}` : 'N/A'}
+                              {movement.monto !== undefined ? `${movement.monto.toFixed(2)}` : '0.00'}
                             </td>
                             <td className="border-t border-gray-300 py-2">{movement.saldoActualizado !== undefined ? `$${movement.saldoActualizado.toFixed(2)}` : 'N/A'}</td>
                           </tr>
