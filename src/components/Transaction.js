@@ -1,91 +1,85 @@
-import React, { useState, useEffect } from 'react';
-import { auth, db } from '../firebaseConfig';
+import React, { useState, useEffect, useContext } from 'react';
+import { db } from '../firebaseConfig';
 import { collection, getDocs, query, where, updateDoc, doc, addDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { Sidebar } from './Sidebar';
-import './Transaction.css';
-import { Header } from './Header';
+import { HeaderDashboard } from './HeaderDashboard';
 import { generatePDF } from '../assets/pdfs/editPDF';
-
-import eyeOpen from '../assets/images/eye-open.png';
-import eyeClosed from '../assets/images/eye-closed.png';
+import { AuthContext } from '../context/AuthContext';
 
 const Transaction = () => {
+  const { user } = useContext(AuthContext);
   const [senderAccount, setSenderAccount] = useState('');
   const [receiverAccount, setReceiverAccount] = useState('');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [receiverName, setReceiverName] = useState('');
   const [error, setError] = useState('');
+  const [receiverError, setReceiverError] = useState(''); // Estado específico para el error de cuenta de destino
   const [successMessage, setSuccessMessage] = useState('');
   const [transactionData, setTransactionData] = useState(null);
-  const [user, setUser] = useState(null);
   const [userAccounts, setUserAccounts] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [dropdownVisible, setDropdownVisible] = useState(false);
-  const [showBalance, setShowBalance] = useState(true);
+  const [hasClickedSubmit, setHasClickedSubmit] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const currentUser = auth.currentUser;
-      if (!currentUser) {
-        console.error("No user is currently logged in.");
-        setLoading(false);
-        return;
-      }
+    if (!user) {
+      return;
+    }
 
+    const fetchData = async () => {
       try {
-        const userDoc = await getDoc(doc(db, 'clientes', currentUser.uid));
+        const userDoc = await getDoc(doc(db, 'clientes', user.uid));
         if (userDoc.exists()) {
-          const userData = userDoc.data();
-          console.log("User Data:", userData); // Depurar datos del usuario
-          setUser(userData);
+          // No necesitas usar `userData`, así que elimínalo
         }
 
-        const q = query(collection(db, 'cuentas'), where('id', '==', currentUser.uid));
+        const q = query(collection(db, 'cuentas'), where('id', '==', user.uid));
         const querySnapshot = await getDocs(q);
         const accountsList = querySnapshot.docs.map(doc => doc.data());
-        console.log("Accounts List:", accountsList); // Depurar lista de cuentas
         setUserAccounts(accountsList);
       } catch (error) {
         console.error("Error fetching data: ", error);
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [user]);
+
+  const generateAccountName = (tipoCuenta, accountNumber) => {
+    const suffix = accountNumber.slice(-4);
+    if (tipoCuenta.toLowerCase() === 'ahorros') {
+      return `AHO${suffix}`;
+    } else if (tipoCuenta.toLowerCase() === 'corriente') {
+      return `CORR${suffix}`;
+    }
+    return `CUENTA${suffix}`;
+  };
 
   const handleTransaction = async () => {
+    setHasClickedSubmit(true);
     setError('');
+    setReceiverError('');
     setSuccessMessage('');
-    console.log("Handling transaction..."); // Verificar si la función se llama
-    if (Number(amount) <= 0) {
-      setError('El monto debe ser mayor a cero.');
+
+    if (!senderAccount || !receiverAccount || !amount || receiverAccount.length !== 10 || Number(amount) <= 0) {
+      setError('Por favor, complete todos los campos correctamente.');
       return;
     }
-    if (receiverAccount.length !== 10) {
-      setError('La cuenta de destino debe tener exactamente 10 dígitos.');
-      return;
-    }
+
     try {
       const accountsCollection = collection(db, 'cuentas');
 
       const senderQuery = query(accountsCollection, where('accountNumber', '==', senderAccount));
       const senderSnapshot = await getDocs(senderQuery);
       const senderDoc = senderSnapshot.docs[0];
-      console.log("Sender Doc:", senderDoc);
 
       const receiverQuery = query(accountsCollection, where('accountNumber', '==', receiverAccount));
       const receiverSnapshot = await getDocs(receiverQuery);
       const receiverDoc = receiverSnapshot.docs[0];
-      console.log("Receiver Doc:", receiverDoc);
 
       if (senderDoc && receiverDoc) {
         const senderData = senderDoc.data();
         const receiverData = receiverDoc.data();
-        console.log("Sender Data:", senderData); // Depurar datos del remitente
-        console.log("Receiver Data:", receiverData); // Depurar datos del receptor
 
         if (senderData.accountBalance >= Number(amount)) {
           const updatedSenderBalance = senderData.accountBalance - Number(amount);
@@ -127,15 +121,13 @@ const Transaction = () => {
           setSuccessMessage('Transferencia realizada con éxito');
           setTransactionData({
             senderAccount: senderData.accountNumber,
-            senderName: `${user.nombre} ${user.apellido}`, // Nombre del remitente
+            senderName: `${user.nombre} ${user.apellido}`,
             receiverAccount: receiverData.accountNumber,
-            receiverName: receiverName || 'N/A', // Nombre del beneficiario, obtenido de la validación
+            receiverName: receiverName || 'N/A',
             amount: transaction.monto,
             description: transaction.descripcion || 'N/A',
             date: new Date().toLocaleDateString()
           });
-
-          console.log('Transacción completada');
         } else {
           setError('Fondos insuficientes');
         }
@@ -152,6 +144,7 @@ const Transaction = () => {
     const value = e.target.value;
     if (/^\d*$/.test(value) && value.length <= 10) {
       setReceiverAccount(value);
+      setReceiverError(''); // Limpiar el error al cambiar la cuenta
     }
   };
 
@@ -164,8 +157,9 @@ const Transaction = () => {
 
   const validateReceiverAccount = async () => {
     setError('');
+    setReceiverError('');
     if (receiverAccount.length !== 10) {
-      setError('La cuenta de destino debe tener exactamente 10 dígitos.');
+      setReceiverError('La cuenta de destino debe tener exactamente 10 dígitos.');
       return;
     }
     try {
@@ -173,166 +167,172 @@ const Transaction = () => {
       const receiverQuery = query(accountsCollection, where('accountNumber', '==', receiverAccount));
       const receiverSnapshot = await getDocs(receiverQuery);
       const receiverDoc = receiverSnapshot.docs[0];
-  
+
       if (receiverDoc) {
         const receiverData = receiverDoc.data();
-        console.log('Receiver Data:', receiverData); // Verifica los datos del receptor
-  
+
         const clienteDoc = await getDoc(doc(db, 'clientes', receiverData.id));
-        console.log('Cliente Doc:', clienteDoc);
-  
+
         if (clienteDoc.exists()) {
           const clienteData = clienteDoc.data();
-          console.log('Cliente Data:', clienteData); // Verifica los datos del cliente
-  
-          // Asegúrate de que los campos nombre y apellido existen y no están vacíos
+
           if (clienteData.nombre && clienteData.apellido) {
             const fullName = `${clienteData.nombre.trim()} ${clienteData.apellido.trim()}`;
-            console.log('Full Name:', fullName); // Verifica el nombre completo
-  
+
             setReceiverName(fullName);
             setTransactionData((prev) => ({
               ...prev,
-              receiverName: fullName // Asigna el nombre del receptor directamente
+              receiverName: fullName
             }));
           } else {
-            setError('El cliente no tiene nombre o apellido definidos.');
+            setReceiverError('El cliente no tiene nombre o apellido definidos.');
           }
         } else {
-          setError('Cliente no encontrado.');
+          setReceiverError('Cliente no encontrado.');
         }
       } else {
-        setError('Cuenta de destino no encontrada.');
+        setReceiverError('Cuenta de destino no encontrada.');
       }
     } catch (error) {
       console.error('Error al validar la cuenta de destino:', error);
-      setError('Error al validar la cuenta de destino.');
+      setReceiverError('Error al validar la cuenta de destino.');
     }
   };
 
-  if (loading) {
-    return <div>Loading...</div>; // Mostrar mensaje de carga mientras se obtienen los datos
-  }
-
   return (
-    <div className="mainContainer">
-      {user && (
-        <Header firstName={user.nombre} lastName={user.apellido} />
-      )}
-      <div className='sidebar'>
-        <Sidebar />
-      </div>
-      <div className="titleContainer">
-        <h2>Transferencia</h2>
-      </div>
-      <div className="inputContainer">
-        <label>Cuenta de origen</label>
-        <div className="dropdownContainer">
-          <button className="dropdownButton" onClick={() => setDropdownVisible(!dropdownVisible)}>
-            {senderAccount ? `${senderAccount}` : 'Seleccione una cuenta'}
-            <span className="arrow">{dropdownVisible ? '▲' : '▼'}</span>
-          </button>
-          {dropdownVisible && (
-            <div className="dropdownMenu">
-              {userAccounts.map((account, index) => (
-                <div 
-                  key={index} 
-                  className="dropdownItem" 
-                  onClick={() => {
-                    setSenderAccount(account.accountNumber);
-                    setDropdownVisible(false);
-                  }}>
-                  <div className="account-info">
-                    <h4 className="account-number">{account.accountNumber}</h4>
-                    <p>Tipo de Cuenta: {account.tipoCuenta}</p>
-                    <div className="balance-info">
-                      <p>Saldo Disponible: {showBalance ? `$${account.accountBalance ? account.accountBalance.toFixed(2) : 'N/A'}` : '***'}</p>
-                      <button className="toggleBalanceButton" onClick={(e) => {
-                        e.stopPropagation();
-                        setShowBalance(!showBalance);
-                      }}>
-                        <img src={showBalance ? eyeOpen : eyeClosed} alt="Toggle Balance Visibility" />
-                      </button>
+    <div className="min-h-screen flex flex-col">
+      <HeaderDashboard />
+      <div className="flex flex-grow">
+        <div className="w-1/4">
+          <Sidebar />
+        </div>
+        <div className="main-content p-6 mx-auto w-3/4 flex flex-col items-center justify-center pt-16">
+          <h2 className="text-2xl font-bold mb-4">Realizar Transferencia</h2>
+          
+          <div className="w-full mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Cuenta de origen</label>
+            <div className="relative">
+              <button
+                className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                onClick={() => setDropdownVisible(!dropdownVisible)}
+              >
+                {senderAccount ? `${senderAccount}` : 'Seleccione una cuenta'}
+                <span className="float-right">{dropdownVisible ? '▲' : '▼'}</span>
+              </button>
+              {dropdownVisible && (
+                <div className="absolute z-10 mt-2 w-full bg-white border border-gray-300 rounded-md shadow-lg">
+                  {userAccounts.map((account, index) => (
+                    <div
+                      key={index}
+                      className="px-4 py-2 cursor-pointer hover:bg-gray-200"
+                      onClick={() => {
+                        setSenderAccount(account.accountNumber);
+                        setDropdownVisible(false);
+                      }}
+                    >
+                      <div>
+                        <h4 className="text-sm font-bold">{generateAccountName(account.tipoCuenta, account.accountNumber)}</h4>
+                        <p className="text-sm text-gray-500">Número de cuenta: {account.accountNumber}</p>
+                        <p className="text-sm text-gray-500">
+                          Saldo Disponible: ${account.accountBalance ? account.accountBalance.toFixed(2) : '0.00'}
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
+            {hasClickedSubmit && !senderAccount && <p className="text-red-600 text-xs mt-1">Debe seleccionar una cuenta de origen.</p>}
+          </div>
+
+          <div className="w-full mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Cuenta de destino</label>
+            <div className="flex items-center">
+              <input
+                type="text"
+                className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="Cuenta de destino"
+                value={receiverAccount}
+                onChange={handleReceiverAccountChange}
+              />
+              <button
+                className={`ml-2 px-3 py-2 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-600 ${receiverAccount.length !== 10 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-sky-900 text-white hover:bg-sky-600 cursor-pointer'}`}
+                onClick={validateReceiverAccount}
+                disabled={receiverAccount.length !== 10}
+              >
+                Validar
+              </button>
+            </div>
+            {hasClickedSubmit && (!receiverAccount || receiverAccount.length !== 10) && <p className="text-red-600 text-xs mt-1">Debe ingresar una cuenta de destino.</p>}
+            {receiverError && <p className="text-red-600 text-xs mt-1">{receiverError}</p>}
+          </div>
+
+          {receiverName && (
+            <div className="w-full mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Nombre del receptor</label>
+              <input
+                type="text"
+                className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                value={receiverName}
+                readOnly
+              />
+            </div>
+          )}
+
+          <div className="w-full mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Monto</label>
+            <input
+              type="text"
+              className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="Monto"
+              value={amount}
+              onChange={handleAmountChange}
+            />
+            {hasClickedSubmit && (!amount || Number(amount) <= 0) && <p className="text-red-600 text-xs mt-1">Debe ingresar un monto a transferir.</p>}
+          </div>
+
+          <div className="w-full mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+            <input
+              type="text"
+              className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="Descripción"
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+
+          {error && <label className="block text-red-600 mb-4">{error}</label>}
+
+          <div className="text-center">
+            <input
+              className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+              type="button"
+              onClick={handleTransaction}
+              value="Realizar Transferencia"
+            />
+          </div>
+
+          {successMessage && (
+            <>
+              <div className="w-full mt-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                <span className="block sm:inline">{successMessage}</span>
+              </div>
+              <div className="text-center mt-4">
+                <button
+                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                  onClick={() => {
+                    if (transactionData) {
+                      generatePDF(transactionData);
+                    }
+                  }}
+                >
+                  Descargar Comprobante
+                </button>
+              </div>
+            </>
           )}
         </div>
       </div>
-      <div className="inputContainer">
-        <label>Cuenta de destino</label>
-        <div className="receiverAccountContainer">
-          <input
-            type="text"
-            className="inputBox"
-            placeholder="Cuenta de destino"
-            value={receiverAccount}
-            onChange={handleReceiverAccountChange}
-          />
-          <button 
-            className="validateButton" 
-            onClick={validateReceiverAccount}
-            disabled={receiverAccount.length !== 10} // Habilitar solo si hay 10 dígitos
-          >
-            Validar
-          </button>
-        </div>
-      </div>
-      {receiverName && (
-        <div className="inputContainer">
-          <label>Nombre del Beneficiario</label>
-          <input
-            type="text"
-            className="inputBox"
-            value={receiverName}
-            readOnly
-          />
-        </div>
-      )}
-      <div className="inputContainer">
-        <label>Monto</label>
-        <input
-          type="number"
-          className="inputBox"
-          placeholder="Monto"
-          value={amount}
-          onChange={handleAmountChange}
-        />
-      </div>
-      <div className="inputContainer">
-        <label>Descripción</label>
-        <input
-          type="text"
-          className="inputBox"
-          placeholder="Descripción"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-      </div>
-      <div className="buttonContainer">
-        <button className="transferButton" onClick={handleTransaction}>
-          Realizar Transferencia
-        </button>
-      </div>
-      {error && (
-        <div className="errorMessage">
-          <p>{error}</p>
-        </div>
-      )}
-      {successMessage && (
-        <div className="successMessage">
-          <p>{successMessage}</p>
-          <button className="downloadReceiptButton" onClick={() => {
-            if (transactionData) {
-              generatePDF(transactionData);
-            }
-          }}>
-            Descargar Comprobante
-          </button>
-        </div>
-      )}
     </div>
   );
 };

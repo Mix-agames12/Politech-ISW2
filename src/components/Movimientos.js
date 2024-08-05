@@ -1,43 +1,40 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { useLocation } from 'react-router-dom';
-import { auth, db } from '../firebaseConfig';
+import { db } from '../firebaseConfig';
 import { collection, getDocs, query, where, getDoc, doc } from 'firebase/firestore';
 import { Sidebar } from './Sidebar';
-import './Movimientos.css';
-import { Header } from './Header';
-import eyeOpen from '../assets/images/eye-open.png';
-import eyeClosed from '../assets/images/eye-closed.png';
+import { HeaderDashboard } from './HeaderDashboard';
 import { generateMovementsPDF } from '../assets/pdfs/generateMovementsPDF';
+import { AuthContext } from '../context/AuthContext';
 
 const Movimientos = () => {
   const location = useLocation();
+  const { user } = useContext(AuthContext);
   const [movements, setMovements] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState(null);
   const [accounts, setAccounts] = useState([]);
   const [selectedAccount, setSelectedAccount] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [dropdownVisible, setDropdownVisible] = useState(false);
-  const [showBalance, setShowBalance] = useState(true);
+  const [accountError, setAccountError] = useState('');
+  const [startDateError, setStartDateError] = useState('');
+  const [endDateError, setEndDateError] = useState('');
   const reportRef = useRef();
+  const [searchPerformed, setSearchPerformed] = useState(false);
+  const [hasClickedSearch, setHasClickedSearch] = useState(false);
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      const currentUser = auth.currentUser;
-
-      if (!currentUser) {
+    const fetchData = async () => {
+      if (!user) {
         console.error("No user is currently logged in.");
         return;
       }
 
       try {
-        const userDoc = await getDoc(doc(db, 'clientes', currentUser.uid));
+        const userDoc = await getDoc(doc(db, 'clientes', user.uid));
         if (userDoc.exists()) {
-          const userData = userDoc.data();
-          setUser(userData);
-
-          const accountsQuery = query(collection(db, 'cuentas'), where('id', '==', currentUser.uid));
+          const accountsQuery = query(collection(db, 'cuentas'), where('id', '==', user.uid));
           const accountsSnapshot = await getDocs(accountsQuery);
           const userAccounts = accountsSnapshot.docs.map(doc => doc.data());
           setAccounts(userAccounts);
@@ -54,14 +51,39 @@ const Movimientos = () => {
       }
     };
 
-    fetchUserData();
-  }, [location]);
+    fetchData();
+  }, [location, user]);
 
   const fetchMovements = async () => {
-    if (!selectedAccount || !startDate || !endDate) {
-      console.error("All fields must be filled");
+    setAccountError('');
+    setStartDateError('');
+    setEndDateError('');
+    setSearchPerformed(false);
+    setHasClickedSearch(true);
+
+    let hasError = false;
+
+    if (!selectedAccount) {
+      setAccountError('Debe seleccionar una cuenta.');
+      hasError = true;
+    }
+
+    if (!startDate) {
+      setStartDateError('Debe ingresar la fecha de inicio.');
+      hasError = true;
+    }
+
+    if (!endDate) {
+      setEndDateError('Debe ingresar la fecha de fin.');
+      hasError = true;
+    }
+
+    if (hasError) {
       return;
     }
+
+    console.log("Start Date:", startDate);
+    console.log("End Date:", endDate);
 
     setMovements([]);
     setLoading(true);
@@ -71,12 +93,16 @@ const Movimientos = () => {
       const q1 = query(
         transaccionesCollection,
         where('cuentaOrigen', '==', selectedAccount.accountNumber),
-        where('tipoMovimiento', '==', 'debito')
+        where('tipoMovimiento', '==', 'debito'),
+        where('fecha', '>=', new Date(startDate)),
+        where('fecha', '<=', new Date(`${endDate}T23:59:59`))
       );
       const q2 = query(
         transaccionesCollection,
         where('cuentaDestino', '==', selectedAccount.accountNumber),
-        where('tipoMovimiento', '==', 'credito')
+        where('tipoMovimiento', '==', 'credito'),
+        where('fecha', '>=', new Date(startDate)),
+        where('fecha', '<=', new Date(`${endDate}T23:59:59`))
       );
 
       const [querySnapshot1, querySnapshot2] = await Promise.all([getDocs(q1), getDocs(q2)]);
@@ -85,30 +111,16 @@ const Movimientos = () => {
 
       querySnapshot1.forEach((doc) => {
         const data = doc.data();
-        if (data.fecha && data.fecha.toDate) {
-          data.fecha = data.fecha.toDate();
-        } else if (data.fecha && typeof data.fecha === 'string') {
-          data.fecha = new Date(data.fecha);
-        }
-        if (data.tipoMovimiento === 'debito') {
-          movementsArray.push({ ...data, id: doc.id });
-        }
+        movementsArray.push({ ...data, id: doc.id, fecha: data.fecha.toDate() });
       });
 
       querySnapshot2.forEach((doc) => {
         const data = doc.data();
-        if (data.fecha && data.fecha.toDate) {
-          data.fecha = data.fecha.toDate();
-        } else if (data.fecha && typeof data.fecha === 'string') {
-          data.fecha = new Date(data.fecha);
-        }
-        if (data.tipoMovimiento === 'credito') {
-          movementsArray.push({ ...data, id: doc.id });
-        }
+        movementsArray.push({ ...data, id: doc.id, fecha: data.fecha.toDate() });
       });
 
-      // Asignación de nombres de usuario de origen y destino
-      for (const movement of movementsArray) {
+      // Parallellize the fetching of user details
+      const fetchUserDetails = async (movement) => {
         if (movement.tipoMovimiento === 'debito') {
           const receiverAccountQuery = query(collection(db, 'cuentas'), where('accountNumber', '==', movement.cuentaDestino));
           const receiverAccountSnapshot = await getDocs(receiverAccountQuery);
@@ -140,12 +152,15 @@ const Movimientos = () => {
             movement.nombreOrigen = 'Cuenta desconocida';
           }
         }
-      }
+      };
 
-      // Ordenar por fecha
+      await Promise.all(movementsArray.map(movement => fetchUserDetails(movement)));
+
       const sortedMovements = movementsArray.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
       setMovements(sortedMovements);
+      console.log("Movements:", sortedMovements);
+      setSearchPerformed(true);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -154,15 +169,7 @@ const Movimientos = () => {
   };
 
   const formatDate = (fecha) => {
-    if (fecha instanceof Date) {
-      return fecha.toLocaleDateString();
-    } else if (fecha && typeof fecha.toDate === 'function') {
-      return fecha.toDate().toLocaleDateString();
-    } else if (typeof fecha === 'string') {
-      return new Date(fecha).toLocaleDateString();
-    } else {
-      return 'N/A';
-    }
+    return fecha.toLocaleDateString();
   };
 
   const handleGeneratePDF = async () => {
@@ -185,133 +192,167 @@ const Movimientos = () => {
 
   useEffect(() => {
     if (selectedAccount) {
-      fetchMovements();
+      setAccountError('');
     }
   }, [selectedAccount]);
 
+  useEffect(() => {
+    if (startDate) {
+      setStartDateError('');
+    }
+  }, [startDate]);
+
+  useEffect(() => {
+    if (endDate) {
+      setEndDateError('');
+    }
+  }, [endDate]);
+
   return (
-    <div className="mainContainer">
-      {user && (
-        <Header firstName={user.nombre} lastName={user.apellido} />
-      )}
-      <div className='sidebar'>
-        <Sidebar />
-      </div>
-      <div className="selectionContainer">
-        <div>
-          <label htmlFor="accountSelect">Selecciona una cuenta:</label>
-          <div className="dropdownContainer">
-            <button className="dropdownButton" onClick={() => setDropdownVisible(!dropdownVisible)}>
-              {selectedAccount ? `${selectedAccount.accountNumber}` : 'Seleccione una cuenta'}
-              <span className="arrow">{dropdownVisible ? '▲' : '▼'}</span>
-            </button>
-            {dropdownVisible && (
-              <div className="dropdownMenu">
-                {accounts.map((account, index) => (
-                  <div
-                    key={index}
-                    className="dropdownItem"
-                    onClick={() => {
-                      setSelectedAccount(account);
-                      setDropdownVisible(false);
-                    }}>
-                    <div className="account-info">
-                      <h4 className="account-number">{account.accountNumber}</h4>
-                      <p>Tipo de Cuenta: {account.tipoCuenta}</p>
-                      <div className="balance-info">
-                        <p className="balance-text">Saldo Disponible: {showBalance ? `$${account.accountBalance ? account.accountBalance.toFixed(2) : 'N/A'}` : '***'}</p>
-                        <button className="toggleBalanceButton" onClick={(e) => {
-                          e.stopPropagation();
-                          setShowBalance(!showBalance);
-                        }}>
-                          <img src={showBalance ? eyeOpen : eyeClosed} alt="Toggle Balance Visibility" />
-                        </button>
+    <div className="min-h-screen flex flex-col">
+      <HeaderDashboard />
+      <div className="flex flex-grow">
+        <div className="w-1/4">
+          <Sidebar />
+        </div>
+        <div className="main-content p-6 mx-auto w-3/4 flex flex-col items-center justify-center pt-16">
+          <h2 className="text-2xl font-bold mb-4">Consulta de Movimientos</h2>
+          <div className="w-full mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Selecciona una cuenta:</label>
+            <div className="relative">
+              <button
+                className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                onClick={() => setDropdownVisible(!dropdownVisible)}
+              >
+                {selectedAccount ? `${selectedAccount.accountNumber}` : 'Seleccione una cuenta'}
+                <span className="float-right">{dropdownVisible ? '▲' : '▼'}</span>
+              </button>
+              {dropdownVisible && (
+                <div className="absolute z-10 mt-2 w-full bg-white border border-gray-300 rounded-md shadow-lg">
+                  {accounts.map((account, index) => (
+                    <div
+                      key={index}
+                      className="px-4 py-2 cursor-pointer hover:bg-gray-200"
+                      onClick={() => {
+                        setSelectedAccount(account);
+                        setDropdownVisible(false);
+                      }}
+                    >
+                      <div>
+                        <h4 className="text-sm font-bold">{account.accountNumber}</h4>
+                        <p>Tipo de Cuenta: {account.tipoCuenta}</p>
+                        <p>Saldo Disponible: ${account.accountBalance ? account.accountBalance.toFixed(2) : '0.00'}</p>
                       </div>
                     </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            {hasClickedSearch && accountError && <p className="text-red-600 text-xs mt-1">{accountError}</p>}
+          </div>
+
+          <div className="w-full mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de inicio:</label>
+            <input
+              type="date"
+              className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              max={maxDate}
+            />
+            {hasClickedSearch && startDateError && <p className="text-red-600 text-xs mt-1">{startDateError}</p>}
+          </div>
+
+          <div className="w-full mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de fin:</label>
+            <input
+              type="date"
+              className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              max={maxDate}
+            />
+            {hasClickedSearch && endDateError && <p className="text-red-600 text-xs mt-1">{endDateError}</p>}
+          </div>
+
+          <div className="flex w-full justify-center space-x-4 mt-4">
+            <button
+              className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+              onClick={fetchMovements}
+            >
+              Buscar Movimientos
+            </button>
+            <button
+              className={`px-4 py-2 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-600 ${searchPerformed ? 'bg-sky-900 text-white hover:bg-sky-600 cursor-pointer' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+              onClick={handleGeneratePDF}
+              disabled={!searchPerformed}
+            >
+              <i className={`fas fa-print ${searchPerformed ? 'text-white' : 'text-gray-500'}`}></i>
+            </button>
+          </div>
+
+          <div className="w-full mt-6" ref={reportRef}>
+            {loading ? (
+              <p>Buscando movimientos...</p>
+            ) : (
+              movements.length > 0 ? (
+                Object.entries(
+                  movements.reduce((acc, movement) => {
+                    const dateStr = formatDate(movement.fecha);
+                    if (!acc[dateStr]) acc[dateStr] = [];
+                    acc[dateStr].push(movement);
+                    return acc;
+                  }, {})
+                ).map(([date, movements], index) => (
+                  <div key={index}>
+                    <h3 className="text-lg font-bold mb-2">{date}</h3>
+                    <table className="w-full mb-6">
+                      <thead>
+                        <tr>
+                          <th className="text-left">Descripción</th>
+                          <th className="text-left">Cuenta Origen</th>
+                          <th className="text-left">Cuenta Destino</th>
+                          <th className="text-left">Monto</th>
+                          <th className="text-left">Saldo Actualizado</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {movements.map((movement, index) => (
+                          <tr key={index}>
+                            <td className="border-t border-gray-300 py-2">
+                              {movement.tipoMovimiento === 'debito' ?
+                                `Transferencia a ${movement.nombreDestino || 'Desconocido'}` :
+                                `Transferencia de ${movement.nombreOrigen || 'Desconocido'}`}
+                            </td>
+                            <td className="border-t border-gray-300 py-2">{`******${movement.cuentaOrigen.slice(-4)}`}</td>
+                            <td className="border-t border-gray-300 py-2">{`******${movement.cuentaDestino.slice(-4)}`}</td>
+                            <td className="border-t border-gray-300 py-2" style={{ color: movement.tipoMovimiento === 'credito' ? '#228B22' : 'red' }}>
+                              {movement.monto !== undefined ? `${movement.monto.toFixed(2)}` : '0.00'}
+                            </td>
+                            <td className="border-t border-gray-300 py-2">{movement.saldoActualizado !== undefined ? `$${movement.saldoActualizado.toFixed(2)}` : 'N/A'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                ))}
-              </div>
+                ))
+              ) : (
+                <p>No se encontraron movimientos.</p>
+              )
             )}
           </div>
+
+          <div className="text-center mt-4">
+            <button
+              className={`px-4 py-2 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-600 ${searchPerformed ? 'bg-sky-900 text-white hover:bg-sky-600 cursor-pointer' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+              onClick={handleGeneratePDF}
+              disabled={!searchPerformed}
+            >
+              Generar PDF
+            </button>
+          </div>
         </div>
-        <div>
-          <label htmlFor="startDate">Fecha de inicio:</label>
-          <input
-            type="date"
-            id="startDate"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            max={maxDate}
-          />
-        </div>
-        <div>
-          <label htmlFor="endDate">Fecha de fin:</label>
-          <input
-            type="date"
-            id="endDate"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            max={maxDate}
-          />
-        </div>
-        <button onClick={fetchMovements}>Buscar Movimientos</button>
       </div>
-      <div className="movementsContainer" ref={reportRef}>
-        {loading ? (
-          <p>Buscando movimientos...</p>
-        ) : (
-          movements.length > 0 ? (
-            Object.entries(
-              movements.reduce((acc, movement) => {
-                const dateStr = formatDate(movement.fecha);
-                if (!acc[dateStr]) acc[dateStr] = [];
-                acc[dateStr].push(movement);
-                return acc;
-              }, {})
-            ).map(([date, movements], index) => (
-              <div key={index}>
-                <h3>{date}</h3>
-                <table className="movementsTable">
-                  <thead>
-                    <tr>
-                      <th>Descripción</th>
-                      <th>Cuenta Origen</th>
-                      <th>Cuenta Destino</th>
-                      <th>Monto</th>
-                      <th>Saldo Actualizado</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {movements.map((movement, index) => (
-                      <tr key={index}>
-                        <td>
-                          {movement.tipoMovimiento === 'debito' ?
-                            `Transferencia a ${movement.nombreDestino || 'Desconocido'}` :
-                            `Transferencia de ${movement.nombreOrigen || 'Desconocido'}`}
-                        </td>
-                        <td>{`******${movement.cuentaOrigen.slice(-4)}`}</td>
-                        <td>{`******${movement.cuentaDestino.slice(-4)}`}</td>
-                        <td style={{ color: movement.tipoMovimiento === 'credito' ? 'green' : 'red' }}>
-                          {movement.monto !== undefined ?
-                            (movement.tipoMovimiento === 'credito' ?
-                              `+${movement.monto.toFixed(2)}` :
-                              `-${movement.monto.toFixed(2)}`
-                            ) : 'N/A'
-                          }
-                        </td>
-                        <td>{movement.saldoActualizado !== undefined ? `$${movement.saldoActualizado.toFixed(2)}` : 'N/A'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ))
-          ) : (
-            <p>No se encontraron movimientos.</p>
-          )
-        )}
-      </div>
-      <button className="generatePDFButton" onClick={handleGeneratePDF}>Generar PDF</button>
     </div>
   );
 };
