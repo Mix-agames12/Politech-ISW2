@@ -118,7 +118,7 @@ export const Login = () => {
                   Contraseña
                 </label>
                 <div className="text-sm">
-                  <a href="/password-reset" className="font-semibold text-sky-500 hover:text-indigo-500">
+                  <a href="/forgot-password" className="font-semibold text-sky-500 hover:text-indigo-500">
                     ¿Olvidaste tu contraseña?
                   </a>
                 </div>

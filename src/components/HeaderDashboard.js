@@ -1,6 +1,7 @@
 // src/components/HeaderDashboard.js
 import React, { useContext } from 'react';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import Logo from '../assets/images/neologo.png';
 
@@ -11,10 +12,12 @@ const userNavigation = [
 
 export const HeaderDashboard = () => {
   const { user, loading, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-  const handleLogout = (e) => {
+  const handleLogout = async (e) => {
     e.preventDefault();
-    logout();
+    await logout(); // Asegúrate de que la sesión se cierre correctamente
+    navigate('/login');
   };
 
   return (

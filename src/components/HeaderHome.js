@@ -1,5 +1,5 @@
 // src/components/Header.js
-import React, { useContext } from 'react';
+import React from 'react';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import Logo from '../assets/images/neologo.png';
 

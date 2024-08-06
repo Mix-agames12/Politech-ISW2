@@ -6,10 +6,10 @@ import bcrypt from 'bcryptjs';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import { useNavigate } from 'react-router-dom';
-import { HeaderDashboard } from './HeaderDashboard';
-import EyeOpenIcon from '../assets/images/eye-open.png'; // Asegúrate de que esta ruta sea correcta
-import EyeClosedIcon from '../assets/images/eye-closed.png'; // Asegúrate de que esta ruta sea correcta
-import Buho from '../assets/images/buho.png'; // Asegúrate de que esta ruta sea correcta
+import { HeaderHome } from './HeaderHome';
+import EyeOpenIcon from '../assets/images/eye-open.png';
+import EyeClosedIcon from '../assets/images/eye-closed.png';
+import Buho from '../assets/images/buho.png';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -135,13 +135,6 @@ const SignUp = () => {
     return age >= 18;
   };
 
-  const handleIdNumberChange = (e) => {
-    const value = e.target.value;
-    if (/^\d{0,10}$/.test(value)) {
-      setIdNumber(value);
-    }
-  };
-
   const generateAccountNumber = () => {
     let accountNumber = '22';
     while (accountNumber.length < 10) {
@@ -152,41 +145,29 @@ const SignUp = () => {
 
   const handleSignUp = async (e) => {
     e.preventDefault();
-    if (!validateInputs()) {
-      return;
+    const inputsAreValid = await validateInputs(); // Asegúrate de que los inputs son válidos antes de continuar
+    if (!inputsAreValid) {
+      return; // No continuar si los inputs no son válidos
     }
 
     try {
-      const hashedPassword = bcrypt.hashSync(password, 10);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      const accountNumber = generateAccountNumber();
 
-      await setDoc(doc(db, 'users', user.uid), {
+      await setDoc(doc(db, 'tempUsers', user.uid), {
         id: user.uid,
         correo: email,
-        contraseña: hashedPassword,
-        username
-      });
-
-      await setDoc(doc(db, 'cuentas', user.uid), {
-        id: user.uid,
-        cedula: idNumber,
-        accountBalance: 100,
-        accountNumber,
-        tipoCuenta: 'ahorros'
-      });
-
-      await setDoc(doc(db, 'clientes', user.uid), {
-        id: user.uid,
-        correo: email,
-        cedula: idNumber,
+        contraseña: bcrypt.hashSync(password, 10),
+        username,
         nombre: firstName,
         apellido: lastName,
-        fechaNacimiento: dateOfBirth
+        cedula: idNumber,
+        fechaNacimiento: dateOfBirth,
       });
 
-      await sendEmailVerification(user); // Envía el correo de verificación
+      await sendEmailVerification(user, {
+        url: `https://politechsw.web.app/verify-email?uid=${user.uid}`
+      });
 
       console.log('Usuario registrado y correo de verificación enviado:', user);
       setOpen(true);
@@ -229,12 +210,13 @@ const SignUp = () => {
 
   return (
     <>
-      <HeaderDashboard />
+      <HeaderHome />
       <div className="min-w-full min-h-screen absolute flex-col items-center justify-center bg-gray-100">
         <div className="w-full max-w-xl mx-auto flex flex-col items-center p-10 my-10 bg-white shadow-lg rounded-lg">
           <div className="sm:mx-auto sm:w-full sm:max-w-lg">
-            <img className="mx-auto h-10 w-auto" src={ Buho } alt="Your Company" />
-            <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">Registrarse</h2>
+            <img className="mx-auto h-10 w-auto" src={Buho} alt="Your Company" />
+            <h2 className="mt-5 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">Registrarse</h2>
+            <p className="mt-2 mb-6 text-center text-sm text-gray-600">Ingresa tus datos personales: </p>
           </div>
           <form className="grid grid-cols-1 md:grid-cols-2 gap-6" onSubmit={handleSignUp}>
             <div>
@@ -254,22 +236,6 @@ const SignUp = () => {
               </div>
             </div>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">Correo electrónico</label>
-              <div className="mt-2">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  placeholder="Correo electrónico"
-                  required
-                />
-                {error.email && <p className="mt-2 text-sm text-red-600">{error.email}</p>}
-              </div>
-            </div>
-            <div>
               <label htmlFor="lastName" className="block text-sm font-medium leading-6 text-gray-900">Apellido</label>
               <div className="mt-2">
                 <input
@@ -283,68 +249,6 @@ const SignUp = () => {
                   required
                 />
                 {error.lastName && <p className="mt-2 text-sm text-red-600">{error.lastName}</p>}
-              </div>
-            </div>
-            <div className="relative">
-              <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">Contraseña</label>
-              <div className="mt-2 flex">
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => validatePassword(e.target.value)}
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  placeholder="Contraseña"
-                  required
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  <img src={showPassword ? EyeClosedIcon : EyeOpenIcon} alt="Toggle Visibility" className="h-5 w-5" />
-                </button>
-              </div>
-              {error.password && <p className="mt-2 text-sm text-red-600">{error.password}</p>}
-            </div>
-            <div className="relative">
-              <label htmlFor="confirmPassword" className="block text-sm font-medium leading-6 text-gray-900">Repetir contraseña</label>
-              <div className="mt-2 flex">
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={confirmPassword}
-                  onChange={(e) => handleConfirmPassword(e.target.value)}
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  placeholder="Repetir contraseña"
-                  required
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  <img src={showConfirmPassword ? EyeClosedIcon : EyeOpenIcon} alt="Toggle Visibility" className="h-5 w-5" />
-                </button>
-              </div>
-              {!passwordsMatch && <p className="mt-2 text-sm text-red-600">Las contraseñas no coinciden</p>}
-            </div>
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium leading-6 text-gray-900">Nombre de usuario</label>
-              <div className="mt-2">
-                <input
-                  id="username"
-                  name="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  placeholder="Nombre de usuario"
-                  required
-                />
-                {error.username && <p className="mt-2 text-sm text-red-600">{error.username}</p>}
               </div>
             </div>
             <div>
@@ -363,21 +267,114 @@ const SignUp = () => {
                 {error.idNumber && <p className="mt-2 text-sm text-red-600">{error.idNumber}</p>}
               </div>
             </div>
-            <div className="md:col-span-2">
-              <div className="inputContainer">
-                <label className={`passwordRequirements ${passwordConditions.length ? 'text-green-500' : 'text-red-600'}`}>
-                  La contraseña debe tener al menos 8 caracteres
-                </label>
-                <label className={`passwordRequirements ${passwordConditions.uppercase ? 'text-green-500' : 'text-red-600'}`}>
-                  La contraseña debe tener al menos una letra mayúscula
-                </label>
-                <label className={`passwordRequirements ${passwordConditions.number ? 'text-green-500' : 'text-red-600'}`}>
-                  La contraseña debe tener al menos un número
-                </label>
-                <label className={`passwordRequirements ${passwordConditions.specialChar ? 'text-green-500' : 'text-red-600'}`}>
-                  La contraseña debe tener al menos un carácter especial
-                </label>
+            <div>
+              <label htmlFor="dateOfBirth" className="block text-sm font-medium leading-6 text-gray-900">Fecha de Nacimiento</label>
+              <div className="mt-2">
+                <input
+                  id="dateOfBirth"
+                  name="dateOfBirth"
+                  type="date"
+                  value={dateOfBirth}
+                  onChange={(e) => setDateOfBirth(e.target.value)}
+                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  required
+                />
+                {error.dateOfBirth && <p className="mt-2 text-sm text-red-600">{error.dateOfBirth}</p>}
               </div>
+            </div>
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">Correo electrónico</label>
+              <div className="mt-2">
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  placeholder="Correo electrónico"
+                  required
+                />
+                {error.email && <p className="mt-2 text-sm text-red-600">{error.email}</p>}
+              </div>
+            </div>
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium leading-6 text-gray-900">Nombre de usuario</label>
+              <div className="mt-2">
+                <input
+                  id="username"
+                  name="username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  placeholder="Nombre de usuario"
+                  required
+                />
+                {error.username && <p className="mt-2 text-sm text-red-600">{error.username}</p>}
+              </div>
+            </div>
+            <div className="relative mb-2">
+              <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">Contraseña</label>
+              <div className="mt-2 flex">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => validatePassword(e.target.value)}
+                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  placeholder="Contraseña"
+                  required
+                />
+                <img
+                  src={showPassword ? EyeOpenIcon : EyeClosedIcon}
+                  alt={showPassword ? "Hide password" : "Show password"}
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-2 top-12 transform -translate-y-1/2 cursor-pointer"
+                  style={{ height: '24px', width: '24px' }}
+                />
+              </div>
+              {error.password && <p className="mt-2 text-sm text-red-600">{error.password}</p>}
+            </div>
+            <div className="relative mb-2">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium leading-6 text-gray-900">Repetir contraseña</label>
+              <div className="mt-2 flex">
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => handleConfirmPassword(e.target.value)}
+                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  placeholder="Repetir contraseña"
+                  required
+                />
+                <img
+                  src={showConfirmPassword ? EyeOpenIcon : EyeClosedIcon}
+                  alt={showConfirmPassword ? "Hide password" : "Show password"}
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-2 top-12 transform -translate-y-1/2 cursor-pointer"
+                  style={{ height: '24px', width: '24px' }}
+                />
+              </div>
+              {!passwordsMatch && <p className="mt-2 text-sm text-red-600">Las contraseñas no coinciden</p>}
+            </div>
+            <div className="mt-2">
+              <ul className="text-sm text-gray-600">
+                <li className={`flex items-center ${passwordConditions.length ? 'text-green-600' : ''}`}>
+                  {passwordConditions.length ? '✔' : '✘'} Al menos 8 caracteres
+                </li>
+                <li className={`flex items-center ${passwordConditions.uppercase ? 'text-green-600' : ''}`}>
+                  {passwordConditions.uppercase ? '✔' : '✘'} Contiene mayúsculas
+                </li>
+                <li className={`flex items-center ${passwordConditions.number ? 'text-green-600' : ''}`}>
+                  {passwordConditions.number ? '✔' : '✘'} Contiene números
+                </li>
+                <li className={`flex items-center ${passwordConditions.specialChar ? 'text-green-600' : ''}`}>
+                  {passwordConditions.specialChar ? '✔' : '✘'} Contiene caracteres especiales
+                </li>
+              </ul>
             </div>
             <div className="md:col-span-2">
               <button

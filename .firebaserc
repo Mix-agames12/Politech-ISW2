@@ -1,5 +1,9 @@
 {
   "projects": {
-    "default": "bankalao-ed14b"
-  }
+    "default": "politechsw",
+    "poliTech": "politechsw"
+  },
+  "targets": {},
+  "etags": {},
+  "dataconnectEmulatorConfig": {}
 }

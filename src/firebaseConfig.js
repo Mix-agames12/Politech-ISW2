@@ -4,14 +4,13 @@ import { getAuth, setPersistence, browserLocalPersistence } from "firebase/auth"
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyCR07ZMbzcqOWwyhoCKIOCBUnsjjOVvrMY",
-    authDomain: "bankalao-ed14b.firebaseapp.com",
-    databaseURL: "https://bankalao-ed14b-default-rtdb.firebaseio.com",
-    projectId: "bankalao-ed14b",
-    storageBucket: "bankalao-ed14b.appspot.com",
-    messagingSenderId: "888383840547",
-    appId: "1:888383840547:web:516e021234315947852c96",
-    measurementId: "G-NG11S4S6Y0"
+  apiKey: "AIzaSyDKDm9I2Y917UuKWKzs7_Vp13wu_cUQiX0",
+  authDomain: "politechsw.firebaseapp.com",
+  projectId: "politechsw",
+  storageBucket: "politechsw.appspot.com",
+  messagingSenderId: "515805507957",
+  appId: "1:515805507957:web:62f2c5875a3617e59ba33c",
+  measurementId: "G-ECED6L38KS"
 };
 
 const app = initializeApp(firebaseConfig);

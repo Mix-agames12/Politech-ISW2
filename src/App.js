@@ -1,4 +1,3 @@
-// src/App.js
 import React from 'react';
 import './App.css';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
@@ -13,6 +12,8 @@ import Movimientos from './components/Movimientos';
 import Home from './components/Home';
 import CrearCuenta from './components/CrearCuenta';
 import AccountMovements from './components/AccountMovements';
+import ForgotPassword from './components/ForgotPassword';
+import VerifyEmail from './components/VerifyEmail'; // Importar el componente VerifyEmail
 import { AuthProvider } from './context/AuthContext';
 
 function App() {
@@ -32,7 +33,9 @@ function App() {
               <Route path="/cambio-contrasena" element={<CambioContrasena />} />
               <Route path="/movimientos" element={<Movimientos />} />
               <Route path="/crear-cuenta" element={<CrearCuenta />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/movimientos/:accountNumber" element={<AccountMovements />} />
+              <Route path="/verify-email" element={<VerifyEmail />} /> {/* Añadir la ruta de VerifyEmail */}
             </Routes>
           </div>
         </div>
