@@ -42,10 +42,9 @@ const Footer = () => {
                             </div>
                             <div className="w-full md:w-auto text-center">
                                 <ul className="flex space-x-4 justify-center">
-                                    <li><a href="https://facebook.com" className="text-gray-400 hover:text-white"><FaFacebook size={24} /></a></li>
-                                    <li><a href="https://x.com" className="text-gray-400 hover:text-white"><FaTwitter size={24} /></a></li>
-                                    <li><a href="https://dribbble.com" className="text-gray-400 hover:text-white"><FaDribbble size={24} /></a></li>
-                                    <li><a href="https://linkedin.com" className="text-gray-400 hover:text-white"><FaLinkedin size={24} /></a></li>
+                                    <li><a href="https://www.facebook.com/profile.php?id=61563716107806" className="text-gray-400 hover:text-white"><FaFacebook size={24} /></a></li>
+                                    <li><a href="https://x.com/BPolitech" className="text-gray-400 hover:text-white"><FaTwitter size={24} /></a></li>
+                                    <li><a href="https://www.linkedin.com/in/banco-politech-068463321/" className="text-gray-400 hover:text-white"><FaLinkedin size={24} /></a></li>
                                 </ul>
                             </div>
                         </div>
