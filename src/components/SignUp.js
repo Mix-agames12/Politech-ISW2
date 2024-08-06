@@ -327,6 +327,7 @@ const SignUp = () => {
           </Alert>
         </Snackbar>
       </div>
+      <Footer/>
     </>
   );
 };
