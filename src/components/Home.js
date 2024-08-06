@@ -8,7 +8,7 @@ const Home = () => {
   return (
     <>
       <HeaderHome />
-      <div className="min-w-full min-h-screen absolute bg-cover bg-center brightness-50" style={{ backgroundImage: `url('https://i.pinimg.com/originals/07/e1/05/07e1059911d72005a91f49bebedcd243.jpg')` }} />
+      <div className="min-w-full min-h-screen absolute bg-cover bg-center brightness-50" style={{ backgroundImage: `url('https://img.freepik.com/fotos-premium/increible-fondo-pantalla-viaje-4k-fondo_839182-1726.jpg')` }} />
       <main className="min-w-full min-h-screen absolute flex flex-col items-center justify-center">
         <div className="h-screen mx-auto py-20 sm:py-32 lg:py-40">
           <div className="text-center pt-36">

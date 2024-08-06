@@ -10,6 +10,7 @@ import { AuthContext } from '../context/AuthContext';
 const Movimientos = () => {
   const location = useLocation();
   const { user } = useContext(AuthContext);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Initially open
   const [movements, setMovements] = useState([]);
   const [loading, setLoading] = useState(false);
   const [accounts, setAccounts] = useState([]);
@@ -208,6 +209,10 @@ const Movimientos = () => {
     }
   }, [endDate]);
 
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <HeaderDashboard />
@@ -215,7 +220,8 @@ const Movimientos = () => {
         <div className="w-1/4">
           <Sidebar />
         </div>
-        <div className="main-content p-6 mx-auto w-3/4 flex flex-col items-center justify-center pt-16">
+        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        <div className={`main-content p-6 mx-auto w-3/4 flex flex-col items-center justify-center pt-16 ${isSidebarOpen ? 'ml-72' : 'ml-72'}`}>
           <h2 className="text-2xl font-bold mb-4">Consulta de Movimientos</h2>
           <div className="w-full mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">Selecciona una cuenta:</label>

@@ -231,32 +231,37 @@ const AccountMovements = () => {
   }
 
   return (
-    <div className="account-movements-container">
+    <div className="">
       {user && (
         <HeaderDashboard firstName={user.nombre} lastName={user.apellido} />
       )}
-      <div className='sidebar'>
-        <Sidebar />
-      </div>
-      {selectedAccount && (
-        <div className="accountCard">
-          <h2>{accountTypeDisplay(selectedAccount.tipoCuenta, selectedAccount.accountNumber)}</h2>
-          <p>Número de cuenta: {selectedAccount.accountNumber}</p>
-          <div className="balance-info">
-            <p>Saldo disponible: {showBalance ? `$${selectedAccount.accountBalance?.toFixed(2) || 'N/A'}` : '***'}</p>
-            <button className="toggleBalanceButton" onClick={() => setShowBalance(!showBalance)}>
-              <img src={showBalance ? eyeOpen : eyeClosed} alt="Toggle Balance Visibility" />
-            </button>
-          </div>
+      <div className="min-h-screen flex flex-col items-center justify-center w-full max-w-5xl p-4">
+        <div className="sidebar">
+          <Sidebar />
         </div>
-      )}
-      <h4 className="movements-title">Tus últimos movimientos</h4>
-      <div className="movements-content">
-        {movementsContent}
+        {selectedAccount && (
+          <div className="accountCard text-center mb-8">
+            <h2 className="text-2xl font-bold">{accountTypeDisplay(selectedAccount.tipoCuenta, selectedAccount.accountNumber)}</h2>
+            <p className="text-lg">Número de cuenta: {selectedAccount.accountNumber}</p>
+            <div className="balance-info mt-4">
+              <p className="text-lg">
+                Saldo disponible: {showBalance ? `$${selectedAccount.accountBalance?.toFixed(2) || 'N/A'}` : '***'}
+              </p>
+              <button className="toggleBalanceButton mt-2" onClick={() => setShowBalance(!showBalance)}>
+                <img src={showBalance ? eyeOpen : eyeClosed} alt="Toggle Balance Visibility" />
+              </button>
+            </div>
+          </div>
+        )}
+        <h4 className="movements-title text-2xl font-bold mb-4">Tus últimos movimientos</h4>
+        <div className="movements-content">
+          {movementsContent}
+        </div>
+        <button className="filterButton mt-4 bg-blue-500 text-white px-4 py-2 rounded" onClick={handleFilterClick}>Filtrar por fechas</button>
       </div>
-      <button className="filterButton" onClick={handleFilterClick}>Filtrar por fechas</button>
     </div>
   );
 };
 
 export default AccountMovements;
+  
