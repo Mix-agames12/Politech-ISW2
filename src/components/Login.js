@@ -9,6 +9,7 @@ import EyeOpenIcon from '../assets/images/eye-open.png';
 import EyeClosedIcon from '../assets/images/eye-closed.png';
 import { HeaderLogin } from './HeaderLogin';
 import { AuthContext } from '../context/AuthContext';
+import  Footer from './Footer';
 
 const Login = (props) => {
   const [username, setUsername] = useState('');
@@ -166,7 +167,9 @@ const Login = (props) => {
             </a>
           </p>
         </div>
+        <Footer />
       </div>
+      
     </>
   );  
 };

@@ -24,7 +24,7 @@ export const HeaderDashboard = () => {
             </div>
             <div className="hidden md:flex items-center ml-6">
               {user && (
-                <span className="text-white mr-4">Hola, {user.nombre} {user.apellido}</span>
+                <span className="text-white mr-4">Hola, {user.nombre} {user.apellido}!</span>
               )}
               <Menu as="div" className="relative">
                 <Menu.Button className="flex text-sm focus:outline-none focus:ring-2 focus:ring-white">
