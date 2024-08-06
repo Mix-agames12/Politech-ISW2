@@ -1,6 +1,7 @@
-// src/components/Header.js
-import React from 'react';
+// src/components/HeaderDashboard.js
+import React, { useContext } from 'react';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
+import { AuthContext } from '../context/AuthContext';
 import Logo from '../assets/images/neologo.png';
 
 const userNavigation = [
@@ -8,7 +9,9 @@ const userNavigation = [
   { name: 'Cerrar sesión', href: '/login' },
 ];
 
-export const HeaderDashboard = ({ firstname, lastname }) => {
+export const HeaderDashboard = () => {
+  const { user } = useContext(AuthContext);
+
   return (
     <div className="min-h-full">
       <Disclosure as="nav" className="bg-sky-950 fixed w-full top-0 z-50">
@@ -20,7 +23,9 @@ export const HeaderDashboard = ({ firstname, lastname }) => {
               </a>
             </div>
             <div className="hidden md:flex items-center ml-6">
-              <span className="text-white mr-4">Hola, {firstname} {lastname}</span>
+              {user && (
+                <span className="text-white mr-4">Hola, {user.nombre} {user.apellido}</span>
+              )}
               <Menu as="div" className="relative">
                 <Menu.Button className="flex text-sm focus:outline-none focus:ring-2 focus:ring-white">
                   <span className="sr-only">Abrir menú de usuario</span>
@@ -61,4 +66,4 @@ export const HeaderDashboard = ({ firstname, lastname }) => {
       </Disclosure>
     </div>
   );
-}
+};
