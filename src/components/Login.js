@@ -8,8 +8,9 @@ import EyeOpenIcon from '../assets/images/eye-open.png';
 import EyeClosedIcon from '../assets/images/eye-closed.png';
 import { HeaderLogin } from './HeaderLogin';
 import { AuthContext } from '../context/AuthContext';
+import  Footer from './Footer';
 
-export const Login = () => {
+const Login = (props) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -164,7 +165,10 @@ export const Login = () => {
             </a>
           </p>
         </div>
+        <Footer />
       </div>
+      
     </>
   );
 };
+export default Login;

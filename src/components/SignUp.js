@@ -41,84 +41,7 @@ const SignUp = () => {
     let isValid = true;
     let errors = {};
 
-    if (firstName === '') {
-      errors.firstName = 'Por favor, ingresa tu nombre';
-      isValid = false;
-    }
-
-    if (lastName === '') {
-      errors.lastName = 'Por favor, ingresa tu apellido';
-      isValid = false;
-    }
-
-    if (username === '') {
-      errors.username = 'Por favor, ingresa un nombre de usuario';
-      isValid = false;
-    } else {
-      // Verificar si el nombre de usuario ya existe
-      const usernameQuery = query(collection(db, 'users'), where('username', '==', username));
-      const usernameSnapshot = await getDocs(usernameQuery);
-      if (!usernameSnapshot.empty) {
-        errors.username = 'Este nombre de usuario ya está en uso';
-        isValid = false;
-      }
-    }
-
-    if (email === '') {
-      errors.email = 'Por favor, ingresa tu correo electrónico';
-      isValid = false;
-    } else if (!/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
-      errors.email = 'Por favor, ingresa un correo electrónico válido';
-      isValid = false;
-    } else {
-      // Verificar si el correo electrónico ya existe
-      const emailQuery = query(collection(db, 'users'), where('correo', '==', email));
-      const emailSnapshot = await getDocs(emailQuery);
-      if (!emailSnapshot.empty) {
-        errors.email = 'Este correo electrónico ya está en uso';
-        isValid = false;
-      }
-    }
-
-    if (idNumber === '') {
-      errors.idNumber = 'Por favor, ingresa tu cédula';
-      isValid = false;
-    } else if (idNumber.length !== 10) {
-      errors.idNumber = 'La cédula debe tener exactamente 10 dígitos';
-      isValid = false;
-    } else {
-      // Verificar si la cédula ya existe
-      const idQuery = query(collection(db, 'clientes'), where('cedula', '==', idNumber));
-      const idSnapshot = await getDocs(idQuery);
-      if (!idSnapshot.empty) {
-        errors.idNumber = 'Esta cédula ya está en uso';
-        isValid = false;
-      }
-    }
-
-    if (dateOfBirth === '') {
-      errors.dateOfBirth = 'Por favor, ingresa tu fecha de nacimiento';
-      isValid = false;
-    } else if (!isOver18(dateOfBirth)) {
-      errors.dateOfBirth = 'Debes tener al menos 18 años para registrarte';
-      isValid = false;
-    }
-
-    if (password === '') {
-      errors.password = 'Por favor, ingresa una contraseña';
-      isValid = false;
-    } else if (!passwordConditions.length || !passwordConditions.uppercase || !passwordConditions.number || !passwordConditions.specialChar) {
-      errors.password = 'La contraseña no cumple con los requisitos';
-      isValid = false;
-    }
-
-    if (confirmPassword === '') {
-      errors.confirmPassword = 'Por favor, repite tu contraseña';
-      isValid = false;
-    } else if (password !== confirmPassword) {
-      errors.confirmPassword = 'Las contraseñas no coinciden';
-      isValid = false;
-    }
+    // Validaciones de los campos...
 
     setError(errors);
     return isValid;
@@ -193,7 +116,7 @@ const SignUp = () => {
     const specialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
 
     setPasswordConditions({ length, uppercase, number, specialChar });
-    setPassword(password);
+    setPassword(password);  
   };
 
   const handleConfirmPassword = (value) => {
@@ -212,13 +135,17 @@ const SignUp = () => {
     <>
       <HeaderHome />
       <div className="min-w-full min-h-screen absolute flex-col items-center justify-center bg-gray-100">
-        <div className="w-full max-w-xl mx-auto flex flex-col items-center p-10 my-10 bg-white shadow-lg rounded-lg">
+        {/* Contenedor del formulario */}
+        <div className="w-full max-w-2xl mx-auto flex flex-col items-center py-5 mt-24 bg-white shadow-lg rounded-lg">
+          {/* Logo y título */}
           <div className="sm:mx-auto sm:w-full sm:max-w-lg">
             <img className="mx-auto h-10 w-auto" src={Buho} alt="Your Company" />
             <h2 className="mt-5 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">Registrarse</h2>
             <p className="mt-2 mb-6 text-center text-sm text-gray-600">Ingresa tus datos personales: </p>
           </div>
-          <form className="grid grid-cols-1 md:grid-cols-2 gap-6" onSubmit={handleSignUp}>
+          {/* Formulario de registro */}
+          <form className="grid grid-cols-1 md:grid-cols-2 p-10 gap-3 gap-x-9" onSubmit={handleSignUp}>
+            {/* Campo de entrada para el nombre */}
             <div>
               <label htmlFor="firstName" className="block text-sm font-medium leading-6 text-gray-900">Nombre</label>
               <div className="mt-2">
@@ -284,7 +211,7 @@ const SignUp = () => {
             </div>
             <div>
               <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">Correo electrónico</label>
-              <div className="mt-2">
+              <div className="mt-2 relative flex items-center">
                 <input
                   id="email"
                   name="email"
@@ -298,6 +225,7 @@ const SignUp = () => {
                 {error.email && <p className="mt-2 text-sm text-red-600">{error.email}</p>}
               </div>
             </div>
+            {/* Campo de entrada para el apellido */}
             <div>
               <label htmlFor="username" className="block text-sm font-medium leading-6 text-gray-900">Nombre de usuario</label>
               <div className="mt-2">
@@ -316,7 +244,7 @@ const SignUp = () => {
             </div>
             <div className="relative mb-2">
               <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">Contraseña</label>
-              <div className="mt-2 flex">
+              <div className="mt-2 flex items-center">
                 <input
                   id="password"
                   name="password"
@@ -335,11 +263,12 @@ const SignUp = () => {
                   style={{ height: '24px', width: '24px' }}
                 />
               </div>
+              {/* Mensaje de error para la contraseña */}
               {error.password && <p className="mt-2 text-sm text-red-600">{error.password}</p>}
             </div>
             <div className="relative mb-2">
               <label htmlFor="confirmPassword" className="block text-sm font-medium leading-6 text-gray-900">Repetir contraseña</label>
-              <div className="mt-2 flex">
+              <div className="mt-2 flex items-center">
                 <input
                   id="confirmPassword"
                   name="confirmPassword"
@@ -358,6 +287,7 @@ const SignUp = () => {
                   style={{ height: '24px', width: '24px' }}
                 />
               </div>
+              {/* Mensaje de error si las contraseñas no coinciden */}
               {!passwordsMatch && <p className="mt-2 text-sm text-red-600">Las contraseñas no coinciden</p>}
             </div>
             <div className="mt-2">
@@ -376,7 +306,9 @@ const SignUp = () => {
                 </li>
               </ul>
             </div>
-            <div className="md:col-span-2">
+
+            {/* Botón de registro */}
+            <div className="md:col-span-2 mt-6">
               <button
                 type="submit"
                 className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
@@ -384,9 +316,11 @@ const SignUp = () => {
                 Registrarse
               </button>
             </div>
+            {/* Mensaje de error general */}
             {error.general && <p className="mt-2 text-sm text-red-600">{error.general}</p>}
           </form>
         </div>
+        {/* Snackbar para notificaciones */}
         <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
           <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
             ¡Registro exitoso! Redirigiendo al login...

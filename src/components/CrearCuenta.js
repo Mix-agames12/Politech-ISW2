@@ -4,7 +4,6 @@ import { auth, db } from '../firebaseConfig';
 import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
 import { Sidebar } from "../components/Sidebar";
 import { HeaderDashboard } from './HeaderDashboard';
-import '../components/CrearCuenta.css';
 
 const CrearCuenta = () => {
     const [newAccount, setNewAccount] = useState({

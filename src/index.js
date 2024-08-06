@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client'; // Importa desde 'react-dom/client' en lugar de 'react-dom'
+import ReactDOM from 'react-dom/client'; // Asegúrate de importar desde 'react-dom/client'
 import './index.css';
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
