@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { auth, db } from '../firebaseConfig';
-import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import bcrypt from 'bcryptjs';
 import Snackbar from '@mui/material/Snackbar';
@@ -77,6 +77,11 @@ const SignUp = () => {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       console.log('Usuario creado:', user.uid);
+
+      // Actualiza el perfil del usuario para incluir displayName
+      await updateProfile(user, {
+        displayName: `${firstName} ${lastName}`,
+      });
 
       await setDoc(doc(db, 'users', user.uid), {
         id: user.uid,

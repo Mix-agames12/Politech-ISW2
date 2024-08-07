@@ -59,12 +59,11 @@ const Login = (props) => {
       }
 
       const userDoc = userSnapshot.docs[0];
-      const userEmail = userDoc.data().correo;
-      const isVerified = userDoc.data().verified;
+      const userData = userDoc.data();
+      const userEmail = userData.correo;
 
-      if (!isVerified) {
-        setUsernameError('Tu cuenta aún no ha sido verificada. Por favor, verifica tu correo electrónico.');
-        console.log('Usuario no verificado:', username);
+      if (!userData.verified) {
+        setUsernameError('Esta cuenta no ha sido verificada. Por favor, verifica tu correo electrónico.');
         return;
       }
 
@@ -88,7 +87,6 @@ const Login = (props) => {
       } else {
         setUsernameError('Error al iniciar sesión. Por favor, intenta de nuevo.');
       }
-      console.error('Error al iniciar sesión:', error);
     }
   };
 
@@ -175,8 +173,8 @@ const Login = (props) => {
         </div>
         <Footer />
       </div>
-      
     </>
   );
 };
+
 export default Login;
