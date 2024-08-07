@@ -4,14 +4,14 @@ import { auth, db } from '../firebaseConfig';
 import { collection, getDocs, query, where, getDoc, doc } from 'firebase/firestore';
 import { Sidebar } from '../components/Sidebar';
 import { HeaderDashboard } from './HeaderDashboard';
-import eyeOpen from '../assets/images/eye-open.png';
-import eyeClosed from '../assets/images/eye-closed.png';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const AccountMovements = () => {
   const { accountNumber } = useParams();
   const [movements, setMovements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Initially open
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [showBalance, setShowBalance] = useState(true);
   const navigate = useNavigate();
@@ -166,6 +166,10 @@ const AccountMovements = () => {
     return lastFourDigits;
   };
 
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
   const movementsContent = useMemo(() => {
     if (movements.length > 0) {
       return Object.entries(
@@ -235,9 +239,9 @@ const AccountMovements = () => {
       {user && (
         <HeaderDashboard firstName={user.nombre} lastName={user.apellido} />
       )}
-      <div className="min-h-screen flex flex-col items-center justify-center w-full max-w-5xl p-4">
+      <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-72' : 'ml-72'}`}>
         <div className="sidebar">
-          <Sidebar />
+          <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         </div>
         {selectedAccount && (
           <div className="accountCard text-center mb-8">
@@ -247,8 +251,8 @@ const AccountMovements = () => {
               <p className="text-lg">
                 Saldo disponible: {showBalance ? `$${selectedAccount.accountBalance?.toFixed(2) || 'N/A'}` : '***'}
               </p>
-              <button className="toggleBalanceButton mt-2" onClick={() => setShowBalance(!showBalance)}>
-                <img src={showBalance ? eyeOpen : eyeClosed} alt="Toggle Balance Visibility" />
+              <button className="toggleBalanceButton mt-2 h-10" onClick={() => setShowBalance(!showBalance)}>
+                {showBalance ? <FaEye className="text-2xl" /> : <FaEyeSlash className="text-2xl" />}
               </button>
             </div>
           </div>
@@ -264,4 +268,3 @@ const AccountMovements = () => {
 };
 
 export default AccountMovements;
-  

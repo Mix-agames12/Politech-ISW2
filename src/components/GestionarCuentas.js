@@ -89,6 +89,10 @@ const GestionarCuentas = () => {
         navigate(`/movimientos/${accountNumber}`);
     };
 
+    const handleCreateAccountClick = () => {
+        navigate('/crear-cuenta');
+    };
+
     return (
         <div className="min-h-screen flex flex-col">
             <HeaderDashboard />
@@ -96,6 +100,12 @@ const GestionarCuentas = () => {
                 <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
                 <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-72' : 'ml-72'}`}>
                     <h2 className="text-2xl font-bold mb-4">Mis Productos</h2>
+                    <button 
+                        className="bg-sky-900 text-white font-semibold py-2 px-4 rounded mb-4 hover:bg-sky-600 transition-colors duration-300"
+                        onClick={handleCreateAccountClick}
+                    >
+                        Agregar Cuenta
+                    </button>
                     <div className="w-full">
                         <h3 className="text-xl font-semibold mb-4 text-left">Cuentas de Ahorros</h3>
                         <div className="account-cards grid gap-7 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
