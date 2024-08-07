@@ -15,6 +15,48 @@
       ]
     },
     {
+      "collectionGroup": "cuentas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "tipoCuenta",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "cuentas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "tipoCuenta",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "id",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "username",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "correo",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
       "collectionGroup": "transacciones",
       "queryScope": "COLLECTION",
       "fields": [
