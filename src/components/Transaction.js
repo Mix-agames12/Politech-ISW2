@@ -12,6 +12,7 @@ const Transaction = () => {
   const [receiverAccount, setReceiverAccount] = useState('');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [receiverName, setReceiverName] = useState('');
   const [error, setError] = useState('');
   const [receiverError, setReceiverError] = useState(''); // Estado específico para el error de cuenta de destino
@@ -155,6 +156,10 @@ const Transaction = () => {
     }
   };
 
+  const toggleSidebar = () => {
+      setIsSidebarOpen(!isSidebarOpen);
+  };
+
   const validateReceiverAccount = async () => {
     setError('');
     setReceiverError('');
@@ -204,10 +209,11 @@ const Transaction = () => {
       <HeaderDashboard />
       <div className="flex flex-grow">
         <div className="w-1/4">
-          <Sidebar />
+        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         </div>
-        <div className="main-content p-6 mx-auto w-3/4 flex flex-col items-center justify-center pt-16">
-          <h2 className="text-2xl font-bold mb-4">Realizar Transferencia</h2>
+
+        <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-16' : 'ml-16'}`}>
+        <h2 className="text-2xl font-bold mb-4">Realizar Transferencia</h2>
           
           <div className="w-full mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">Cuenta de origen</label>
