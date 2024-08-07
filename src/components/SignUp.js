@@ -68,31 +68,50 @@ const SignUp = () => {
 
   const handleSignUp = async (e) => {
     e.preventDefault();
-    const inputsAreValid = await validateInputs(); // Asegúrate de que los inputs son válidos antes de continuar
+    const inputsAreValid = await validateInputs();
     if (!inputsAreValid) {
-      return; // No continuar si los inputs no son válidos
+      return;
     }
 
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+      console.log('Usuario creado:', user.uid);
 
-      await setDoc(doc(db, 'tempUsers', user.uid), {
+      await setDoc(doc(db, 'users', user.uid), {
         id: user.uid,
         correo: email,
         contraseña: bcrypt.hashSync(password, 10),
         username,
+        verified: false, // Campo adicional
+      });
+
+      await setDoc(doc(db, 'clientes', user.uid), {
+        id: user.uid,
+        correo: email,
+        cedula: idNumber,
         nombre: firstName,
         apellido: lastName,
-        cedula: idNumber,
         fechaNacimiento: dateOfBirth,
       });
 
-      await sendEmailVerification(user, {
-        url: `https://politechsw.web.app/verify-email?uid=${user.uid}`
+      const accountNumber = generateAccountNumber();
+      await setDoc(doc(db, 'cuentas', user.uid), {
+        id: user.uid,
+        accountBalance: 100,
+        accountNumber: accountNumber,
+        accountName: username,
+        tipoCuenta: 'ahorros',
       });
 
-      console.log('Usuario registrado y correo de verificación enviado:', user);
+      const actionCodeSettings = {
+        url: `https://politechsw.web.app/verify-email?uid=${user.uid}`,
+        handleCodeInApp: true
+      };
+
+      await sendEmailVerification(user, actionCodeSettings);
+
+      console.log('Correo de verificación enviado:', user.email);
       setOpen(true);
       setTimeout(() => {
         navigate('/login');
@@ -135,17 +154,13 @@ const SignUp = () => {
     <>
       <HeaderHome />
       <div className="min-w-full min-h-screen absolute flex-col items-center justify-center bg-gray-100">
-        {/* Contenedor del formulario */}
         <div className="w-full max-w-2xl mx-auto flex flex-col items-center py-5 mt-24 bg-white shadow-lg rounded-lg">
-          {/* Logo y título */}
           <div className="sm:mx-auto sm:w-full sm:max-w-lg">
             <img className="mx-auto h-10 w-auto" src={Buho} alt="Your Company" />
             <h2 className="mt-5 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">Registrarse</h2>
             <p className="mt-2 mb-6 text-center text-sm text-gray-600">Ingresa tus datos personales: </p>
           </div>
-          {/* Formulario de registro */}
           <form className="grid grid-cols-1 md:grid-cols-2 p-10 gap-3 gap-x-9" onSubmit={handleSignUp}>
-            {/* Campo de entrada para el nombre */}
             <div>
               <label htmlFor="firstName" className="block text-sm font-medium leading-6 text-gray-900">Nombre</label>
               <div className="mt-2">
@@ -225,7 +240,6 @@ const SignUp = () => {
                 {error.email && <p className="mt-2 text-sm text-red-600">{error.email}</p>}
               </div>
             </div>
-            {/* Campo de entrada para el apellido */}
             <div>
               <label htmlFor="username" className="block text-sm font-medium leading-6 text-gray-900">Nombre de usuario</label>
               <div className="mt-2">
@@ -263,7 +277,6 @@ const SignUp = () => {
                   style={{ height: '24px', width: '24px' }}
                 />
               </div>
-              {/* Mensaje de error para la contraseña */}
               {error.password && <p className="mt-2 text-sm text-red-600">{error.password}</p>}
             </div>
             <div className="relative mb-2">
@@ -287,7 +300,6 @@ const SignUp = () => {
                   style={{ height: '24px', width: '24px' }}
                 />
               </div>
-              {/* Mensaje de error si las contraseñas no coinciden */}
               {!passwordsMatch && <p className="mt-2 text-sm text-red-600">Las contraseñas no coinciden</p>}
             </div>
             <div className="mt-2">
@@ -307,7 +319,6 @@ const SignUp = () => {
               </ul>
             </div>
 
-            {/* Botón de registro */}
             <div className="md:col-span-2 mt-6">
               <button
                 type="submit"
@@ -316,11 +327,9 @@ const SignUp = () => {
                 Registrarse
               </button>
             </div>
-            {/* Mensaje de error general */}
             {error.general && <p className="mt-2 text-sm text-red-600">{error.general}</p>}
           </form>
         </div>
-        {/* Snackbar para notificaciones */}
         <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
           <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
             ¡Registro exitoso! Redirigiendo al login...

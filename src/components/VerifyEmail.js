@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebaseConfig';
 import { applyActionCode } from 'firebase/auth';
-import { doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { HeaderHome } from './HeaderHome';
 
 const VerifyEmail = () => {
@@ -12,70 +12,46 @@ const VerifyEmail = () => {
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
-    const oobCode = queryParams.get('oobCode');
-    const uid = queryParams.get('uid');
+    const oobCode = queryParams.get('oobCode'); // Código de verificación
+    const uid = queryParams.get('uid'); // ID del usuario
 
-    if (oobCode && uid) {
-      applyActionCode(auth, oobCode)
-        .then(async () => {
-          // Get the user data from tempUsers collection
-          const userDoc = await db.collection('tempUsers').doc(uid).get();
-          if (userDoc.exists) {
-            const userData = userDoc.data();
+    const verifyEmail = async () => {
+      if (oobCode && uid) {
+        try {
+          console.log('Código de verificación recibido:', oobCode);
+          console.log('UID recibido:', uid);
 
-            // Save user data to final collections
-            await setDoc(doc(db, 'users', uid), {
-              id: uid,
-              correo: userData.correo,
-              contraseña: userData.contraseña,
-              username: userData.username,
+          await applyActionCode(auth, oobCode);
+          console.log('Código de acción aplicado:', oobCode);
+
+          const userDoc = await getDoc(doc(db, 'users', uid));
+          if (userDoc.exists()) {
+            console.log('Documento del usuario encontrado:', userDoc.data());
+
+            await updateDoc(doc(db, 'users', uid), {
+              verified: true,
             });
 
-            await setDoc(doc(db, 'clientes', uid), {
-              id: uid,
-              correo: userData.correo,
-              cedula: userData.cedula,
-              nombre: userData.nombre,
-              apellido: userData.apellido,
-              fechaNacimiento: userData.fechaNacimiento,
-            });
-
-            const accountNumber = generateAccountNumber();
-            await setDoc(doc(db, 'cuentas', uid), {
-              id: uid,
-              accountBalance: 100,
-              accountNumber: accountNumber,
-              accountName: userData.username,
-              tipoCuenta: 'ahorros',
-            });
-
-            // Delete temp user data
-            await deleteDoc(doc(db, 'tempUsers', uid));
-
+            console.log('Estado de verificación actualizado a true para:', uid);
             setMessage('¡Correo electrónico verificado exitosamente! Redirigiendo al login...');
             setTimeout(() => {
               navigate('/login');
             }, 3000);
           } else {
             setMessage('Error al verificar el correo electrónico. Por favor, inténtalo de nuevo.');
+            console.log('No se encontró el documento del usuario:', uid);
           }
-        })
-        .catch((error) => {
+        } catch (error) {
           console.error('Error al verificar el correo electrónico:', error);
           setMessage('Error al verificar el correo electrónico. Por favor, inténtalo de nuevo.');
-        });
-    } else {
-      setMessage('Código de verificación inválido. Por favor, inténtalo de nuevo.');
-    }
-  }, [location.search, navigate]);
+        }
+      } else {
+        setMessage('Código de verificación inválido. Por favor, inténtalo de nuevo.');
+      }
+    };
 
-  const generateAccountNumber = () => {
-    let accountNumber = '22';
-    while (accountNumber.length < 10) {
-      accountNumber += Math.floor(Math.random() * 10);
-    }
-    return accountNumber;
-  };
+    verifyEmail();
+  }, [location.search, navigate]);
 
   return (
     <>

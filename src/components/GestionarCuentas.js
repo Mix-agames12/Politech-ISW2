@@ -110,7 +110,7 @@ const GestionarCuentas = () => {
       <HeaderDashboard />
       <div className="flex flex-grow">
         <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-        <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-72' : 'ml-20'}`}>
+        <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-72' : 'ml-72 '}`}>
           <h2 className="text-2xl font-bold mb-4">Mis Productos</h2>
           <div className="w-full">
             <h3 className="text-xl font-semibold mb-4 text-left">Cuentas de Ahorros</h3>

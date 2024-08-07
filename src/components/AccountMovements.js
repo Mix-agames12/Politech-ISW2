@@ -23,7 +23,6 @@ const AccountMovements = () => {
         return;
       }
 
-      // Retrieve account and movements from localStorage
       const savedAccount = localStorage.getItem('selectedAccount');
       const savedMovements = localStorage.getItem('movements');
 
@@ -65,13 +64,11 @@ const AccountMovements = () => {
 
     const q1 = query(
       transaccionesCollection,
-      where('cuentaOrigen', '==', accountNumber),
-      where('tipoMovimiento', '==', 'debito')
+      where('cuentaOrigen', '==', accountNumber)
     );
     const q2 = query(
       transaccionesCollection,
-      where('cuentaDestino', '==', accountNumber),
-      where('tipoMovimiento', '==', 'credito')
+      where('cuentaDestino', '==', accountNumber)
     );
 
     const allMovements = [];
@@ -137,7 +134,12 @@ const AccountMovements = () => {
           const sortedMovements = completedMovements.sort((a, b) => b.fecha - a.fecha).slice(0, 10);
           setMovements(sortedMovements);
 
-          // Save to localStorage
+          const newBalance = sortedMovements.reduce((acc, movement) => {
+            return movement.tipoMovimiento === 'credito' ? acc + movement.monto : acc - movement.monto;
+          }, selectedAccount.accountBalance || 0);
+
+          setSelectedAccount(prevAccount => ({ ...prevAccount, accountBalance: newBalance }));
+
           localStorage.setItem('movements', JSON.stringify(sortedMovements));
           localStorage.setItem('selectedAccount', JSON.stringify(selectedAccount));
         });

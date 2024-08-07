@@ -8,7 +8,7 @@ import EyeOpenIcon from '../assets/images/eye-open.png';
 import EyeClosedIcon from '../assets/images/eye-closed.png';
 import { HeaderLogin } from './HeaderLogin';
 import { AuthContext } from '../context/AuthContext';
-import  Footer from './Footer';
+import Footer from './Footer';
 
 const Login = (props) => {
   const [username, setUsername] = useState('');
@@ -60,6 +60,13 @@ const Login = (props) => {
 
       const userDoc = userSnapshot.docs[0];
       const userEmail = userDoc.data().correo;
+      const isVerified = userDoc.data().verified;
+
+      if (!isVerified) {
+        setUsernameError('Tu cuenta aún no ha sido verificada. Por favor, verifica tu correo electrónico.');
+        console.log('Usuario no verificado:', username);
+        return;
+      }
 
       const userCredential = await signInWithEmailAndPassword(auth, userEmail, password);
       const firebaseUser = userCredential.user;
@@ -81,6 +88,7 @@ const Login = (props) => {
       } else {
         setUsernameError('Error al iniciar sesión. Por favor, intenta de nuevo.');
       }
+      console.error('Error al iniciar sesión:', error);
     }
   };
 
