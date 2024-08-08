@@ -1,6 +1,7 @@
 // src/components/HeaderDashboard.js
 import React, { useContext } from 'react';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import Logo from '../assets/images/neologo.png';
 
@@ -11,10 +12,12 @@ const userNavigation = [
 
 export const HeaderDashboard = () => {
   const { user, loading, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-  const handleLogout = (e) => {
+  const handleLogout = async (e) => {
     e.preventDefault();
-    logout();
+    await logout(); // Asegúrate de que la sesión se cierre correctamente
+    navigate('/login');
   };
 
   return (
@@ -29,7 +32,9 @@ export const HeaderDashboard = () => {
             </div>
             <div className="hidden md:flex items-center ml-6">
               {!loading && user && (
-                <span className="text-white mr-4">Hola, {user.nombre} {user.apellido}</span>
+                <span className="text-white mr-4">
+                  Hola, {user.nombre} {user.apellido}
+                </span>
               )}
               <Menu as="div" className="relative">
                 <Menu.Button className="flex text-sm focus:outline-none focus:ring-2 focus:ring-white">

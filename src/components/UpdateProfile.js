@@ -12,7 +12,6 @@ const UpdateProfile = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate(); // Usar useNavigate
   const [editableUsername, setEditableUsername] = useState(true); // Estado para editar nombre de usuario
@@ -31,9 +30,6 @@ const UpdateProfile = () => {
         const userDoc = await getDoc(doc(db, 'clientes', currentUser.uid));
         if (userDoc.exists()) {
           const userData = userDoc.data();
-          setUser(userData);
-          setName(userData.nombre || '');
-          setEmail(userData.correo || '');
         }
       } catch (error) {
         console.error("Error fetching user data: ", error);

@@ -8,8 +8,9 @@ import EyeOpenIcon from '../assets/images/eye-open.png';
 import EyeClosedIcon from '../assets/images/eye-closed.png';
 import { HeaderLogin } from './HeaderLogin';
 import { AuthContext } from '../context/AuthContext';
+import Footer from './Footer';
 
-export const Login = () => {
+const Login = (props) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -58,7 +59,13 @@ export const Login = () => {
       }
 
       const userDoc = userSnapshot.docs[0];
-      const userEmail = userDoc.data().correo;
+      const userData = userDoc.data();
+      const userEmail = userData.correo;
+
+      if (!userData.verified) {
+        setUsernameError('Esta cuenta no ha sido verificada. Por favor, verifica tu correo electrónico.');
+        return;
+      }
 
       const userCredential = await signInWithEmailAndPassword(auth, userEmail, password);
       const firebaseUser = userCredential.user;
@@ -73,6 +80,7 @@ export const Login = () => {
 
       navigate('/gestionar-cuentas');
     } catch (error) {
+      console.error('Error al iniciar sesión:', error);
       if (error.code === 'auth/user-not-found') {
         setUsernameError('No se encontró ningún usuario con este nombre de usuario');
       } else if (error.code === 'auth/wrong-password') {
@@ -118,7 +126,7 @@ export const Login = () => {
                   Contraseña
                 </label>
                 <div className="text-sm">
-                  <a href="/password-reset" className="font-semibold text-sky-500 hover:text-indigo-500">
+                  <a href="/forgot-password" className="font-semibold text-sky-500 hover:text-indigo-500">
                     ¿Olvidaste tu contraseña?
                   </a>
                 </div>
@@ -164,7 +172,10 @@ export const Login = () => {
             </a>
           </p>
         </div>
+        <Footer />
       </div>
     </>
   );
 };
+
+export default Login;
