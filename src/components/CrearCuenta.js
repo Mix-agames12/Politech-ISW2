@@ -14,6 +14,7 @@ const CrearCuenta = () => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Initially open
     const [validEmail, setValidEmail] = useState(null); // null: not checked, true: valid, false: invalid
     const [emailErrorMessage, setEmailErrorMessage] = useState(''); // Message explaining email validation error
     const navigate = useNavigate();
@@ -128,6 +129,10 @@ const CrearCuenta = () => {
         }
     };
 
+    const toggleSidebar = () => {
+        setIsSidebarOpen(!isSidebarOpen);
+    };
+
     const handleEmailChange = (e) => {
         const email = e.target.value;
         setNewAccount({ ...newAccount, correo: email });
@@ -135,52 +140,60 @@ const CrearCuenta = () => {
     };
 
     if (loading) {
-        return <div>Cargando...</div>; // Mostrar un mensaje de carga mientras se obtienen los datos
+        return <div className="flex items-center justify-center min-h-screen">Cargando...</div>; // Mostrar un mensaje de carga mientras se obtienen los datos
     }
 
     return (
-        <div>
+        <div className="min-h-screen flex flex-col">
             {user && (
                 <HeaderDashboard firstName={user.nombre} lastName={user.apellido} />
             )}
-            <div className="Sidebar">
-                <Sidebar />
-            </div>
-            <div className="main-content">
-                <h2>Crear Nueva Cuenta</h2>
-                <div className="new-account-form">
-                    {error && <p style={{ color: 'red' }}>{error}</p>}
-                    <input
-                        type="text"
-                        placeholder="Cédula"
-                        value={newAccount.cedula}
-                        maxLength={10}
-                        onChange={(e) => setNewAccount({ ...newAccount, cedula: e.target.value })}
-                    />
-                    <div className="email-field">
+            <div className="flex flex-grow">
+                <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+                <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-72' : 'ml-72'}`}>
+                    <h2 className="text-3xl font-bold mb-6">Crear Nueva Cuenta</h2>
+                    <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
+                        {error && <p className="text-red-500 mb-4">{error}</p>}
                         <input
-                            type="email"
-                            placeholder="Correo Electrónico"
-                            value={newAccount.correo}
-                            onChange={handleEmailChange}
+                            type="text"
+                            placeholder="Cédula"
+                            value={newAccount.cedula}
+                            maxLength={10}
+                            onChange={(e) => setNewAccount({ ...newAccount, cedula: e.target.value })}
+                            className="w-full px-4 py-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
-                        {validEmail !== null && (
-                            <span className={`email-validation ${validEmail ? 'valid' : 'invalid'}`}>
-                                {validEmail ? '✔️' : '❌'}
-                            </span>
-                        )}
-                        {!validEmail && emailErrorMessage && (
-                            <p className="error-message">{emailErrorMessage}</p>
-                        )}
+                        <div className="mb-4 relative">
+                            <input
+                                type="email"
+                                placeholder="Correo Electrónico"
+                                value={newAccount.correo}
+                                onChange={handleEmailChange}
+                                className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            {validEmail !== null && (
+                                <span className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${validEmail ? 'text-green-500' : 'text-red-500'}`}>
+                                    {validEmail ? '✔️' : '❌'}
+                                </span>
+                            )}
+                            {!validEmail && emailErrorMessage && (
+                                <p className="text-red-500 text-sm mt-1">{emailErrorMessage}</p>
+                            )}
+                        </div>
+                        <select
+                            value={newAccount.tipoCuenta}
+                            onChange={(e) => setNewAccount({ ...newAccount, tipoCuenta: e.target.value })}
+                            className="w-full px-4 py-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="Ahorros">Ahorros</option>
+                            <option value="Corriente">Corriente</option>
+                        </select>
+                        <button 
+                            onClick={handleAddAccount}
+                            className="w-full bg-blue-500 text-white font-semibold py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-300"
+                        >
+                            Agregar Cuenta
+                        </button>
                     </div>
-                    <select
-                        value={newAccount.tipoCuenta}
-                        onChange={(e) => setNewAccount({ ...newAccount, tipoCuenta: e.target.value })}
-                    >
-                        <option value="Ahorros">Ahorros</option>
-                        <option value="Corriente">Corriente</option>
-                    </select>
-                    <button onClick={handleAddAccount}>Agregar Cuenta</button>
                 </div>
             </div>
         </div>
