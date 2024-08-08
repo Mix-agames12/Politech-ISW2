@@ -173,11 +173,6 @@ const AccountMovements = () => {
     }
     return lastFourDigits;
   };
-
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
-
   const movementsContent = useMemo(() => {
     if (movements.length > 0) {
       return Object.entries(

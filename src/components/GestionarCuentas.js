@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import { Sidebar } from '../components/Sidebar';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebaseConfig';
-import { collection, query, where, updateDoc, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { HeaderDashboard } from './HeaderDashboard';
 import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa';
 import { AuthContext } from '../context/AuthContext';
@@ -21,28 +21,14 @@ const GestionarCuentas = () => {
     }
 
     if (!user) {
+      console.log('No user found, redirecting to login');
       navigate('/login');
       return;
     }
 
-    suscribeToAccounts();
+    console.log('User found:', user);
+    suscribeToAccounts(user.uid);
   }, [user, authLoading, navigate]);
-
-  useEffect(() => {
-    try {
-      const savingsAccountsLocal = JSON.parse(localStorage.getItem('savingsAccounts'));
-
-      if (savingsAccountsLocal.length !== 0) {
-        setSavingsAccounts(savingsAccountsLocal);
-      }
-    } catch (e) {
-      console.log(e);
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('savingsAccounts', JSON.stringify(savingsAccounts));
-  }, [savingsAccounts]);
 
   const generateAccountName = (tipoCuenta, accountNumber) => {
     const suffix = accountNumber.slice(-4);
@@ -73,10 +59,17 @@ const GestionarCuentas = () => {
     navigate(`/movimientos/${accountNumber}`);
   };
 
-  const suscribeToAccounts = () => {
+  const handleCreateAccountClick = () => {
+    navigate('/crear-cuenta'); // Ejemplo de navegación a una página para crear cuentas
+  };
+
+  const suscribeToAccounts = (userId) => {
+    console.log('Subscribing to accounts for user:', userId);
+
+    // Query para cuentas de ahorros
     const savingsQuery = query(
       collection(db, 'cuentas'),
-      where('id', '==', user.uid),
+      where('id', '==', userId),
       where('tipoCuenta', '==', 'ahorros')
     );
 
@@ -86,22 +79,29 @@ const GestionarCuentas = () => {
         id: doc.id,
         ...doc.data()
       }));
+      console.log('Ahorros:', accounts); // Verificar consulta de ahorros
       setSavingsAccounts(accounts);
+    }, error => {
+      console.error('Error al obtener cuentas de ahorros:', error);
     });
 
+    // Query para cuentas corrientes
     const currentQuery = query(
       collection(db, 'cuentas'),
-      where('id', '==', user.uid),
+      where('id', '==', userId),
       where('tipoCuenta', '==', 'corriente')
     );
 
     onSnapshot(currentQuery, (querySnapshot) => {
-      const currentAccounts = [];
-      querySnapshot.forEach((doc) => currentAccounts.push({
+      let accounts = [];
+      querySnapshot.forEach(doc => accounts.push({
         id: doc.id,
         ...doc.data()
       }));
-      setCurrentAccounts(currentAccounts);
+      console.log('Corriente:', accounts); // Verificar consulta de cuentas corrientes
+      setCurrentAccounts(accounts);
+    }, error => {
+      console.error('Error al obtener cuentas corrientes:', error);
     });
   };
 
@@ -112,12 +112,12 @@ const GestionarCuentas = () => {
         <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-72' : 'ml-72 '}`}>
           <h2 className="text-2xl font-bold mb-4">Mis Productos</h2>
-                    <button 
-                        className="bg-sky-900 text-white font-semibold py-2 px-4 rounded mb-4 hover:bg-sky-600 transition-colors duration-300"
-                        onClick={handleCreateAccountClick}
-                    >
-                        Agregar Cuenta
-                    </button>
+          <button 
+            className="bg-sky-900 text-white font-semibold py-2 px-4 rounded mb-4 hover:bg-sky-600 transition-colors duration-300"
+            onClick={handleCreateAccountClick}
+          >
+            Agregar Cuenta
+          </button>
           <div className="w-full">
             <h3 className="text-xl font-semibold mb-4 text-left">Cuentas de Ahorros</h3>
             <div className="account-cards grid gap-7 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
