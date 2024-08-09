@@ -105,6 +105,12 @@ const GestionarCuentas = () => {
     });
   };
 
+  // Mostrar un mensaje de carga mientras se verifica la autenticación
+  if (authLoading) {
+    return <p>Cargando...</p>;
+  }
+
+  // Si el usuario no está autenticado, la redirección ya se manejó en useEffect
   return (
     <div className="min-h-screen flex flex-col">
       <HeaderDashboard />
@@ -182,3 +188,4 @@ const GestionarCuentas = () => {
 };
 
 export default GestionarCuentas;
+  
