@@ -13,6 +13,8 @@ import CrearCuenta from './components/CrearCuenta';
 import AccountMovements from './components/AccountMovements';
 import ForgotPassword from './components/ForgotPassword';
 import VerifyEmail from './components/VerifyEmail'; // Importar el componente VerifyEmail
+import BillsPayment from './components/BillsPayment';
+import GenerarPago from './components/GenerarPago';
 import { AuthProvider } from './context/AuthContext';
 
 function App() {
@@ -35,6 +37,8 @@ function App() {
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/movimientos/:accountNumber" element={<AccountMovements />} />
               <Route path="/verify-email" element={<VerifyEmail />} /> {/* Añadir la ruta de VerifyEmail */}
+              <Route path="/pago-servicios" element={<BillsPayment />} />
+              <Route path="/generar-pago" element={<GenerarPago />} />
             </Routes>
           </div>
         </div>
