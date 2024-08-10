@@ -15,12 +15,18 @@ const Transaction = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [receiverName, setReceiverName] = useState('');
   const [error, setError] = useState('');
-  const [receiverError, setReceiverError] = useState(''); // Estado específico para el error de cuenta de destino
+  const [receiverError, setReceiverError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [transactionData, setTransactionData] = useState(null);
   const [userAccounts, setUserAccounts] = useState([]);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [hasClickedSubmit, setHasClickedSubmit] = useState(false);
+
+  // Estados para manejar el código de verificación
+  const [verificationCode, setVerificationCode] = useState('');
+  const [isCodeSent, setIsCodeSent] = useState(false);
+  const [inputCode, setInputCode] = useState('');
+  const [isCodeVerified, setIsCodeVerified] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -56,11 +62,64 @@ const Transaction = () => {
     return `CUENTA${suffix}`;
   };
 
+  const sendVerificationCode = async () => {
+    setError('');
+    try {
+      const response = await fetch('http://localhost:5000/send-verification-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email: user.email })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setIsCodeSent(true);
+        console.log('Código de verificación enviado con éxito');
+      } else {
+        setError('No se pudo enviar el código de verificación. Por favor, inténtalo de nuevo.');
+      }
+    } catch (error) {
+      console.error('Error al enviar el código de verificación:', error);
+      setError('No se pudo enviar el código de verificación. Por favor, inténtalo de nuevo.');
+    }
+  };
+
+  const verifyCode = async () => {
+    setError('');
+    try {
+      const response = await fetch('http://localhost:5000/verify-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email: user.email, code: inputCode })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setIsCodeVerified(true);
+        console.log('Código de verificación correcto');
+      } else {
+        setError('El código de verificación es incorrecto.');
+      }
+    } catch (error) {
+      console.error('Error al verificar el código:', error);
+      setError('Error al verificar el código.');
+    }
+  };
+
   const handleTransaction = async () => {
     setHasClickedSubmit(true);
     setError('');
     setReceiverError('');
     setSuccessMessage('');
+
+    if (!isCodeVerified) {
+      setError('Debe verificar el código enviado a su correo antes de realizar la transacción.');
+      return;
+    }
 
     if (!senderAccount || !receiverAccount || !amount || receiverAccount.length !== 10 || Number(amount) <= 0) {
       setError('Por favor, complete todos los campos correctamente.');
@@ -157,7 +216,7 @@ const Transaction = () => {
   };
 
   const toggleSidebar = () => {
-      setIsSidebarOpen(!isSidebarOpen);
+    setIsSidebarOpen(!isSidebarOpen);
   };
 
   const validateReceiverAccount = async () => {
@@ -209,12 +268,12 @@ const Transaction = () => {
       <HeaderDashboard />
       <div className="flex flex-grow">
         <div className="w-1/4">
-        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+          <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         </div>
 
         <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-16' : 'ml-16'}`}>
-        <h2 className="text-2xl font-bold mb-4">Realizar Transferencia</h2>
-          
+          <h2 className="text-2xl font-bold mb-4">Realizar Transferencia</h2>
+
           <div className="w-full mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">Cuenta de origen</label>
             <div className="relative">
@@ -307,15 +366,44 @@ const Transaction = () => {
             />
           </div>
 
+          {isCodeSent && (
+            <div className="w-full mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Ingrese el código de verificación</label>
+              <input
+                type="text"
+                className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="Código de verificación"
+                value={inputCode}
+                onChange={(e) => setInputCode(e.target.value)}
+              />
+              <button
+                className="mt-2 px-4 py-2 bg-sky-900 text-white rounded-md shadow-sm hover:bg-sky-600"
+                onClick={verifyCode}
+              >
+                Verificar Código
+              </button>
+            </div>
+          )}
+
           {error && <label className="block text-red-600 mb-4">{error}</label>}
 
           <div className="text-center">
-            <input
-              className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
-              type="button"
-              onClick={handleTransaction}
-              value="Realizar Transferencia"
-            />
+            {!isCodeSent ? (
+              <button
+                className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                onClick={sendVerificationCode}
+              >
+                Enviar Código de Verificación
+              </button>
+            ) : (
+              <input
+                className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                type="button"
+                onClick={handleTransaction}
+                value="Realizar Transferencia"
+                disabled={!isCodeVerified}
+              />
+            )}
           </div>
 
           {successMessage && (
