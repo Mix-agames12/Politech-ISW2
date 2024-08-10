@@ -209,11 +209,11 @@ const Transaction = () => {
       <HeaderDashboard />
       <div className="flex flex-grow">
         <div className="w-1/4">
-          <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         </div>
 
         <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-16' : 'ml-16'}`}>
-          <h2 className="text-2xl font-bold mb-4">Realizar Transferencia</h2>
+        <h2 className="text-2xl font-bold mb-4">Realizar Transferencia</h2>
           
           <div className="w-full mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">Cuenta de origen</label>
