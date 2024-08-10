@@ -63,38 +63,68 @@ const Transaction = () => {
   };
 
   const sendVerificationCode = async () => {
-    const response = await fetch('https://politech-isw2.onrender.com/send-code', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email: user.email })
-    });
+    try {
+      const response = await fetch('https://politech-isw2.onrender.com/send-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: user.email })
+      });
   
-    const data = await response.json();
-    if (data.success) {
-      localStorage.setItem('sessionId', data.sessionId); // Almacena el sessionId
+      const data = await response.json();
+      console.log('Respuesta del servidor:', data); // Agrega este log
+      if (data.success) {
+        localStorage.setItem('sessionId', data.sessionId); // Almacena el sessionId
+        setIsCodeSent(true);
+      } else {
+        setError('No se pudo enviar el código de verificación.');
+      }
+    } catch (error) {
+      console.error('Error al enviar el código de verificación:', error);
+      setError('No se pudo enviar el código de verificación.');
     }
   };
+  
   
 
   const verifyCode = async () => {
-    const sessionId = localStorage.getItem('sessionId'); // O donde lo hayas almacenado
-    const response = await fetch('https://politech-isw2.onrender.com/verify-code', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ sessionId, code: inputCode })
-    });
-    
-    const data = await response.json();
-    if (data.success) {
-      // Código verificado correctamente
-    } else {
-      // Manejo de error
+    try {
+      const sessionId = localStorage.getItem('sessionId'); // O donde lo hayas almacenado
+      console.log('Session ID:', sessionId); // Verifica que el sessionId esté presente
+      console.log('Código ingresado:', inputCode); // Verifica que el código esté correcto
+  
+      if (!sessionId || !inputCode) {
+        setError('Faltan datos para la verificación.'); // Maneja el caso donde faltan datos
+        return;
+      }
+  
+      const response = await fetch('https://politech-isw2.onrender.com/verify-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ sessionId, code: inputCode })
+      });
+  
+      const data = await response.json();
+      console.log('Respuesta del servidor:', data);
+  
+      if (response.ok) {
+        // Si la respuesta tiene un status 200
+        setIsCodeVerified(true);
+        setSuccessMessage('Código verificado correctamente.');
+      } else {
+        // Si la respuesta tiene un status diferente de 200
+        setError(data.message || 'Error al verificar el código.');
+      }
+    } catch (error) {
+      console.error('Error al verificar el código:', error);
+      setError('Error al verificar el código.');
     }
   };
+  
+  
   
 
   const handleTransaction = async () => {

@@ -43,7 +43,8 @@ app.post('/send-code', async (req, res) => {
   verificationCodes[sessionId] = {
     email: email,
     code: code,
-    createdAt: Date.now()
+    createdAt: Date.now(),
+    used: false  // Nueva propiedad para marcar si el código ha sido usado
   };
 
   // Contenido HTML para el correo
@@ -99,10 +100,15 @@ app.post('/verify-code', (req, res) => {
     return res.status(400).json({ success: false, message: 'Código incorrecto o expirado' });
   }
 
+  // Verifica si el código ya ha sido utilizado
+  if (verificationData.used) {
+    return res.status(400).json({ success: false, message: 'El código ya ha sido utilizado' });
+  }
+
   // Compara el código enviado con el almacenado
   if (verificationData.code === code) {
-    // Si es correcto, se elimina el código para evitar reusos
-    delete verificationCodes[sessionId];
+    // Marca el código como utilizado
+    verificationCodes[sessionId].used = true;
     res.status(200).json({ success: true, message: 'Código verificado correctamente' });
   } else {
     res.status(400).json({ success: false, message: 'Código incorrecto o expirado' });
