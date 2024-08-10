@@ -65,18 +65,20 @@ const Transaction = () => {
   const sendVerificationCode = async () => {
     setError('');
     try {
-      const response = await fetch('http://localhost:5000/send-verification-code', {
+      const generatedCode = Math.floor(100000 + Math.random() * 900000).toString(); // Genera un código de 6 dígitos
+      const response = await fetch('https://politech-isw2.onrender.com/send-code', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ email: user.email })
+        body: JSON.stringify({ email: user.email, code: generatedCode }) // Envía el código generado
       });
 
       const data = await response.json();
       if (data.success) {
         setIsCodeSent(true);
         console.log('Código de verificación enviado con éxito');
+        setVerificationCode(generatedCode); // Guarda el código para la verificación posterior
       } else {
         setError('No se pudo enviar el código de verificación. Por favor, inténtalo de nuevo.');
       }
@@ -89,16 +91,7 @@ const Transaction = () => {
   const verifyCode = async () => {
     setError('');
     try {
-      const response = await fetch('http://localhost:5000/verify-code', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email: user.email, code: inputCode })
-      });
-
-      const data = await response.json();
-      if (data.success) {
+      if (inputCode === verificationCode) {
         setIsCodeVerified(true);
         console.log('Código de verificación correcto');
       } else {
@@ -268,7 +261,6 @@ const Transaction = () => {
       <HeaderDashboard />
       <div className="flex flex-grow">
         <div className="w-1/4">
-          <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
           <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         </div>
 
