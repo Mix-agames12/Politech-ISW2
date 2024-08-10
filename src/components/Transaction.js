@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { db } from '../firebaseConfig';
 import { collection, getDocs, query, where, updateDoc, doc, addDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { Sidebar } from './Sidebar';
@@ -27,6 +27,11 @@ const Transaction = () => {
   const [isCodeSent, setIsCodeSent] = useState(false);
   const [inputCode, setInputCode] = useState('');
   const [isCodeVerified, setIsCodeVerified] = useState(false);
+  const [isTransferCompleted, setIsTransferCompleted] = useState(false);
+
+  // Refs para desplazamiento automático
+  const codeInputRef = useRef(null);
+  const transferButtonRef = useRef(null);
 
   useEffect(() => {
     if (!user) {
@@ -77,6 +82,9 @@ const Transaction = () => {
       if (data.success) {
         localStorage.setItem('sessionId', data.sessionId); // Almacena el sessionId
         setIsCodeSent(true);
+        if (codeInputRef.current) {
+          codeInputRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
       } else {
         setError('No se pudo enviar el código de verificación.');
       }
@@ -114,6 +122,9 @@ const Transaction = () => {
         // Si la respuesta tiene un status 200
         setIsCodeVerified(true);
         setSuccessMessage('Código verificado correctamente.');
+        if (transferButtonRef.current) {
+          transferButtonRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
       } else {
         // Si la respuesta tiene un status diferente de 200
         setError(data.message || 'Error al verificar el código.');
@@ -205,6 +216,7 @@ const Transaction = () => {
             description: transaction.descripcion || 'N/A',
             date: new Date().toLocaleDateString()
           });
+          setIsTransferCompleted(true);
         } else {
           setError('Fondos insuficientes');
         }
@@ -385,7 +397,7 @@ const Transaction = () => {
 
           {isCodeSent && (
             <div className="w-full mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Ingrese el código de verificación</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2" ref={codeInputRef}>Ingrese el código de verificación</label>
               <input
                 type="text"
                 className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
@@ -413,20 +425,22 @@ const Transaction = () => {
                 Enviar Código de Verificación
               </button>
             ) : (
-              <input
-                className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
-                type="button"
-                onClick={handleTransaction}
-                value="Realizar Transferencia"
-                disabled={!isCodeVerified}
-              />
+              !isTransferCompleted && (
+                <input
+                  className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                  type="button"
+                  onClick={handleTransaction}
+                  value="Realizar Transferencia"
+                  ref={transferButtonRef}
+                />
+              )
             )}
           </div>
 
-          {successMessage && (
+          {isTransferCompleted && (
             <>
               <div className="w-full mt-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-                <span className="block sm:inline">{successMessage}</span>
+                <span className="block sm:inline">Transferencia realizada con éxito</span>
               </div>
               <div className="text-center mt-4">
                 <button
@@ -441,6 +455,12 @@ const Transaction = () => {
                 </button>
               </div>
             </>
+          )}
+
+          {successMessage && !isTransferCompleted && (
+            <div className="w-full mt-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+              <span className="block sm:inline">{successMessage}</span>
+            </div>
           )}
         </div>
       </div>
