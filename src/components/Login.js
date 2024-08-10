@@ -8,7 +8,7 @@ import EyeOpenIcon from '../assets/images/eye-open.png';
 import EyeClosedIcon from '../assets/images/eye-closed.png';
 import { HeaderLogin } from './HeaderLogin';
 import { AuthContext } from '../context/AuthContext';
-import  Footer from './Footer';
+import Footer from './Footer';
 
 const Login = (props) => {
   const [username, setUsername] = useState('');
@@ -59,7 +59,13 @@ const Login = (props) => {
       }
 
       const userDoc = userSnapshot.docs[0];
-      const userEmail = userDoc.data().correo;
+      const userData = userDoc.data();
+      const userEmail = userData.correo;
+
+      if (!userData.verified) {
+        setUsernameError('Esta cuenta no ha sido verificada. Por favor, verifica tu correo electrónico.');
+        return;
+      }
 
       const userCredential = await signInWithEmailAndPassword(auth, userEmail, password);
       const firebaseUser = userCredential.user;
@@ -167,8 +173,8 @@ const Login = (props) => {
         </div>
         <Footer />
       </div>
-      
     </>
   );
 };
+
 export default Login;

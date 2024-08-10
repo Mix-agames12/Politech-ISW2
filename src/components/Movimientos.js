@@ -10,7 +10,7 @@ import { AuthContext } from '../context/AuthContext';
 const Movimientos = () => {
   const location = useLocation();
   const { user } = useContext(AuthContext);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Initially open
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [movements, setMovements] = useState([]);
   const [loading, setLoading] = useState(false);
   const [accounts, setAccounts] = useState([]);
@@ -40,7 +40,6 @@ const Movimientos = () => {
           const userAccounts = accountsSnapshot.docs.map(doc => doc.data());
           setAccounts(userAccounts);
 
-          // Verifica si hay un account en la URL
           const params = new URLSearchParams(location.search);
           const account = params.get('account');
           if (account) {
@@ -83,9 +82,6 @@ const Movimientos = () => {
       return;
     }
 
-    console.log("Start Date:", startDate);
-    console.log("End Date:", endDate);
-
     setMovements([]);
     setLoading(true);
 
@@ -120,7 +116,6 @@ const Movimientos = () => {
         movementsArray.push({ ...data, id: doc.id, fecha: data.fecha.toDate() });
       });
 
-      // Parallellize the fetching of user details
       const fetchUserDetails = async (movement) => {
         if (movement.tipoMovimiento === 'debito') {
           const receiverAccountQuery = query(collection(db, 'cuentas'), where('accountNumber', '==', movement.cuentaDestino));
@@ -160,7 +155,6 @@ const Movimientos = () => {
       const sortedMovements = movementsArray.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
       setMovements(sortedMovements);
-      console.log("Movements:", sortedMovements);
       setSearchPerformed(true);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -217,11 +211,8 @@ const Movimientos = () => {
     <div className="min-h-screen flex flex-col">
       <HeaderDashboard />
       <div className="flex flex-grow">
-        <div className="w-1/4">
-          <Sidebar />
-        </div>
         <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-        <div className={`main-content p-6 mx-auto w-3/4 flex flex-col items-center justify-center pt-16 ${isSidebarOpen ? 'ml-72' : 'ml-72'}`}>
+        <div className={`main-content p-6 mx-auto flex flex-col items-center justify-center w-full pt-16 ${isSidebarOpen ? 'ml-72' : 'ml-20'}`}>
           <h2 className="text-2xl font-bold mb-4">Consulta de Movimientos</h2>
           <div className="w-full mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">Selecciona una cuenta:</label>
@@ -293,7 +284,7 @@ const Movimientos = () => {
               onClick={handleGeneratePDF}
               disabled={!searchPerformed}
             >
-              <i className={`fas fa-print ${searchPerformed ? 'text-white' : 'text-gray-500'}`}></i>
+              Generar PDF
             </button>
           </div>
 
@@ -312,30 +303,30 @@ const Movimientos = () => {
                 ).map(([date, movements], index) => (
                   <div key={index}>
                     <h3 className="text-lg font-bold mb-2">{date}</h3>
-                    <table className="w-full mb-6">
+                    <table className="w-full mb-6 text-left border-collapse">
                       <thead>
-                        <tr>
-                          <th className="text-left">Descripción</th>
-                          <th className="text-left">Cuenta Origen</th>
-                          <th className="text-left">Cuenta Destino</th>
-                          <th className="text-left">Monto</th>
-                          <th className="text-left">Saldo Actualizado</th>
+                        <tr className="bg-gray-200">
+                          <th className="p-2 border-b">Descripción</th>
+                          <th className="p-2 border-b">Cuenta Origen</th>
+                          <th className="p-2 border-b">Cuenta Destino</th>
+                          <th className="p-2 border-b">Monto</th>
+                          <th className="p-2 border-b">Saldo Actualizado</th>
                         </tr>
                       </thead>
                       <tbody>
                         {movements.map((movement, index) => (
-                          <tr key={index}>
-                            <td className="border-t border-gray-300 py-2">
+                          <tr key={index} className="hover:bg-gray-100">
+                            <td className="p-2 border-b">
                               {movement.tipoMovimiento === 'debito' ?
                                 `Transferencia a ${movement.nombreDestino || 'Desconocido'}` :
                                 `Transferencia de ${movement.nombreOrigen || 'Desconocido'}`}
                             </td>
-                            <td className="border-t border-gray-300 py-2">{`******${movement.cuentaOrigen.slice(-4)}`}</td>
-                            <td className="border-t border-gray-300 py-2">{`******${movement.cuentaDestino.slice(-4)}`}</td>
-                            <td className="border-t border-gray-300 py-2" style={{ color: movement.tipoMovimiento === 'credito' ? '#228B22' : 'red' }}>
+                            <td className="p-2 border-b">{`******${movement.cuentaOrigen.slice(-4)}`}</td>
+                            <td className="p-2 border-b">{`******${movement.cuentaDestino.slice(-4)}`}</td>
+                            <td className="p-2 border-b" style={{ color: movement.tipoMovimiento === 'credito' ? '#228B22' : 'red' }}>
                               {movement.monto !== undefined ? `${movement.monto.toFixed(2)}` : '0.00'}
                             </td>
-                            <td className="border-t border-gray-300 py-2">{movement.saldoActualizado !== undefined ? `$${movement.saldoActualizado.toFixed(2)}` : 'N/A'}</td>
+                            <td className="p-2 border-b">{movement.saldoActualizado !== undefined ? `$${movement.saldoActualizado.toFixed(2)}` : 'N/A'}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -346,16 +337,6 @@ const Movimientos = () => {
                 <p>No se encontraron movimientos.</p>
               )
             )}
-          </div>
-
-          <div className="text-center mt-4">
-            <button
-              className={`px-4 py-2 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-600 ${searchPerformed ? 'bg-sky-900 text-white hover:bg-sky-600 cursor-pointer' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
-              onClick={handleGeneratePDF}
-              disabled={!searchPerformed}
-            >
-              Generar PDF
-            </button>
           </div>
         </div>
       </div>
