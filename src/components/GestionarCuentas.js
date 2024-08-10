@@ -137,7 +137,7 @@ const GestionarCuentas = () => {
                                             e.stopPropagation();
                                             toggleAccountNumberVisibility(account.id);
                                         }}>
-                                            <img src={showAccountNumbers[account.id] ? EyeOpenIcon : EyeClosedIcon} alt="Toggle Visibility" className="h-5 w-5" />
+                                            <img src={showAccountNumbers[account.id] ? FaRegEye : FaRegEyeSlash} alt="Toggle Visibility" className="h-5 w-5" />
                                         </button>
                                     </div>
                                     <p>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { collection, query, where, getDoc, doc, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, getDocs, getDoc, doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { Sidebar } from '../components/Sidebar';
 import { HeaderDashboard } from './HeaderDashboard';
@@ -12,7 +12,7 @@ const AccountMovements = () => {
   const { accountNumber } = useParams();
   const [movements, setMovements] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
+  const [setUser] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Initially open
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [showBalance, setShowBalance] = useState(true);
@@ -63,7 +63,7 @@ const AccountMovements = () => {
     fetchUserData();
   }, [accountNumber, user]);
 
-  const fetchMovements = (accountNumber) => {
+  const fetchMovements = async (accountNumber) => {
     const transaccionesCollection = collection(db, 'transacciones');
 
     const q1 = query(
@@ -77,78 +77,74 @@ const AccountMovements = () => {
 
     const allMovements = [];
 
-    onSnapshot(q1, (querySnapshot1) => {
-      querySnapshot1.forEach((doc) => {
-        const data = doc.data();
-        if (data.fecha && data.fecha.toDate) {
-          data.fecha = data.fecha.toDate();
-        } else if (data.fecha && typeof data.fecha === 'string') {
-          data.fecha = new Date(data.fecha);
-        }
-        allMovements.push({ ...data, id: doc.id, tipoMovimiento: 'debito' });
-      });
-
-      onSnapshot(q2, (querySnapshot2) => {
-        querySnapshot2.forEach((doc) => {
-          const data = doc.data();
-          if (data.fecha && data.fecha.toDate) {
-            data.fecha = data.fecha.toDate();
-          } else if (data.fecha && typeof data.fecha === 'string') {
-            data.fecha = new Date(data.fecha);
-          }
-          allMovements.push({ ...data, id: doc.id, tipoMovimiento: 'credito' });
-        });
-
-        const movementsWithNames = allMovements.map(async (movement) => {
-          if (movement.tipoMovimiento === 'debito') {
-            const receiverAccountQuery = query(collection(db, 'cuentas'), where('accountNumber', '==', movement.cuentaDestino));
-            const receiverAccountSnapshot = await getDoc(receiverAccountQuery);
-            if (!receiverAccountSnapshot.empty) {
-              const receiverAccountData = receiverAccountSnapshot.docs[0].data();
-              const receiverUserDoc = await getDoc(doc(db, 'clientes', receiverAccountData.id));
-              if (receiverUserDoc.exists()) {
-                const receiverData = receiverUserDoc.data();
-                movement.nombreDestino = `${receiverData.nombre} ${receiverData.apellido}`;
-              } else {
-                movement.nombreDestino = 'Usuario desconocido';
-              }
-            } else {
-              movement.nombreDestino = 'Cuenta desconocida';
-            }
-          } else if (movement.tipoMovimiento === 'credito') {
-            const senderAccountQuery = query(collection(db, 'cuentas'), where('accountNumber', '==', movement.cuentaOrigen));
-            const senderAccountSnapshot = await getDoc(senderAccountQuery);
-            if (!senderAccountSnapshot.empty) {
-              const senderAccountData = senderAccountSnapshot.docs[0].data();
-              const senderUserDoc = await getDoc(doc(db, 'clientes', senderAccountData.id));
-              if (senderUserDoc.exists()) {
-                const senderData = senderUserDoc.data();
-                movement.nombreOrigen = `${senderData.nombre} ${senderData.apellido}`;
-              } else {
-                movement.nombreOrigen = 'Usuario desconocido';
-              }
-            } else {
-              movement.nombreOrigen = 'Cuenta desconocida';
-            }
-          }
-          return movement;
-        });
-
-        Promise.all(movementsWithNames).then((completedMovements) => {
-          const sortedMovements = completedMovements.sort((a, b) => b.fecha - a.fecha).slice(0, 10);
-          setMovements(sortedMovements);
-
-          const newBalance = sortedMovements.reduce((acc, movement) => {
-            return movement.tipoMovimiento === 'credito' ? acc + movement.monto : acc - movement.monto;
-          }, selectedAccount.accountBalance || 0);
-
-          setSelectedAccount(prevAccount => ({ ...prevAccount, accountBalance: newBalance }));
-
-          localStorage.setItem('movements', JSON.stringify(sortedMovements));
-          localStorage.setItem('selectedAccount', JSON.stringify(selectedAccount));
-        });
-      });
+    const snapshot1 = await getDocs(q1);
+    snapshot1.forEach((doc) => {
+      const data = doc.data();
+      if (data.fecha && data.fecha.toDate) {
+        data.fecha = data.fecha.toDate();
+      } else if (data.fecha && typeof data.fecha === 'string') {
+        data.fecha = new Date(data.fecha);
+      }
+      allMovements.push({ ...data, id: doc.id, tipoMovimiento: 'debito' });
     });
+
+    const snapshot2 = await getDocs(q2);
+    snapshot2.forEach((doc) => {
+      const data = doc.data();
+      if (data.fecha && data.fecha.toDate) {
+        data.fecha = data.fecha.toDate();
+      } else if (data.fecha && typeof data.fecha === 'string') {
+        data.fecha = new Date(data.fecha);
+      }
+      allMovements.push({ ...data, id: doc.id, tipoMovimiento: 'credito' });
+    });
+
+    const movementsWithNames = await Promise.all(allMovements.map(async (movement) => {
+      if (movement.tipoMovimiento === 'debito') {
+        const receiverAccountQuery = query(collection(db, 'cuentas'), where('accountNumber', '==', movement.cuentaDestino));
+        const receiverAccountSnapshot = await getDocs(receiverAccountQuery);
+        if (!receiverAccountSnapshot.empty) {
+          const receiverAccountData = receiverAccountSnapshot.docs[0].data();
+          const receiverUserDoc = await getDoc(doc(db, 'clientes', receiverAccountData.id));
+          if (receiverUserDoc.exists()) {
+            const receiverData = receiverUserDoc.data();
+            movement.nombreDestino = `${receiverData.nombre} ${receiverData.apellido}`;
+          } else {
+            movement.nombreDestino = 'Usuario desconocido';
+          }
+        } else {
+          movement.nombreDestino = 'Cuenta desconocida';
+        }
+      } else if (movement.tipoMovimiento === 'credito') {
+        const senderAccountQuery = query(collection(db, 'cuentas'), where('accountNumber', '==', movement.cuentaOrigen));
+        const senderAccountSnapshot = await getDocs(senderAccountQuery);
+        if (!senderAccountSnapshot.empty) {
+          const senderAccountData = senderAccountSnapshot.docs[0].data();
+          const senderUserDoc = await getDoc(doc(db, 'clientes', senderAccountData.id));
+          if (senderUserDoc.exists()) {
+            const senderData = senderUserDoc.data();
+            movement.nombreOrigen = `${senderData.nombre} ${senderData.apellido}`;
+          } else {
+            movement.nombreOrigen = 'Usuario desconocido';
+          }
+        } else {
+          movement.nombreOrigen = 'Cuenta desconocida';
+        }
+      }
+      return movement;
+    }));
+
+    const sortedMovements = movementsWithNames.sort((a, b) => b.fecha - a.fecha).slice(0, 10);
+    setMovements(sortedMovements);
+
+    const newBalance = sortedMovements.reduce((acc, movement) => {
+      return movement.tipoMovimiento === 'credito' ? acc + movement.monto : acc - movement.monto;
+    }, selectedAccount.accountBalance || 0);
+
+    setSelectedAccount(prevAccount => ({ ...prevAccount, accountBalance: newBalance }));
+
+    localStorage.setItem('movements', JSON.stringify(sortedMovements));
+    localStorage.setItem('selectedAccount', JSON.stringify(selectedAccount));
   };
 
   const formatDate = (fecha) => {
@@ -242,11 +238,11 @@ const AccountMovements = () => {
   }
 
   return (
-    <div className="">
+    <><div className="">
       {user && (
         <HeaderDashboard firstName={user.nombre} lastName={user.apellido} />
       )}
-      <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-72' : 'ml-72'}`}>
+    </div><div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-72' : 'ml-72'}`}>
         <div className="sidebar">
           <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         </div>
@@ -267,36 +263,36 @@ const AccountMovements = () => {
         <h4 className="movements-title text-2xl font-bold mb-4">Tus últimos movimientos</h4>
         <div className="movements-content">
           {movementsContent}
-    <div className="min-h-screen flex flex-col">
-      {user && <HeaderDashboard firstName={user.nombre} lastName={user.apellido} />}
-      <div className="flex flex-grow">
-        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-        <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-72' : 'ml-20'}`}>
-          {selectedAccount && (
-            <div className="account-card text-center mb-8 bg-white shadow-md rounded-lg p-6 w-full max-w-md">
-              <h2 className="text-2xl font-bold">{accountTypeDisplay(selectedAccount.tipoCuenta, selectedAccount.accountNumber)}</h2>
-              <p className="text-lg">Número de cuenta: {selectedAccount.accountNumber}</p>
-              <div className="balance-info mt-4 flex items-center justify-center">
-                <p className="text-lg mr-2">
-                  Saldo disponible: {showBalance ? `$${selectedAccount.accountBalance?.toFixed(2) || 'N/A'}` : '***'}
-                </p>
-                <button className="toggle-balance-button" onClick={() => setShowBalance(!showBalance)}>
-                  {showBalance ? <FaRegEye className="h-6 w-6" /> : <FaRegEyeSlash className="h-6 w-6" />}
-                </button>
+          <div className="min-h-screen flex flex-col">
+            {user && <HeaderDashboard firstName={user.nombre} lastName={user.apellido} />}
+            <div className="flex flex-grow">
+              <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+              <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-72' : 'ml-20'}`}>
+                {selectedAccount && (
+                  <div className="account-card text-center mb-8 bg-white shadow-md rounded-lg p-6 w-full max-w-md">
+                    <h2 className="text-2xl font-bold">{accountTypeDisplay(selectedAccount.tipoCuenta, selectedAccount.accountNumber)}</h2>
+                    <p className="text-lg">Número de cuenta: {selectedAccount.accountNumber}</p>
+                    <div className="balance-info mt-4 flex items-center justify-center">
+                      <p className="text-lg mr-2">
+                        Saldo disponible: {showBalance ? `$${selectedAccount.accountBalance?.toFixed(2) || 'N/A'}` : '***'}
+                      </p>
+                      <button className="toggle-balance-button" onClick={() => setShowBalance(!showBalance)}>
+                        {showBalance ? <FaRegEye className="h-6 w-6" /> : <FaRegEyeSlash className="h-6 w-6" />}
+                      </button>
+                    </div>
+                  </div>
+                )}
+                <h4 className="movements-title text-2xl font-bold mb-4">Tus últimos movimientos</h4>
+                <div className="movements-content w-full">
+                  {movementsContent}
+                </div>
+                <button className="filter-button mt-4 bg-sky-900 text-white px-4 py-2 rounded" onClick={handleFilterClick}>Filtrar por fechas</button>
               </div>
+              <button className="filterButton mt-4 bg-sky-900 text-white px-4 py-2 rounded" onClick={handleFilterClick}>Filtrar por fechas</button>
             </div>
-          )}
-          <h4 className="movements-title text-2xl font-bold mb-4">Tus últimos movimientos</h4>
-          <div className="movements-content w-full">
-            {movementsContent}
           </div>
-          <button className="filter-button mt-4 bg-blue-500 text-white px-4 py-2 rounded" onClick={handleFilterClick}>Filtrar por fechas</button>
         </div>
-        <button className="filterButton mt-4 bg-blue-500 text-white px-4 py-2 rounded" onClick={handleFilterClick}>Filtrar por fechas</button>
-      </div>
-    </div>
+      </div></>
   );
 };
-
 export default AccountMovements;
-
