@@ -6,8 +6,8 @@ import { AuthContext } from '../context/AuthContext';
 import Logo from '../assets/images/neologo.png';
 
 const userNavigation = [
-  { name: 'Actualizar perfil', href: '/update-profile' },
-  { name: 'Cerrar sesión', href: '#' },
+  { name: 'Ver perfil', path: '/update-profile' },
+  { name: 'Cerrar sesión', path: '#' },
 ];
 
 export const HeaderDashboard = () => {
@@ -15,9 +15,14 @@ export const HeaderDashboard = () => {
   const navigate = useNavigate();
 
   const handleLogout = async (e) => {
-    e.preventDefault();
     await logout(); // Asegúrate de que la sesión se cierre correctamente
     navigate('/login');
+  };
+
+  const handleNavigation = (path) => {
+    if (path !== '#') {
+      navigate(path);
+    }
   };
 
   return (
@@ -26,7 +31,7 @@ export const HeaderDashboard = () => {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center">
-              <a href="/" className="flex-shrink-0">
+              <a className="flex-shrink-0">
                 <img alt="Your Company" src={Logo} className="h-8 w-15" />
               </a>
             </div>
@@ -58,13 +63,12 @@ export const HeaderDashboard = () => {
                     {userNavigation.map((item) => (
                       <Menu.Item key={item.name}>
                         {({ active }) => (
-                          <a
-                            href={item.href}
-                            className={`block px-4 py-2 text-sm text-gray-700 ${active ? 'bg-gray-100' : ''}`}
-                            onClick={item.name === 'Cerrar sesión' ? handleLogout : undefined}
+                          <button
+                            onClick={() => item.name === 'Cerrar sesión' ? handleLogout() : handleNavigation(item.path)}
+                            className={`w-full block px-4 py-2 text-sm text-gray-700 ${active ? 'bg-gray-100' : ''}`}
                           >
                             {item.name}
-                          </a>
+                          </button>
                         )}
                       </Menu.Item>
                     ))}
