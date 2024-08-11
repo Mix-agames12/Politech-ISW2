@@ -60,13 +60,19 @@ const CrearCuenta = () => {
                 return;
             }
 
+            // Validar que la cédula y el correo ingresados coincidan con los del usuario autenticado
+            if (user.cedula !== cedula || user.correo !== correo) {
+                setError("La cédula o el correo electrónico no coinciden con el usuario autenticado.");
+                return;
+            }
+
             console.log('Verificando cliente con cédula:', cedula, 'y correo:', correo);
 
             const q = query(collection(db, 'clientes'), where('cedula', '==', cedula), where('correo', '==', correo));
             const querySnapshot = await getDocs(q);
             if (querySnapshot.empty) {
                 console.log('No se encontró ningún cliente con los datos proporcionados.');
-                setError("Los datos ingresados no coinciden. Intenta nuevamente");
+                setError("Los datos ingresados no coinciden. Intenta nuevamente.");
                 return;
             }
 
@@ -74,7 +80,7 @@ const CrearCuenta = () => {
             console.log('Datos del cliente:', clientData);
             if (clientData.id !== currentUser.uid) { // Verifica que el campo "id" coincida con el UID del usuario autenticado
                 console.log('El id del cliente no coincide con el usuario autenticado.');
-                setError("Los datos ingresados no coinciden. Intenta nuevamente");
+                setError("Los datos ingresados no coinciden. Intenta nuevamente.");
                 return;
             }
 
@@ -152,17 +158,21 @@ const CrearCuenta = () => {
                 <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
                 <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-72' : 'ml-72'}`}>
                     <h2 className="text-3xl font-bold mb-6">Crear Nueva Cuenta</h2>
-                    <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
+                    <div className="bg-white p-8 rounded shadow-md w-full max-w-lg">
                         {error && <p className="text-red-500 mb-4">{error}</p>}
-                        <input
-                            type="text"
-                            placeholder="Cédula"
-                            value={newAccount.cedula}
-                            maxLength={10}
-                            onChange={(e) => setNewAccount({ ...newAccount, cedula: e.target.value })}
-                            className="w-full px-4 py-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
+                        <div className="mb-4">
+                            <label className="block text-gray-700 text-sm font-bold mb-2">Cédula</label>
+                            <input
+                                type="text"
+                                placeholder="Cédula"
+                                value={newAccount.cedula}
+                                maxLength={10}
+                                onChange={(e) => setNewAccount({ ...newAccount, cedula: e.target.value })}
+                                className="w-full px-4 py-2 mb-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
                         <div className="mb-4 relative">
+                            <label className="block text-gray-700 text-sm font-bold mb-2">Correo Electrónico</label>
                             <input
                                 type="email"
                                 placeholder="Correo Electrónico"
@@ -179,14 +189,18 @@ const CrearCuenta = () => {
                                 <p className="text-red-500 text-sm mt-1">{emailErrorMessage}</p>
                             )}
                         </div>
-                        <select
-                            value={newAccount.tipoCuenta}
-                            onChange={(e) => setNewAccount({ ...newAccount, tipoCuenta: e.target.value })}
-                            className="w-full px-4 py-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            <option value="Ahorros">Ahorros</option>
-                            <option value="Corriente">Corriente</option>
-                        </select>
+
+                        <div className="mb-6">
+                            <label className="block text-gray-700 text-sm font-bold mb-2">Tipo de Cuenta</label>
+                            <select
+                                value={newAccount.tipoCuenta}
+                                onChange={(e) => setNewAccount({ ...newAccount, tipoCuenta: e.target.value })}
+                                className="w-full px-4 py-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                <option value="Ahorros">Ahorros</option>
+                                <option value="Corriente">Corriente</option>
+                            </select>
+                        </div>
                         <button 
                             onClick={handleAddAccount}
                             className="w-full bg-blue-500 text-white font-semibold py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-300"
