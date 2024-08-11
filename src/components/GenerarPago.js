@@ -172,7 +172,7 @@ const GenerarPago = () => {
           };
 
           setPaymentData(paymentData);
-          
+
 
           // Enviar correo de confirmación de pago
           const response = await fetch('https://politech-isw2.onrender.com/process-payment', {
@@ -205,15 +205,15 @@ const GenerarPago = () => {
     <div className="min-h-screen flex flex-col">
       <HeaderDashboard />
       <div className="flex flex-grow">
-        <div className="w-1/4">
+        <div className="w-1/4 ">
           <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         </div>
 
-        <div className={`main-content p-6 mx-auto flex flex-col items-center justify-center w-full pt-16 ${isSidebarOpen ? 'sm:ml-16 md:ml-16 lg:ml-32' : 'sm:w-8/12 md:ml-16 lg:ml-32'}`}>
+        <div className={`main-content p-6 mx-auto flex flex-col items-center justify-center w-full pt-16 ${isSidebarOpen ? 'ml-4 sm:ml-4 md:ml-16 lg:ml-32' : 'mr-4 sm:mr-4 md:mr-16 lg:mr-32'}`}>
           <div className="w-full flex">
-            <h2 className="flex-1 w-64 text-center text-2xl font-bold mb-4">Paga tu factura</h2>
+            <h2 className="flex-1 w-64 mt-4 text-center text-2xl font-bold mb-4">Paga tu factura</h2>
           </div>
-          <div className="w-1/2 bg-sky-50 p-5">
+          <div className="xl:w-1/2 md:3/4 sm:md:3/4 bg-sky-50 p-5">
             <label className='block text-center text-xl font-medium text-gray-700 mb-5'>SERVICIO DE {service}</label>
             <label className="block text-sm font-medium text-gray-700 mb-3">Valor a pagar</label>
             <h2 className='text-center font-black text-3xl text-gray-950 mb-6'>$ {amount}</h2>
