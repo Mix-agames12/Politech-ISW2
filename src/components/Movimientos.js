@@ -210,10 +210,12 @@ const Movimientos = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <HeaderDashboard />
-      <div className="flex flex-grow justify-center items-center">
-        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <div className="flex flex-grow justify-center items-center ">
+        <div className="xl:w-1/4 md:w-1/4 sm:w-6/12">
+          <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        </div>
         {/* Cuerpo del formulario */}
-        <div className={`main-content p-6 mx-auto flex flex-col items-center w-full pt-16 ${isSidebarOpen ? 'ml-72' : 'ml-20'} md:ml-0`}>
+        <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center xl:w-full md:w-5/12 sm:w-4/12 ${isSidebarOpen ? 'ml-72' : 'ml-20'} md:ml-0`}>
           <h2 className="text-2xl font-bold mb-4 text-center">Consulta de Movimientos</h2>
           <div className="w-full max-w-xl mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">Selecciona una cuenta:</label>
