@@ -220,6 +220,8 @@ const Transaction = () => {
             body: JSON.stringify({
               senderEmail: user.email,
               receiverEmail: receiverEmail,
+              senderName: user.name,
+              receiverName: receiverName,
               transactionDetails: {
                 senderAccount,
                 receiverAccount,

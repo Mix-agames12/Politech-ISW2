@@ -107,7 +107,7 @@ app.post('/verify-code', (req, res) => {
 
 // Ruta para procesar la transacción y enviar correos de confirmación
 app.post('/process-transaction', async (req, res) => {
-  const { senderEmail, receiverEmail, transactionDetails } = req.body;
+  const { senderEmail, receiverEmail, transactionDetails, receiverName, senderName } = req.body;
 
   try {
     // Enviar correo al remitente
@@ -123,7 +123,7 @@ app.post('/process-transaction', async (req, res) => {
           <ul>
             <li>Cuenta de Origen: ${transactionDetails.senderAccount}</li>
             <li>Cuenta de Destino: ${transactionDetails.receiverAccount}</li>
-            <li>Nombre del beneficiario: $${transactionDetails.receiverName}</li>
+            <li>Nombre del beneficiario: $${receiverName}</li>
             <li>Monto: $${transactionDetails.amount}</li>
             <li>Descripción: ${transactionDetails.description}</li>
             <li>Fecha: ${transactionDetails.date}</li>
@@ -148,7 +148,7 @@ app.post('/process-transaction', async (req, res) => {
           <ul>
             <li>Cuenta de Origen: ${transactionDetails.senderAccount}</li>
             <li>Cuenta de Destino: ${transactionDetails.receiverAccount}</li>
-            <li>Nombre del remitente: ${transactionDetails.senderName}</li>
+            <li>Nombre del remitente: ${senderName}</li>
             <li>Monto: $${transactionDetails.amount}</li>
             <li>Fecha: ${transactionDetails.date}</li>
           </ul>
