@@ -23,21 +23,14 @@ const GenerarPago = () => {
   const [isCodeSent, setIsCodeSent] = useState(false);
   const [inputCode, setInputCode] = useState('');
   const [isCodeVerified, setIsCodeVerified] = useState(false);
-  const [paymentDate, setPaymentDate] = useState(''); // Estado para la fecha de pago
-  const navigate = useNavigate(); // Para navegar de vuelta a la selección de servicios
+  const [paymentDate, setPaymentDate] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user) {
-      return;
-    }
+    if (!user) return;
 
     const fetchData = async () => {
       try {
-        const userDoc = await getDoc(doc(db, 'clientes', user.uid));
-        if (userDoc.exists()) {
-          // No necesitas usar `userData`, así que elimínalo
-        }
-
         const q = query(collection(db, 'cuentas'), where('id', '==', user.uid));
         const querySnapshot = await getDocs(q);
         const accountsList = querySnapshot.docs.map(doc => doc.data());
@@ -49,10 +42,9 @@ const GenerarPago = () => {
 
     fetchData();
 
-    // Obtener la fecha actual y formatearla
     const today = new Date();
     const formattedDate = `${today.getDate()}/${today.getMonth() + 1}/${today.getFullYear()}`;
-    setPaymentDate(formattedDate); // Establecer la fecha en el estado
+    setPaymentDate(formattedDate);
 
   }, [user]);
 
@@ -62,12 +54,7 @@ const GenerarPago = () => {
 
   const generateAccountName = (tipoCuenta, accountNumber) => {
     const suffix = accountNumber.slice(-4);
-    if (tipoCuenta.toLowerCase() === 'ahorros') {
-      return `AHO${suffix}`;
-    } else if (tipoCuenta.toLowerCase() === 'corriente') {
-      return `CORR${suffix}`;
-    }
-    return `CUENTA${suffix}`;
+    return tipoCuenta.toLowerCase() === 'ahorros' ? `AHO${suffix}` : `CORR${suffix}`;
   };
 
   const sendVerificationCode = async () => {
@@ -175,15 +162,24 @@ const GenerarPago = () => {
           };
           await addDoc(collection(db, 'transacciones'), payment);
 
-          setSuccessMessage('Pago de servicio realizado con éxito');
-          setPaymentData({
+          const paymentData = {
             senderAccount: senderData.accountNumber,
             senderName: `${user.nombre} ${user.apellido}`,
-            receiverName: service,
+            service: service,
             amount: payment.monto,
             description: payment.descripcion || 'N/A',
-            date: new Date().toLocaleDateString()
+            date: new Date().toLocaleDateString(),
+          };
+
+          setPaymentData(paymentData);
+
+          await fetch('http://localhost:5000/send-payment-confirmation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: user.email, paymentDetails: paymentData })
           });
+
+          setSuccessMessage('Pago de servicio realizado con éxito');
         } else {
           setError('Fondos insuficientes');
         }
@@ -195,7 +191,7 @@ const GenerarPago = () => {
   };
 
   const goBackToServices = () => {
-    navigate('/pago-servicios'); // Navegar de vuelta a la selección de servicios
+    navigate('/pago-servicios');
   };
 
   return (

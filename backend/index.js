@@ -123,7 +123,7 @@ app.post('/process-transaction', async (req, res) => {
           <ul>
             <li>Cuenta de Origen: ${transactionDetails.senderAccount}</li>
             <li>Cuenta de Destino: ${transactionDetails.receiverAccount}</li>
-            <li>Nombre del Beneficiario: ${transactionDetails.receiverName}</li> <!-- Nombre del beneficiario -->
+            <li>Nombre del Beneficiario: ${transactionDetails.receiverName}</li>
             <li>Monto: $${transactionDetails.amount}</li>
             <li>Descripción: ${transactionDetails.description}</li>
             <li>Fecha: ${transactionDetails.date}</li>
@@ -148,7 +148,7 @@ app.post('/process-transaction', async (req, res) => {
           <ul>
             <li>Cuenta de Origen: ${transactionDetails.senderAccount}</li>
             <li>Cuenta de Destino: ${transactionDetails.receiverAccount}</li>
-            <li>Nombre del Remitente: ${transactionDetails.senderName}</li> <!-- Nombre del remitente -->
+            <li>Nombre del Remitente: ${transactionDetails.senderName}</li>
             <li>Monto: $${transactionDetails.amount}</li>
             <li>Fecha: ${transactionDetails.date}</li>
           </ul>
@@ -158,6 +158,26 @@ app.post('/process-transaction', async (req, res) => {
     };
 
     await sgMail.send(receiverMsg);
+
+    // Enviar correo de confirmación al remitente (cliente que hizo el pago)
+    const confirmationMsg = {
+      to: senderEmail,
+      from: 'politechsw@gmail.com',
+      subject: 'Confirmación de Pago Realizado',
+      html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+          <h2 style="color: #333;">Hola,</h2>
+          <p style="color: #555;">Tu pago ha sido realizado con éxito. Aquí están los detalles:</p>
+          <p><strong>Valor:</strong> $${transactionDetails.amount}</p>
+          <p><strong>Desde:</strong> ${transactionDetails.senderAccount}</p>
+          <p><strong>Nombre del remitente:</strong> ${transactionDetails.senderName}</p>
+          <p><strong>Servicio:</strong> ${transactionDetails.receiverName}</p>
+          <p><strong>Descripción:</strong> ${transactionDetails.description || 'N/A'}</p>
+        </div>
+      `,
+    };
+
+    await sgMail.send(confirmationMsg);
 
     res.status(200).json({ success: true, message: 'Correos enviados con éxito' });
   } catch (error) {
