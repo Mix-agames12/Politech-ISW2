@@ -14,7 +14,7 @@ const Transaction = () => {
   const [description, setDescription] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [receiverName, setReceiverName] = useState('');
-  const [receiverEmail, setReceiverEmail] = useState(''); // State for the receiver's email
+  const [receiverEmail, setReceiverEmail] = useState(''); 
   const [error, setError] = useState('');
   const [receiverError, setReceiverError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -25,8 +25,6 @@ const Transaction = () => {
   const [isTransferCompleted, setIsTransferCompleted] = useState(false);
   const [showVerificationFields, setShowVerificationFields] = useState(false);
 
-  // Estados para manejar el código de verificación
-  //const [verificationCode, setVerificationCode] = useState('');
   const [isCodeSent, setIsCodeSent] = useState(false);
   const [inputCode, setInputCode] = useState('');
   const [isCodeVerified, setIsCodeVerified] = useState(false);
@@ -51,7 +49,6 @@ const Transaction = () => {
 
   const fetchReceiverEmail = async (accountNumber) => {
     try {
-      // First, find the account with the given account number in the 'cuentas' collection
       const q = query(collection(db, 'cuentas'), where('accountNumber', '==', accountNumber));
       const querySnapshot = await getDocs(q);
 
@@ -59,14 +56,11 @@ const Transaction = () => {
         const accountDoc = querySnapshot.docs[0];
         const accountData = accountDoc.data();
 
-        // Use the id from the 'cuentas' collection to find the corresponding document in the 'clientes' collection
         const clientDoc = await getDoc(doc(db, 'clientes', accountData.id));
         if (clientDoc.exists()) {
-          // Extract the correct field 'correo' instead of 'email'
-          const receiverEmail = clientDoc.data().correo; // Corrected to match your collection field name
-          const receiverName = `${clientDoc.data().nombre} ${clientDoc.data().apellido}`; // Assuming you want the full name too
+          const receiverEmail = clientDoc.data().correo; 
+          const receiverName = `${clientDoc.data().nombre} ${clientDoc.data().apellido}`; 
 
-          // Set the receiver's email and name in the state
           setReceiverEmail(receiverEmail);
           setReceiverName(receiverName);
         } else {
@@ -107,7 +101,6 @@ const Transaction = () => {
         body: JSON.stringify({ email: user.email })
       });
 
-
       const data = await response.json();
       if (data.success) {
         localStorage.setItem('sessionId', data.sessionId);
@@ -125,15 +118,11 @@ const Transaction = () => {
 
   const verifyCode = async () => {
     try {
-      const sessionId = localStorage.getItem('sessionId'); // O donde lo hayas almacenado
-      console.log('Session ID:', sessionId); // Verifica que el sessionId esté presente
-      console.log('Código ingresado:', inputCode); // Verifica que el código esté correcto
-
+      const sessionId = localStorage.getItem('sessionId');
       if (!sessionId || !inputCode) {
         setError('Faltan datos para la verificación.');
         return;
       }
-
 
       const response = await fetch('https://politech-isw2.onrender.com/verify-code', {
         method: 'POST',
@@ -141,10 +130,7 @@ const Transaction = () => {
         body: JSON.stringify({ sessionId, code: inputCode })
       });
 
-
       const data = await response.json();
-      console.log('Respuesta del servidor:', data);
-
       if (response.ok) {
         setIsCodeVerified(true);
         setSuccessMessage('Código verificado correctamente.');
@@ -157,9 +143,6 @@ const Transaction = () => {
       setError('Error al verificar el código.');
     }
   };
-
-
-
 
   const handleTransaction = async () => {
     setHasClickedSubmit(true);
@@ -225,7 +208,6 @@ const Transaction = () => {
             saldoActualizado: updatedReceiverBalance
           });
 
-          // Enviar correos de confirmación de transacción
           await fetch('https://politech-isw2.onrender.com/process-transaction', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -235,8 +217,8 @@ const Transaction = () => {
               transactionDetails: {
                 senderAccount,
                 receiverAccount,
-                receiverName, // Añadir el nombre del beneficiario
-                senderName: `${user.nombre} ${user.apellido}`, // Añadir el nombre del remitente
+                receiverName, 
+                senderName: `${user.nombre} ${user.apellido}`, 
                 amount,
                 description,
                 date: new Date().toLocaleDateString(),
@@ -319,8 +301,9 @@ const Transaction = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">Cuenta de origen</label>
             <div className="relative">
               <button
-                className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                onClick={() => setDropdownVisible(!dropdownVisible)}
+                className={`w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${isCodeSent ? 'bg-gray-200 cursor-not-allowed' : ''}`}
+                onClick={() => !isCodeSent && setDropdownVisible(!dropdownVisible)}
+                disabled={isCodeSent}
               >
                 {senderAccount ? `${senderAccount}` : 'Seleccione una cuenta'}
                 <span className="float-right">{dropdownVisible ? '▲' : '▼'}</span>
@@ -356,15 +339,16 @@ const Transaction = () => {
             <div className="flex items-center">
               <input
                 type="text"
-                className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className={`w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${isCodeSent ? 'bg-gray-200 cursor-not-allowed' : ''}`}
                 placeholder="Cuenta de destino"
                 value={receiverAccount}
                 onChange={handleReceiverAccountChange}
+                disabled={isCodeSent}
               />
               <button
-                className={`ml-2 px-3 py-2 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-600 ${receiverAccount.length !== 10 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-sky-900 text-white hover:bg-sky-600 cursor-pointer'}`}
+                className={`ml-2 px-3 py-2 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-600 ${receiverAccount.length !== 10 || isCodeSent ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-sky-900 text-white hover:bg-sky-600 cursor-pointer'}`}
                 onClick={validateReceiverAccount}
-                disabled={receiverAccount.length !== 10}
+                disabled={receiverAccount.length !== 10 || isCodeSent}
               >
                 Validar
               </button>
@@ -378,7 +362,7 @@ const Transaction = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">Nombre del receptor</label>
               <input
                 type="text"
-                className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className={`w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${isCodeSent ? 'bg-gray-200 cursor-not-allowed' : ''}`}
                 value={receiverName}
                 readOnly
               />
@@ -389,10 +373,11 @@ const Transaction = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">Monto</label>
             <input
               type="text"
-              className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className={`w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${isCodeSent ? 'bg-gray-200 cursor-not-allowed' : ''}`}
               placeholder="Monto"
               value={amount}
               onChange={handleAmountChange}
+              disabled={isCodeSent}
             />
             {hasClickedSubmit && (!amount || Number(amount) <= 0) && (
               <p className="text-red-600 text-xs mt-1">Debe ingresar un monto a transferir.</p>
@@ -409,9 +394,10 @@ const Transaction = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">Descripción (Opcional)</label>
             <input
               type="text"
-              className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className={`w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${isCodeSent ? 'bg-gray-200 cursor-not-allowed' : ''}`}
               placeholder="Descripción"
               onChange={(e) => setDescription(e.target.value)}
+              disabled={isCodeSent}
             />
           </div>
 
