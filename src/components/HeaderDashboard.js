@@ -14,7 +14,6 @@ export const HeaderDashboard = () => {
   const navigate = useNavigate();
 
   const handleLogout = async (e) => {
-    e.preventDefault();
     await logout();
     navigate('/login');
   };
@@ -32,7 +31,7 @@ export const HeaderDashboard = () => {
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
             <div className="flex-shrink-0">
-              <a href="/" className="flex items-center">
+              <a className="flex items-center">
                 <img alt="Your Company" src={Logo} className="h-8 w-15" />
               </a>
             </div>
@@ -50,7 +49,7 @@ export const HeaderDashboard = () => {
             </div>
             {/* Dropdown Menu for all screen sizes */}
             <Menu as="div" className="relative md:ml-4 md:mr-2 sm:ml-3 sm:mr-2">
-              <Menu.Button className="flex text-sm focus:outline-none focus:ring-2 focus:ring-white">
+              <Menu.Button className="flex text-sm">
                 <span className="sr-only">Abrir menú de usuario</span>
                 <div className="relative w-8 h-8 overflow-hidden bg-gray-100 rounded-full dark:bg-gray-600 flex  justify-center ">
                   <svg className="absolute w-11 h-11 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -71,13 +70,12 @@ export const HeaderDashboard = () => {
                   {userNavigation.map((item) => (
                     <Menu.Item key={item.name}>
                       {({ active }) => (
-                        <a
-                          href={item.href}
-                          className={`block px-4 py-2 text-sm text-gray-700 ${active ? 'bg-gray-100' : ''}`}
-                          onClick={item.name === 'Cerrar sesión' ? handleLogout : undefined}
+                        <button
+                          className={`block w-full px-4 py-2 text-sm text-gray-700 ${active ? 'bg-gray-100' : ''}`}
+                          onClick={() => item.name === 'Cerrar sesión' ? handleLogout() : handleNavigation(item.path)}
                         >
                           {item.name}
-                        </a>
+                        </button>
                       )}
                     </Menu.Item>
                   ))}
