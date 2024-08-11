@@ -14,7 +14,7 @@ const Transaction = () => {
   const [description, setDescription] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [receiverName, setReceiverName] = useState('');
-  const [receiverEmail, setReceiverEmail] = useState(''); // Nuevo estado para el correo del receptor
+  const [receiverEmail, setReceiverEmail] = useState(''); // State for the receiver's email
   const [error, setError] = useState('');
   const [receiverError, setReceiverError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -32,19 +32,9 @@ const Transaction = () => {
 
   useEffect(() => {
     if (!user) return;
-  
+
     const fetchData = async () => {
       try {
-        // Fetch the receiver's email from the 'clientes' collection using the user's ID
-        const userDoc = await getDoc(doc(db, 'clientes', user.uid));
-        if (userDoc.exists()) {
-          // Extract the correct field 'correo' instead of 'email'
-          const receiverEmail = userDoc.data().correo; // Corrected to match your collection field name
-          console.log(receiverEmail);
-          setReceiverEmail(receiverEmail);
-        }
-  
-        // Query the 'cuentas' collection for accounts belonging to the user
         const q = query(collection(db, 'cuentas'), where('id', '==', user.uid));
         const querySnapshot = await getDocs(q);
         const accountsList = querySnapshot.docs.map(doc => doc.data());
@@ -53,9 +43,40 @@ const Transaction = () => {
         console.error("Error fetching data: ", error);
       }
     };
-  
+
     fetchData();
   }, [user]);
+
+  const fetchReceiverEmail = async (accountNumber) => {
+    try {
+      // First, find the account with the given account number in the 'cuentas' collection
+      const q = query(collection(db, 'cuentas'), where('accountNumber', '==', accountNumber));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        const accountDoc = querySnapshot.docs[0];
+        const accountData = accountDoc.data();
+
+        // Use the id from the 'cuentas' collection to find the corresponding document in the 'clientes' collection
+        const clientDoc = await getDoc(doc(db, 'clientes', accountData.id));
+        if (clientDoc.exists()) {
+          // Extract the correct field 'correo' instead of 'email'
+          const receiverEmail = clientDoc.data().correo; // Corrected to match your collection field name
+          const receiverName = `${clientDoc.data().nombre} ${clientDoc.data().apellido}`; // Assuming you want the full name too
+
+          // Set the receiver's email and name in the state
+          setReceiverEmail(receiverEmail);
+          setReceiverName(receiverName);
+        } else {
+          console.error('No client found with the provided ID.');
+        }
+      } else {
+        console.error('No account found with the provided account number.');
+      }
+    } catch (error) {
+      console.error('Error fetching receiver email:', error);
+    }
+  };
 
   const generateAccountName = (tipoCuenta, accountNumber) => {
     const suffix = accountNumber.slice(-4);
@@ -262,37 +283,7 @@ const Transaction = () => {
       return;
     }
     try {
-      const accountsCollection = collection(db, 'cuentas');
-      const receiverQuery = query(accountsCollection, where('accountNumber', '==', receiverAccount));
-      const receiverSnapshot = await getDocs(receiverQuery);
-      const receiverDoc = receiverSnapshot.docs[0];
-
-      if (receiverDoc) {
-        const receiverData = receiverDoc.data();
-
-        const clienteDoc = await getDoc(doc(db, 'clientes', receiverData.id));
-
-        if (clienteDoc.exists()) {
-          const clienteData = clienteDoc.data();
-
-          if (clienteData.nombre && clienteData.apellido) {
-            const fullName = `${clienteData.nombre.trim()} ${clienteData.apellido.trim()}`;
-
-            setReceiverName(fullName);
-            setTransactionData((prev) => ({
-              ...prev,
-              receiverName: fullName
-            }));
-            setReceiverError('');
-          } else {
-            setReceiverError('El cliente no tiene nombre o apellido definidos.');
-          }
-        } else {
-          setReceiverError('Cliente no encontrado.');
-        }
-      } else {
-        setReceiverError('Cuenta de destino no encontrada.');
-      }
+      await fetchReceiverEmail(receiverAccount);
     } catch (error) {
       console.error('Error al validar la cuenta de destino:', error);
       setReceiverError('Error al validar la cuenta de destino.');
