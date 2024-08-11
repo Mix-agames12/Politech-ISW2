@@ -95,7 +95,7 @@ const Transaction = () => {
     }
 
     try {
-      const response = await fetch('https://politech-isw2.onrender.com/send-code', {
+      const response = await fetch('https://politech-isw2.onrender.com/auth/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: user.email })
@@ -124,7 +124,7 @@ const Transaction = () => {
         return;
       }
 
-      const response = await fetch('https://politech-isw2.onrender.com/verify-code', {
+      const response = await fetch('https://politech-isw2.onrender.com/auth/verify-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId, code: inputCode })
@@ -208,7 +208,7 @@ const Transaction = () => {
             saldoActualizado: updatedReceiverBalance
           });
 
-          await fetch('https://politech-isw2.onrender.com/process-transfer', {
+          await fetch('https://politech-isw2.onrender.com/transfers/process-transfer', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
