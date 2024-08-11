@@ -6,9 +6,9 @@ import bcrypt from 'bcryptjs';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import { useNavigate } from 'react-router-dom';
-import { HeaderHome } from './HeaderHome';
 import { FaRegEye, FaRegEyeSlash, FaArrowLeft } from 'react-icons/fa';
 import Buho from '../assets/images/buho.png';
+import { HeaderLogin } from './HeaderLogin';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -34,6 +34,7 @@ const SignUp = () => {
   const [open, setOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [usernameHasUppercase, setUsernameHasUppercase] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -107,12 +108,12 @@ const SignUp = () => {
     return age >= 18;
   };
 
-  const generateAccountNumber = (accountType) => {
+  const generateAccountNumber = () => {
     let accountNumber = '22';
     while (accountNumber.length < 10) {
       accountNumber += Math.floor(Math.random() * 10);
     }
-    return accountType === 'ahorros' ? `AHO${accountNumber.slice(-4)}` : `CORR${accountNumber.slice(-4)}`;
+    return accountNumber;
   };
 
   const handleSignUp = async (e) => {
@@ -127,7 +128,6 @@ const SignUp = () => {
       const user = userCredential.user;
       console.log('Usuario creado:', user.uid);
 
-      // Actualiza el perfil del usuario para incluir displayName
       await updateProfile(user, {
         displayName: `${firstName} ${lastName}`,
       });
@@ -137,7 +137,7 @@ const SignUp = () => {
         correo: email,
         contraseña: bcrypt.hashSync(password, 10),
         username,
-        verified: false, // Campo adicional
+        verified: false, 
       });
 
       await setDoc(doc(db, 'clientes', user.uid), {
@@ -149,13 +149,18 @@ const SignUp = () => {
         fechaNacimiento: dateOfBirth,
       });
 
-      const accountNumber = generateAccountNumber('ahorros');
+      const accountNumber = generateAccountNumber();
+      const accountType = 'ahorros';  // Cambia esto si tienes otro tipo de cuenta
+      const accountName = accountType === 'ahorros' 
+        ? `AHO${accountNumber.slice(-4)}` 
+        : `CORR${accountNumber.slice(-4)}`;
+
       await setDoc(doc(db, 'cuentas', user.uid), {
         id: user.uid,
         accountBalance: 100,
-        accountNumber: accountNumber,
-        accountName: username,
-        tipoCuenta: 'ahorros',
+        accountNumber: accountNumber,  // Guarda el número completo
+        accountName: accountName,
+        tipoCuenta: accountType,
       });
 
       const actionCodeSettings = {
@@ -197,6 +202,29 @@ const SignUp = () => {
     setPasswordsMatch(value === password);
   };
 
+  const handleFirstNameChange = (value) => {
+    const formattedValue = value.replace(/[^a-zA-Z\s]/g, '').toLowerCase().replace(/^\w/, c => c.toUpperCase()).slice(0, 25);
+    setFirstName(formattedValue);
+  };
+
+  const handleLastNameChange = (value) => {
+    const formattedValue = value.replace(/[^a-zA-Z\s]/g, '').toLowerCase().replace(/^\w/, c => c.toUpperCase()).slice(0, 25);
+    setLastName(formattedValue);
+  };
+
+  const handleUsernameChange = (value) => {
+    const hasUppercase = /[A-Z]/.test(value);
+    setUsernameHasUppercase(hasUppercase);
+
+    const formattedValue = value.replace(/[^a-z0-9]/g, '').toLowerCase().slice(0, 25);
+    setUsername(formattedValue);
+  };
+
+  const handleIdNumberChange = (value) => {
+    const formattedValue = value.replace(/\D/g, '');
+    setIdNumber(formattedValue);
+  };
+
   const handleClose = (event, reason) => {
     if (reason === 'clickaway') {
       return;
@@ -206,7 +234,7 @@ const SignUp = () => {
 
   return (
     <>
-      <HeaderHome />
+      <HeaderLogin />
       <div className="min-w-full min-h-screen absolute flex flex-col items-center justify-center bg-gray-100">
         <div className="relative w-full max-w-2xl mx-auto flex flex-col items-center py-5 mt-24 bg-white shadow-lg rounded-lg">
           <button
@@ -218,19 +246,22 @@ const SignUp = () => {
           </button>
           <div className="sm:mx-auto sm:w-full sm:max-w-lg">
             <img className="mx-auto h-10 w-auto" src={Buho} alt="Your Company" />
-            <h2 className="mt-5 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">Registrarse</h2>
+            <h2 className="mt-5 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">Registro</h2>
             <p className="mt-2 mb-6 text-center text-sm text-gray-600">Ingresa tus datos personales:</p>
           </div>
           <form className="grid grid-cols-1 md:grid-cols-2 p-10 pt-3 gap-3 gap-x-9 w-full" onSubmit={handleSignUp}>
             <div>
-              <label htmlFor="firstName" className="block text-sm font-medium leading-6 text-gray-900">Nombre</label>
+              <label htmlFor="firstName" className="block text-sm font-medium leading-6 text-gray-900">
+                Nombre <span title="Campo obligatorio" style={{ cursor: 'pointer' }}>*</span>
+              </label>
               <div className="mt-2">
                 <input
                   id="firstName"
                   name="firstName"
                   type="text"
                   value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
+                  onChange={(e) => handleFirstNameChange(e.target.value)}
+                  maxLength={25}
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   placeholder="Nombre"
                   required
@@ -239,14 +270,17 @@ const SignUp = () => {
               </div>
             </div>
             <div>
-              <label htmlFor="lastName" className="block text-sm font-medium leading-6 text-gray-900">Apellido</label>
+              <label htmlFor="lastName" className="block text-sm font-medium leading-6 text-gray-900">
+                Apellido <span title="Campo obligatorio " style={{ cursor: 'pointer' }}>*</span>
+              </label>
               <div className="mt-2">
                 <input
                   id="lastName"
                   name="lastName"
                   type="text"
                   value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
+                  onChange={(e) => handleLastNameChange(e.target.value)}
+                  maxLength={25}
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   placeholder="Apellido"
                   required
@@ -255,7 +289,9 @@ const SignUp = () => {
               </div>
             </div>
             <div>
-              <label htmlFor="idNumber" className="block text-sm font-medium leading-6 text-gray-900">Cédula</label>
+              <label htmlFor="idNumber" className="block text-sm font-medium leading-6 text-gray-900">
+                Cédula <span title="Campo obligatorio" style={{ cursor: 'pointer' }}>*</span>
+              </label>
               <div className="mt-2">
                 <input
                   id="idNumber"
@@ -263,7 +299,7 @@ const SignUp = () => {
                   type="text"
                   maxLength={10}
                   value={idNumber}
-                  onChange={(e) => setIdNumber(e.target.value)}
+                  onChange={(e) => handleIdNumberChange(e.target.value)}
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   placeholder="Cédula"
                   required
@@ -272,7 +308,9 @@ const SignUp = () => {
               </div>
             </div>
             <div>
-              <label htmlFor="dateOfBirth" className="block text-sm font-medium leading-6 text-gray-900">Fecha de Nacimiento</label>
+              <label htmlFor="dateOfBirth" className="block text-sm font-medium leading-6 text-gray-900">
+                Fecha de Nacimiento <span title="Campo obligatorio" style={{ cursor: 'pointer' }}>*</span>
+              </label>
               <div className="mt-2">
                 <input
                   id="dateOfBirth"
@@ -287,7 +325,9 @@ const SignUp = () => {
               </div>
             </div>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">Correo electrónico</label>
+              <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">
+                Correo electrónico <span title="Campo obligatorio" style={{ cursor: 'pointer' }}>*</span>
+              </label>
               <div className="mt-2">
                 <input
                   id="email"
@@ -303,23 +343,29 @@ const SignUp = () => {
               </div>
             </div>
             <div>
-              <label htmlFor="username" className="block text-sm font-medium leading-6 text-gray-900">Nombre de usuario</label>
+              <label htmlFor="username" className="block text-sm font-medium leading-6 text-gray-900">
+                Nombre de usuario <span title="Campos obligatorios" style={{ cursor: 'pointer' }}>*</span>
+              </label>
               <div className="mt-2">
                 <input
                   id="username"
                   name="username"
                   type="text"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) => handleUsernameChange(e.target.value)}
+                  maxLength={25}
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   placeholder="Nombre de usuario"
                   required
                 />
                 {error.username && <p className="mt-2 text-sm text-red-600">{error.username}</p>}
+                {usernameHasUppercase && <p className="mt-2 text-sm text-red-600">El nombre de usuario debe ingresarse en minúsculas.</p>}
               </div>
             </div>
             <div className="relative mb-2">
-              <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">Contraseña</label>
+              <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">
+                Contraseña <span title="Campo obligatorio" style={{ cursor: 'pointer' }}>*</span>
+              </label>
               <div className="mt-2 flex items-center relative">
                 <input
                   id="password"
@@ -358,7 +404,9 @@ const SignUp = () => {
               {error.password && <p className="mt-2 text-sm text-red-600">{error.password}</p>}
             </div>
             <div className="relative mb-2">
-              <label htmlFor="confirmPassword" className="block text-sm font-medium leading-6 text-gray-900">Repetir contraseña</label>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium leading-6 text-gray-900">
+                Repetir contraseña <span title="Campo obligatorio" style={{ cursor: 'pointer' }}>*</span>
+              </label>
               <div className="mt-2 flex items-center relative">
                 <input
                   id="confirmPassword"

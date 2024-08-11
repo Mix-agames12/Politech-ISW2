@@ -48,6 +48,7 @@ const GestionarCuentas = () => {
   };
 
   const formatAccountNumber = (accountNumber) => {
+    // Aquí podrías aplicar cualquier formateo que desees al número de cuenta
     return accountNumber;
   };
 
@@ -74,13 +75,13 @@ const GestionarCuentas = () => {
     );
 
     onSnapshot(savingsQuery, (querySnapshot) => {
-      let accounts = [];
-      querySnapshot.forEach(doc => accounts.push({
+      let savings = [];
+      querySnapshot.forEach(doc => savings.push({
         id: doc.id,
         ...doc.data()
       }));
-      console.log('Ahorros:', accounts); // Verificar consulta de ahorros
-      setSavingsAccounts(accounts);
+      console.log('Ahorros:', savings); // Verificar consulta de ahorros
+      setSavingsAccounts(savings);
     }, error => {
       console.error('Error al obtener cuentas de ahorros:', error);
     });
@@ -89,22 +90,28 @@ const GestionarCuentas = () => {
     const currentQuery = query(
       collection(db, 'cuentas'),
       where('id', '==', userId),
-      where('tipoCuenta', '==', 'corriente')
+      where('tipoCuenta', '==', 'Corriente')
     );
 
     onSnapshot(currentQuery, (querySnapshot) => {
-      let accounts = [];
-      querySnapshot.forEach(doc => accounts.push({
+      let currents = [];
+      querySnapshot.forEach(doc => currents.push({
         id: doc.id,
         ...doc.data()
       }));
-      console.log('Corriente:', accounts); // Verificar consulta de cuentas corrientes
-      setCurrentAccounts(accounts);
+      console.log('Corrientes:', currents); // Verificar consulta de cuentas corrientes
+      setCurrentAccounts(currents);
     }, error => {
       console.error('Error al obtener cuentas corrientes:', error);
     });
   };
 
+  // Mostrar un mensaje de carga mientras se verifica la autenticación
+  if (authLoading) {
+    return <p>Cargando...</p>;
+  }
+
+  // Si el usuario no está autenticado, la redirección ya se manejó en useEffect
   return (
     <div className="min-h-screen flex flex-col">
       <HeaderDashboard />
