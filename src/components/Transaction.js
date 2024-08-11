@@ -208,7 +208,7 @@ const Transaction = () => {
             saldoActualizado: updatedReceiverBalance
           });
 
-          await fetch('https://politech-isw2.onrender.com/process-transaction', {
+          await fetch('https://politech-isw2.onrender.com/process-transfer', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
