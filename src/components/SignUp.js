@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaRegEye, FaRegEyeSlash, FaArrowLeft } from 'react-icons/fa';
 import Buho from '../assets/images/buho.png';
 import { HeaderLogin } from './HeaderLogin';
+import  Footer  from './Footer';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
