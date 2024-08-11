@@ -122,32 +122,32 @@ const GenerarPago = () => {
       setError('Debe verificar el código enviado a su correo antes de realizar el pago.');
       return;
     }
-
+  
     setHasClickedSubmit(true);
     setError('');
-
+  
     if (!senderAccount) {
       setError('Por favor, proporcione la información solicitada.');
       return;
     }
-
+  
     try {
       const accountsCollection = collection(db, 'cuentas');
-
+  
       const senderQuery = query(accountsCollection, where('accountNumber', '==', senderAccount));
       const senderSnapshot = await getDocs(senderQuery);
       const senderDoc = senderSnapshot.docs[0];
-
+  
       if (senderDoc) {
         const senderData = senderDoc.data();
-
+  
         if (senderData.accountBalance >= amount) {
           const updatedSenderBalance = senderData.accountBalance - amount;
-
+  
           await updateDoc(doc(db, 'cuentas', senderDoc.id), {
             accountBalance: updatedSenderBalance
           });
-
+  
           const payment = {
             tipo: 'pagoServicio',
             tipoMovimiento: 'debito',
@@ -160,7 +160,7 @@ const GenerarPago = () => {
             saldoActualizado: updatedSenderBalance
           };
           await addDoc(collection(db, 'transacciones'), payment);
-
+  
           const paymentData = {
             senderAccount: senderData.accountNumber,
             senderName: `${user.nombre} ${user.apellido}`,
@@ -169,8 +169,20 @@ const GenerarPago = () => {
             description: payment.descripcion || 'N/A',
             date: new Date().toLocaleDateString(),
           };
-
+  
           setPaymentData(paymentData);
+  
+          // Enviar correo de confirmación de pago
+          const response = await fetch('https://politech-isw2.onrender.com/process-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: user.email, paymentDetails: paymentData })
+          });
+  
+          if (!response.ok) {
+            throw new Error('Error al enviar el correo de confirmación');
+          }
+  
           setSuccessMessage('Pago de servicio realizado con éxito');
         } else {
           setError('Fondos insuficientes');
@@ -180,7 +192,7 @@ const GenerarPago = () => {
       console.error('Error al procesar el pago del servicio:', error);
       setError('Error al procesar el pago del servicio');
     }
-  };
+  };  
 
   const goBackToServices = () => {
     navigate('/pago-servicios');
@@ -330,3 +342,4 @@ const GenerarPago = () => {
 };
 
 export default GenerarPago;
+
