@@ -220,11 +220,11 @@ const Transaction = () => {
             body: JSON.stringify({
               senderEmail: user.email,
               receiverEmail: receiverEmail,
-              senderName: user.name,
-              receiverName: receiverName,
               transactionDetails: {
                 senderAccount,
                 receiverAccount,
+                receiverName, // Añadir el nombre del beneficiario
+                senderName: `${user.nombre} ${user.apellido}`, // Añadir el nombre del remitente
                 amount,
                 description,
                 date: new Date().toLocaleDateString(),
