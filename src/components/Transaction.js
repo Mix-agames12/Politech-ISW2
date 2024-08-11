@@ -39,6 +39,7 @@ const Transaction = () => {
         if (userDoc.exists()) {
           // Extrae el correo del usuario receptor y almacénalo en el estado
           const receiverEmail = userDoc.data().email;
+          console.log(receiverEmail);
           setReceiverEmail(receiverEmail);
         }
 
