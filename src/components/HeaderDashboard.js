@@ -30,22 +30,24 @@ export const HeaderDashboard = () => {
                 <img alt="Your Company" src={Logo} className="h-8 w-15" />
               </a>
             </div>
-            {/* Centered Profile Icon and Name */}
+            {/* Profile Icon and Name */}
             <div className="flex-grow flex items-center justify-center md:justify-end">
               {!loading && user && (
-                <span className="text-white flex items-center space-x-2 ml-4 sm:ml-6">
-                  <div className="relative w-8 h-8 overflow-hidden ">
-                  </div>
-                  <span>Hola, {user.nombre} {user.apellido}</span>
-                </span>
+                <>
+                  {/* Saludo en pantallas medianas y grandes */}
+                  <span className="hidden md:flex text-white items-center space-x-2 ml-4">
+                    <span>Hola, {user.nombre} {user.apellido}</span>
+                  </span>
+                  {/* Icono del usuario, visible en todos los tamaños */}
+                </>
               )}
             </div>
             {/* Dropdown Menu for all screen sizes */}
-            <Menu as="div" className="relative ml-4 mr-4 sm:ml-2 mr-2">
+            <Menu as="div" className="relative md:ml-4 md:mr-2 sm:ml-3 sm:mr-2">
               <Menu.Button className="flex text-sm focus:outline-none focus:ring-2 focus:ring-white">
                 <span className="sr-only">Abrir menú de usuario</span>
-                <div className="relative w-8 h-8 overflow-hidden bg-gray-100 rounded-full dark:bg-gray-600">
-                  <svg className="absolute w-10 h-10 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <div className="relative w-8 h-8 overflow-hidden bg-gray-100 rounded-full dark:bg-gray-600 flex  justify-center ">
+                  <svg className="absolute w-11 h-11 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                     <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd"></path>
                   </svg>
                 </div>
