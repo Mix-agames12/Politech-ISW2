@@ -25,7 +25,7 @@ const BillsPayment = () => {
           <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         </div>
 
-        <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-16' : 'ml-16'}`}>
+        <div className={`main-content p-6 mx-auto flex flex-col items-center justify-center w-full pt-16 ${isSidebarOpen ? 'sm:ml-0 md:ml-16 lg:ml-32' : 'sm:ml-0 md:ml-16 lg:ml-32'}`}>
           <h2 className="text-2xl font-bold mb-4">Pago de servicios</h2>
           <div className="w-full mb-6">
             <h3 className="text-xl font-semibold mb-4 text-left">Servicios disponibles</h3>
