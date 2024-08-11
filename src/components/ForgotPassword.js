@@ -24,12 +24,18 @@ const ForgotPassword = () => {
     return emailRegex.test(email);
   };
 
-  const checkEmailExists = async (email) => {
-    // Verificar la existencia del correo electrónico en Firestore
+  const checkEmailExistsAndVerified = async (email) => {
+    // Verificar la existencia del correo electrónico y si está verificado en Firestore
     const usersCollection = collection(db, 'users');
     const emailQuery = query(usersCollection, where('correo', '==', email));
     const emailSnapshot = await getDocs(emailQuery);
-    return !emailSnapshot.empty;
+
+    if (emailSnapshot.empty) {
+      return { exists: false, verified: false };
+    }
+
+    const userDoc = emailSnapshot.docs[0].data();
+    return { exists: true, verified: userDoc.verified === true };
   };
 
   const handlePasswordReset = async () => {
@@ -40,9 +46,14 @@ const ForgotPassword = () => {
       return;
     }
 
-    const emailExists = await checkEmailExists(email);
-    if (!emailExists) {
+    const { exists, verified } = await checkEmailExistsAndVerified(email);
+    if (!exists) {
       setError('El correo electrónico no está registrado.');
+      return;
+    }
+
+    if (!verified) {
+      setError('El usuario no está verificado. Por favor verifica tu cuenta antes de restablecer la contraseña.');
       return;
     }
 
@@ -108,7 +119,7 @@ const ForgotPassword = () => {
                 onClick={handlePasswordReset}
                 className="flex w-full justify-center rounded-md bg-sky-900 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-sky-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
-                Restablecer Contraseña
+                Enviar correo electrónico
               </button>
             </div>
           </div>

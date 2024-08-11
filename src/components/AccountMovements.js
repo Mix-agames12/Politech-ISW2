@@ -4,16 +4,12 @@ import { collection, query, where, getDocs, getDoc, doc, onSnapshot } from 'fire
 import { db } from '../firebaseConfig';
 import { Sidebar } from '../components/Sidebar';
 import { HeaderDashboard } from './HeaderDashboard';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa';
 import { AuthContext } from '../context/AuthContext';
 
 const AccountMovements = () => {
   const { accountNumber } = useParams();
   const [movements, setMovements] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [setUser] = useState(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Initially open
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [showBalance, setShowBalance] = useState(true);
   const navigate = useNavigate();
@@ -173,11 +169,6 @@ const AccountMovements = () => {
     }
     return lastFourDigits;
   };
-
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
-
   const movementsContent = useMemo(() => {
     if (movements.length > 0) {
       return Object.entries(
@@ -238,61 +229,33 @@ const AccountMovements = () => {
   }
 
   return (
-    <><div className="">
-      {user && (
-        <HeaderDashboard firstName={user.nombre} lastName={user.apellido} />
-      )}
-    </div><div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-72' : 'ml-72'}`}>
-        <div className="sidebar">
-          <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-        </div>
-        {selectedAccount && (
-          <div className="accountCard text-center mb-8">
-            <h2 className="text-2xl font-bold">{accountTypeDisplay(selectedAccount.tipoCuenta, selectedAccount.accountNumber)}</h2>
-            <p className="text-lg">Número de cuenta: {selectedAccount.accountNumber}</p>
-            <div className="balance-info mt-4">
-              <p className="text-lg">
-                Saldo disponible: {showBalance ? `$${selectedAccount.accountBalance?.toFixed(2) || 'N/A'}` : '***'}
-              </p>
-              <button className="toggleBalanceButton mt-2 h-10" onClick={() => setShowBalance(!showBalance)}>
-                {showBalance ? <FaEye className="text-2xl" /> : <FaEyeSlash className="text-2xl" />}
-              </button>
-            </div>
-          </div>
-        )}
-        <h4 className="movements-title text-2xl font-bold mb-4">Tus últimos movimientos</h4>
-        <div className="movements-content">
-          {movementsContent}
-          <div className="min-h-screen flex flex-col">
-            {user && <HeaderDashboard firstName={user.nombre} lastName={user.apellido} />}
-            <div className="flex flex-grow">
-              <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-              <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-72' : 'ml-20'}`}>
-                {selectedAccount && (
-                  <div className="account-card text-center mb-8 bg-white shadow-md rounded-lg p-6 w-full max-w-md">
-                    <h2 className="text-2xl font-bold">{accountTypeDisplay(selectedAccount.tipoCuenta, selectedAccount.accountNumber)}</h2>
-                    <p className="text-lg">Número de cuenta: {selectedAccount.accountNumber}</p>
-                    <div className="balance-info mt-4 flex items-center justify-center">
-                      <p className="text-lg mr-2">
-                        Saldo disponible: {showBalance ? `$${selectedAccount.accountBalance?.toFixed(2) || 'N/A'}` : '***'}
-                      </p>
-                      <button className="toggle-balance-button" onClick={() => setShowBalance(!showBalance)}>
-                        {showBalance ? <FaRegEye className="h-6 w-6" /> : <FaRegEyeSlash className="h-6 w-6" />}
-                      </button>
-                    </div>
-                  </div>
-                )}
-                <h4 className="movements-title text-2xl font-bold mb-4">Tus últimos movimientos</h4>
-                <div className="movements-content w-full">
-                  {movementsContent}
-                </div>
-                <button className="filter-button mt-4 bg-sky-900 text-white px-4 py-2 rounded" onClick={handleFilterClick}>Filtrar por fechas</button>
+    <div className="min-h-screen flex flex-col">
+      {user && <HeaderDashboard firstName={user.nombre} lastName={user.apellido} />}
+      <div className="flex flex-grow">
+        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-72' : 'ml-20'}`}>
+          {selectedAccount && (
+            <div className="account-card text-center mb-8 bg-white shadow-md rounded-lg p-6 w-full max-w-md">
+              <h2 className="text-2xl font-bold">{accountTypeDisplay(selectedAccount.tipoCuenta, selectedAccount.accountNumber)}</h2>
+              <p className="text-lg">Número de cuenta: {selectedAccount.accountNumber}</p>
+              <div className="balance-info mt-4 flex items-center justify-center">
+                <p className="text-lg mr-2">
+                  Saldo disponible: {showBalance ? `$${selectedAccount.accountBalance?.toFixed(2) || 'N/A'}` : '***'}
+                </p>
+                <button className="toggle-balance-button" onClick={() => setShowBalance(!showBalance)}>
+                  {showBalance ? <FaRegEye className="h-6 w-6" /> : <FaRegEyeSlash className="h-6 w-6" />}
+                </button>
               </div>
-              <button className="filterButton mt-4 bg-sky-900 text-white px-4 py-2 rounded" onClick={handleFilterClick}>Filtrar por fechas</button>
             </div>
+          )}
+          <h4 className="movements-title text-2xl font-bold mb-4">Tus últimos movimientos</h4>
+          <div className="movements-content w-full">
+            {movementsContent}
           </div>
+          <button className="filter-button mt-4 bg-blue-500 text-white px-4 py-2 rounded" onClick={handleFilterClick}>Filtrar por fechas</button>
         </div>
-      </div></>
+      </div>
+    </div>
   );
 };
 export default AccountMovements;

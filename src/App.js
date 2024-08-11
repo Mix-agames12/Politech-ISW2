@@ -1,6 +1,6 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Login  from './components/Login';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import Login from './components/Login';
 import SignUp from './components/SignUp';
 import PasswordReset from './components/PasswordReset';
 import UpdateProfile from './components/UpdateProfile';
@@ -13,19 +13,36 @@ import CrearCuenta from './components/CrearCuenta';
 import AccountMovements from './components/AccountMovements';
 import ForgotPassword from './components/ForgotPassword';
 import VerifyEmail from './components/VerifyEmail'; // Importar el componente VerifyEmail
+import BillsPayment from './components/BillsPayment';
+import GenerarPago from './components/GenerarPago';
 import { AuthProvider } from './context/AuthContext';
+import { useLocation } from 'react-router-dom';
 
-function App() {
+const AppRoutes = () => {
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const mode = queryParams.get('mode');
+  const oobCode = queryParams.get('oobCode');
+
+  if (mode === 'resetPassword' && oobCode) {
+    return <PasswordReset />;
+  } else if (mode === 'verifyEmail' && oobCode) {
+    return <VerifyEmail />;
+  } else {
+    return <Home />;
+  }
+};
+
+const App = () => {
   return (
     <AuthProvider>
       <Router>
         <div className="App w-100 h-auto">
           <div className="container">
             <Routes>
-              <Route path="/" element={<Home />} />
+              <Route path="/*" element={<AppRoutes />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<SignUp />} />
-              <Route path="/password-reset" element={<PasswordReset />} />
               <Route path="/update-profile" element={<UpdateProfile />} />
               <Route path="/transaction" element={<Transaction />} />
               <Route path="/gestionar-cuentas" element={<GestionarCuentas />} />
@@ -35,12 +52,14 @@ function App() {
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/movimientos/:accountNumber" element={<AccountMovements />} />
               <Route path="/verify-email" element={<VerifyEmail />} /> {/* Añadir la ruta de VerifyEmail */}
+              <Route path="/pago-servicios" element={<BillsPayment />} />
+              <Route path="/generar-pago" element={<GenerarPago />} />
             </Routes>
           </div>
         </div>
       </Router>
     </AuthProvider>
   );
-}
+};
 
 export default App;

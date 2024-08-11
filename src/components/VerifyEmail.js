@@ -1,64 +1,59 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
+import { auth, db } from '../firebaseConfig'; // Asegúrate de exportar `db` desde `firebaseConfig`
 import { useLocation, useNavigate } from 'react-router-dom';
-import { auth, db } from '../firebaseConfig';
 import { applyActionCode } from 'firebase/auth';
-import { doc, updateDoc, getDoc } from 'firebase/firestore';
+import { doc, updateDoc } from 'firebase/firestore'; // Importar para actualizar Firestore
 import { HeaderHome } from './HeaderHome';
+import Buho from '../assets/images/buho.png';
 
 const VerifyEmail = () => {
-  const [message, setMessage] = useState('Verificación de correo electrónico');
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
-    const oobCode = queryParams.get('oobCode'); // Código de verificación
-    const uid = queryParams.get('uid'); // ID del usuario
+    const actionCode = queryParams.get('oobCode'); // Usar el parámetro correcto para la acción de verificación
 
-    const verifyEmail = async () => {
-      if (oobCode && uid) {
-        try {
-          console.log('Código de verificación recibido:', oobCode);
-          console.log('UID recibido:', uid);
+    if (actionCode) {
+      applyActionCode(auth, actionCode) // Verifica el correo electrónico
+        .then(() => {
+          // Email verified successfully
+          console.log('Correo electrónico verificado');
 
-          await applyActionCode(auth, oobCode);
-          console.log('Código de acción aplicado:', oobCode);
-
-          const userDoc = await getDoc(doc(db, 'users', uid));
-          if (userDoc.exists()) {
-            console.log('Documento del usuario encontrado:', userDoc.data());
-
-            await updateDoc(doc(db, 'users', uid), {
-              verified: true,
-            });
-
-            console.log('Estado de verificación actualizado a true para:', uid);
-            setMessage('¡Correo electrónico verificado exitosamente! Redirigiendo al login...');
-            setTimeout(() => {
-              navigate('/login');
-            }, 3000);
+          // Obtener el usuario actual y actualizar el campo `verified` en Firestore
+          const user = auth.currentUser;
+          if (user) {
+            const userRef = doc(db, 'users', user.uid); // Referencia al documento del usuario en Firestore
+            updateDoc(userRef, { verified: true })
+              .then(() => {
+                console.log('Campo verified actualizado a true en Firestore');
+                navigate('/login');
+              })
+              .catch((error) => {
+                console.error('Error al actualizar el campo verified:', error);
+                navigate('/login');
+              });
           } else {
-            setMessage('Error al verificar el correo electrónico. Por favor, inténtalo de nuevo.');
-            console.log('No se encontró el documento del usuario:', uid);
+            navigate('/login');
           }
-        } catch (error) {
+        })
+        .catch((error) => {
           console.error('Error al verificar el correo electrónico:', error);
-          setMessage('Error al verificar el correo electrónico. Por favor, inténtalo de nuevo.');
-        }
-      } else {
-        setMessage('Código de verificación inválido. Por favor, inténtalo de nuevo.');
-      }
-    };
-
-    verifyEmail();
+          navigate('/login');
+        });
+    } else {
+      navigate('/login');
+    }
   }, [location.search, navigate]);
 
   return (
     <>
       <HeaderHome />
-      <div className="min-w-full min-h-screen absolute flex items-center justify-center bg-gray-100">
-        <div className="w-full max-w-xl mx-auto flex flex-col items-center p-10 my-10 bg-white shadow-lg rounded-lg">
-          <h2 className="text-2xl font-bold text-gray-900 text-center mb-6">{message}</h2>
+      <div className="min-w-full min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="w-full max-w-md mx-auto flex flex-col items-center py-5 bg-white shadow-lg rounded-lg">
+          <img className="mx-auto h-10 w-auto" src={Buho} alt="Your Company" />
+          <h2 className="mt-5 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">Verificación de Correo</h2>
+          <p className="mt-2 mb-6 text-center text-sm text-gray-600">Estamos verificando tu correo electrónico. Por favor, espera...</p>
         </div>
       </div>
     </>

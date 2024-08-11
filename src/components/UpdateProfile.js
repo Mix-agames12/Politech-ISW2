@@ -14,6 +14,9 @@ const UpdateProfile = () => {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate(); // Usar useNavigate
+  const [editableUsername, setEditableUsername] = useState(true); // Estado para editar nombre de usuario
+  const [editableMail, setEditableMail] = useState(true); // Estado para editar correo electrónico
+
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -41,19 +44,15 @@ const UpdateProfile = () => {
   const handleUpdate = async () => {
     setError('');
     setSuccess('');
-    const user = auth.currentUser;
-    if (user) {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
       try {
-        if (name) {
-          await updateProfile(user, { displayName: name });
-          await updateDoc(doc(db, 'clientes', user.uid), { nombre: name });
-        }
         if (email) {
-          await updateEmail(user, email);
-          await updateDoc(doc(db, 'clientes', user.uid), { correo: email });
+          await updateEmail(currentUser, email);
+          await updateDoc(doc(db, 'clientes', currentUser.uid), { correo: email });
         }
         if (password) {
-          await updatePassword(user, password);
+          await updatePassword(currentUser, password);
         }
         setSuccess('Perfil actualizado correctamente');
       } catch (error) {
