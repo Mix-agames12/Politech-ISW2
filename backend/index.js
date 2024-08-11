@@ -7,18 +7,17 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Almacenamiento temporal en memoria (no recomendado para producción)
-let verificationCodes = {};
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // Configuración de CORS
 app.use(cors({
-  origin: '*', // Asegúrate de configurar esto correctamente para producción
+  origin: '*',
 }));
 
 app.use(express.json());
 
-// Configurar la API Key de SendGrid
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+// Almacenamiento temporal en memoria (no recomendado para producción)
+let verificationCodes = {};
 
 // Ruta para la raíz ("/")
 app.get('/', (req, res) => {
@@ -33,21 +32,16 @@ app.post('/send-code', async (req, res) => {
     return res.status(400).json({ success: false, message: 'Email es requerido' });
   }
 
-  // Genera un código de verificación de 6 dígitos
   const code = Math.floor(100000 + Math.random() * 900000).toString();
-
-  // Genera un ID de sesión único para esta solicitud
   const sessionId = crypto.randomBytes(16).toString('hex');
 
-  // Almacena el código en la memoria asociándolo al email y al sessionId
   verificationCodes[sessionId] = {
     email: email,
     code: code,
     createdAt: Date.now(),
-    used: false  // Nueva propiedad para marcar si el código ha sido usado
+    used: false
   };
 
-  // Contenido HTML para el correo
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; line-height: 1.6;">
       <h2 style="color: #333;">Hola,</h2>
@@ -63,7 +57,7 @@ app.post('/send-code', async (req, res) => {
 
   const msg = {
     to: email,
-    from: 'politechsw@gmail.com', // Correo autorizado en SendGrid
+    from: 'politechsw@gmail.com', 
     subject: 'Código de Verificación',
     html: htmlContent,
   };
@@ -92,26 +86,115 @@ app.post('/verify-code', (req, res) => {
   }
 
   const currentTime = Date.now();
-  const timeElapsed = (currentTime - verificationData.createdAt) / 1000 / 60; // Tiempo transcurrido en minutos
+  const timeElapsed = (currentTime - verificationData.createdAt) / 1000 / 60;
 
   if (timeElapsed > 5) {
-    // El código ha expirado
     delete verificationCodes[sessionId];
     return res.status(400).json({ success: false, message: 'Código incorrecto o expirado' });
   }
 
-  // Verifica si el código ya ha sido utilizado
   if (verificationData.used) {
     return res.status(400).json({ success: false, message: 'El código ya ha sido utilizado' });
   }
 
-  // Compara el código enviado con el almacenado
   if (verificationData.code === code) {
-    // Marca el código como utilizado
     verificationCodes[sessionId].used = true;
     res.status(200).json({ success: true, message: 'Código verificado correctamente' });
   } else {
     res.status(400).json({ success: false, message: 'Código incorrecto o expirado' });
+  }
+});
+
+// Ruta para procesar la transferencia bancaria y enviar correos de confirmación
+app.post('/process-transfer', async (req, res) => {
+  const { senderEmail, receiverEmail, transactionDetails } = req.body;
+
+  try {
+    // Enviar correo al remitente
+    const senderMsg = {
+      to: senderEmail,
+      from: 'politechsw@gmail.com',
+      subject: 'Transferencia Exitosa',
+      html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+          <h2 style="color: #333;">Hola,</h2>
+          <p style="color: #555;">Tu transferencia fue realizada con éxito.</p>
+          <p style="color: #555;">Detalles de la transacción:</p>
+          <ul>
+            <li>Cuenta de Origen: ${transactionDetails.senderAccount}</li>
+            <li>Cuenta de Destino: ${transactionDetails.receiverAccount}</li>
+            <li>Nombre del Beneficiario: ${transactionDetails.receiverName}</li>
+            <li>Monto: $${transactionDetails.amount}</li>
+            <li>Descripción: ${transactionDetails.description}</li>
+            <li>Fecha: ${transactionDetails.date}</li>
+          </ul>
+          <p style="color: #555;">Gracias por usar nuestros servicios.</p>
+        </div>
+      `,
+    };
+
+    await sgMail.send(senderMsg);
+
+    // Enviar correo al receptor
+    const receiverMsg = {
+      to: receiverEmail,
+      from: 'politechsw@gmail.com',
+      subject: 'Has Recibido una Transferencia',
+      html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+          <h2 style="color: #333;">Hola,</h2>
+          <p style="color: #555;">Has recibido una transferencia en tu cuenta.</p>
+          <p style="color: #555;">Detalles de la transacción:</p>
+          <ul>
+            <li>Cuenta de Origen: ${transactionDetails.senderAccount}</li>
+            <li>Cuenta de Destino: ${transactionDetails.receiverAccount}</li>
+            <li>Nombre del Remitente: ${transactionDetails.senderName}</li>
+            <li>Monto: $${transactionDetails.amount}</li>
+            <li>Fecha: ${transactionDetails.date}</li>
+          </ul>
+          <p style="color: #555;">Gracias por usar nuestros servicios.</p>
+        </div>
+      `,
+    };
+
+    await sgMail.send(receiverMsg);
+
+    res.status(200).json({ success: true, message: 'Correos enviados con éxito' });
+  } catch (error) {
+    console.error('Error al enviar correos de confirmación:', error.response ? error.response.body : error.message);
+    res.status(500).json({ success: false, message: 'No se pudo enviar los correos de confirmación' });
+  }
+});
+
+// Ruta para procesar el pago de servicios y enviar correos de confirmación
+app.post('/process-payment', async (req, res) => {
+  const { email, paymentDetails } = req.body;
+
+  try {
+    // Enviar correo de confirmación al remitente (cliente que hizo el pago)
+    const confirmationMsg = {
+      to: email,
+      from: 'politechsw@gmail.com',
+      subject: 'Confirmación de Pago Realizado',
+      html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+          <h2 style="color: #333;">Hola,</h2>
+          <p style="color: #555;">Tu pago ha sido realizado con éxito. Aquí están los detalles:</p>
+          <p><strong>Valor:</strong> $${paymentDetails.amount}</p>
+          <p><strong>Desde:</strong> ${paymentDetails.senderAccount}</p>
+          <p><strong>Nombre del remitente:</strong> ${paymentDetails.senderName}</p>
+          <p><strong>Servicio:</strong> ${paymentDetails.service}</p>
+          <p><strong>Fecha:</strong> ${paymentDetails.date}</p>
+        </div>
+      `,
+    };
+
+    await sgMail.send(confirmationMsg);
+
+    res.status(200).json({ success: true, message: 'Correo de confirmación enviado con éxito' });
+  } catch (error) {
+    console.error('Error al enviar correo de confirmación:', error.response ? error.response.body : error.message);
+    res.status(500).json({ success: false, message: 'No se pudo enviar el correo de confirmación' });
   }
 });
 

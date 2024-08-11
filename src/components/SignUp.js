@@ -6,9 +6,9 @@ import bcrypt from 'bcryptjs';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import { useNavigate } from 'react-router-dom';
-import { HeaderHome } from './HeaderHome';
 import { FaRegEye, FaRegEyeSlash, FaArrowLeft } from 'react-icons/fa';
 import Buho from '../assets/images/buho.png';
+import { HeaderLogin } from './HeaderLogin';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -234,7 +234,7 @@ const SignUp = () => {
 
   return (
     <>
-      <HeaderHome />
+      <HeaderLogin />
       <div className="min-w-full min-h-screen absolute flex flex-col items-center justify-center bg-gray-100">
         <div className="relative w-full max-w-2xl mx-auto flex flex-col items-center py-5 mt-24 bg-white shadow-lg rounded-lg">
           <button

@@ -25,6 +25,9 @@ const Movimientos = () => {
   const [searchPerformed, setSearchPerformed] = useState(false);
   const [hasClickedSearch, setHasClickedSearch] = useState(false);
 
+  const showLastOnly = location.state?.showLastOnly || false;
+  const fromProducts = location.state?.fromProducts || false;
+
   useEffect(() => {
     const fetchData = async () => {
       if (!user) {
@@ -42,8 +45,12 @@ const Movimientos = () => {
 
           const params = new URLSearchParams(location.search);
           const account = params.get('account');
+          console.log("Account param:", account);  // Verifica que el parámetro de la cuenta se está leyendo correctamente
+
           if (account) {
-            setSelectedAccount(userAccounts.find(acc => acc.accountNumber === account));
+            const foundAccount = userAccounts.find(acc => acc.accountNumber === account);
+            console.log("Found Account:", foundAccount);  // Verifica que la cuenta se está encontrando en las cuentas del usuario
+            setSelectedAccount(foundAccount);
           }
         }
       } catch (error) {
@@ -54,53 +61,67 @@ const Movimientos = () => {
     fetchData();
   }, [location, user]);
 
-  const fetchMovements = async () => {
-    setAccountError('');
-    setStartDateError('');
-    setEndDateError('');
-    setSearchPerformed(false);
-    setHasClickedSearch(true);
+  useEffect(() => {
+    if (fromProducts) {
+      if (selectedAccount) {
+        fetchMovements(true); // Llamar a fetchMovements con true para obtener solo los últimos 10 movimientos
+      } else {
+        console.error("No se seleccionó ninguna cuenta al intentar cargar movimientos.");
+      }
+    }
+  }, [fromProducts, selectedAccount]);
 
-    let hasError = false;
+  const formatDate = (fecha) => {
+    return fecha.toLocaleDateString();
+  };
 
+  const fetchMovements = async (onlyLastTen = false) => {
     if (!selectedAccount) {
-      setAccountError('Debe seleccionar una cuenta.');
-      hasError = true;
-    }
-
-    if (!startDate) {
-      setStartDateError('Debe ingresar la fecha de inicio.');
-      hasError = true;
-    }
-
-    if (!endDate) {
-      setEndDateError('Debe ingresar la fecha de fin.');
-      hasError = true;
-    }
-
-    if (hasError) {
+      setAccountError("Debe seleccionar una cuenta.");
       return;
     }
 
-    setMovements([]);
+    if (!fromProducts && (!startDate || !endDate)) {
+      if (!startDate) setStartDateError("Debe ingresar la fecha de inicio.");
+      if (!endDate) setEndDateError("Debe ingresar la fecha de fin.");
+      return;
+    }
+
     setLoading(true);
 
     try {
       const transaccionesCollection = collection(db, 'transacciones');
-      const q1 = query(
-        transaccionesCollection,
-        where('cuentaOrigen', '==', selectedAccount.accountNumber),
-        where('tipoMovimiento', '==', 'debito'),
-        where('fecha', '>=', new Date(startDate)),
-        where('fecha', '<=', new Date(`${endDate}T23:59:59`))
-      );
-      const q2 = query(
-        transaccionesCollection,
-        where('cuentaDestino', '==', selectedAccount.accountNumber),
-        where('tipoMovimiento', '==', 'credito'),
-        where('fecha', '>=', new Date(startDate)),
-        where('fecha', '<=', new Date(`${endDate}T23:59:59`))
-      );
+      let q1, q2;
+
+      if (fromProducts) {
+        // Para "Mis Productos": Obtener los últimos 10 movimientos sin fechas
+        q1 = query(
+          transaccionesCollection,
+          where('cuentaOrigen', '==', selectedAccount.accountNumber),
+          where('tipoMovimiento', '==', 'debito')
+        );
+        q2 = query(
+          transaccionesCollection,
+          where('cuentaDestino', '==', selectedAccount.accountNumber),
+          where('tipoMovimiento', '==', 'credito')
+        );
+      } else {
+        // Para "Movimientos" en el Sidebar: Obtener movimientos dentro de las fechas
+        q1 = query(
+          transaccionesCollection,
+          where('cuentaOrigen', '==', selectedAccount.accountNumber),
+          where('tipoMovimiento', '==', 'debito'),
+          where('fecha', '>=', new Date(startDate)),
+          where('fecha', '<=', new Date(`${endDate}T23:59:59`))
+        );
+        q2 = query(
+          transaccionesCollection,
+          where('cuentaDestino', '==', selectedAccount.accountNumber),
+          where('tipoMovimiento', '==', 'credito'),
+          where('fecha', '>=', new Date(startDate)),
+          where('fecha', '<=', new Date(`${endDate}T23:59:59`))
+        );
+      }
 
       const [querySnapshot1, querySnapshot2] = await Promise.all([getDocs(q1), getDocs(q2)]);
 
@@ -116,55 +137,48 @@ const Movimientos = () => {
         movementsArray.push({ ...data, id: doc.id, fecha: data.fecha.toDate() });
       });
 
-      const fetchUserDetails = async (movement) => {
-        if (movement.tipoMovimiento === 'debito') {
-          const receiverAccountQuery = query(collection(db, 'cuentas'), where('accountNumber', '==', movement.cuentaDestino));
-          const receiverAccountSnapshot = await getDocs(receiverAccountQuery);
-          if (!receiverAccountSnapshot.empty) {
-            const receiverAccountData = receiverAccountSnapshot.docs[0].data();
-            const receiverUserDoc = await getDoc(doc(db, 'clientes', receiverAccountData.id));
-            if (receiverUserDoc.exists()) {
-              const receiverData = receiverUserDoc.data();
-              movement.nombreDestino = `${receiverData.nombre} ${receiverData.apellido}`;
-            } else {
-              movement.nombreDestino = 'Usuario desconocido';
-            }
-          } else {
-            movement.nombreDestino = 'Cuenta desconocida';
-          }
-        } else if (movement.tipoMovimiento === 'credito') {
-          const senderAccountQuery = query(collection(db, 'cuentas'), where('accountNumber', '==', movement.cuentaOrigen));
-          const senderAccountSnapshot = await getDocs(senderAccountQuery);
-          if (!senderAccountSnapshot.empty) {
-            const senderAccountData = senderAccountSnapshot.docs[0].data();
-            const senderUserDoc = await getDoc(doc(db, 'clientes', senderAccountData.id));
-            if (senderUserDoc.exists()) {
-              const senderData = senderUserDoc.data();
-              movement.nombreOrigen = `${senderData.nombre} ${senderData.apellido}`;
-            } else {
-              movement.nombreOrigen = 'Usuario desconocido';
-            }
-          } else {
-            movement.nombreOrigen = 'Cuenta desconocida';
-          }
-        }
-      };
+      let sortedMovements = movementsArray.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
-      await Promise.all(movementsArray.map(movement => fetchUserDetails(movement)));
+      if (onlyLastTen) {
+        sortedMovements = sortedMovements.slice(0, 10);
+        console.log("Mostrando los últimos 10 movimientos:", sortedMovements);
+      }
 
-      const sortedMovements = movementsArray.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      // Llamada a la función para obtener nombres de usuarios
+      const movementsWithNames = await fetchNamesForMovements(sortedMovements);
 
-      setMovements(sortedMovements);
+      setMovements(movementsWithNames);
+      console.log("Movimientos finales asignados:", movementsWithNames);
+
       setSearchPerformed(true);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("Error al buscar movimientos:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const formatDate = (fecha) => {
-    return fecha.toLocaleDateString();
+  const fetchNamesForMovements = async (movements) => {
+    return await Promise.all(movements.map(async (movement) => {
+      let accountNumberToLookup = movement.tipoMovimiento === 'debito' ? movement.cuentaDestino : movement.cuentaOrigen;
+      let nombreCampo = movement.tipoMovimiento === 'debito' ? 'nombreDestino' : 'nombreOrigen';
+
+      const accountSnapshot = await getDocs(query(collection(db, 'cuentas'), where('accountNumber', '==', accountNumberToLookup)));
+      if (!accountSnapshot.empty) {
+        const accountData = accountSnapshot.docs[0].data();
+        const userDoc = await getDoc(doc(db, 'clientes', accountData.id));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          movement[nombreCampo] = `${userData.nombre} ${userData.apellido}`;
+        } else {
+          movement[nombreCampo] = 'Usuario desconocido';
+        }
+      } else {
+        movement[nombreCampo] = 'Cuenta desconocida';
+      }
+
+      return movement;
+    }));
   };
 
   const handleGeneratePDF = async () => {
@@ -182,8 +196,6 @@ const Movimientos = () => {
     const day = String(today.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
-
-  const maxDate = getCurrentDate();
 
   useEffect(() => {
     if (selectedAccount) {
@@ -214,7 +226,10 @@ const Movimientos = () => {
         <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         <div className={`main-content p-6 mx-auto flex flex-col items-center justify-center w-full pt-16 ${isSidebarOpen ? 'ml-0' : 'ml-0'}`}>
           <h2 className="text-2xl font-bold mb-4 text-center">Consulta de Movimientos</h2>
-          <div className="w-full max-w-lg mb-6">
+
+          {!fromProducts && (
+            <>
+          <div className="w-full max-w-xl mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">Selecciona una cuenta:</label>
             <div className="relative">
               <button
@@ -249,8 +264,7 @@ const Movimientos = () => {
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              max={maxDate}
-              className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              max={getCurrentDate()}
             />
             {startDateError && <p className="text-red-500 text-sm mt-2">{startDateError}</p>}
           </div>
@@ -260,45 +274,88 @@ const Movimientos = () => {
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              max={maxDate}
-              className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              max={getCurrentDate()}
             />
             {endDateError && <p className="text-red-500 text-sm mt-2">{endDateError}</p>}
           </div>
-          <div className="flex flex-col items-center">
-            <button
-              onClick={fetchMovements}
-              className="w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              Buscar
-            </button>
-            {loading && <p className="mt-4">Cargando...</p>}
-          </div>
-          <div className="w-full max-w-lg mt-6">
-            {searchPerformed && movements.length > 0 ? (
-              <div>
-                <h3 className="text-lg font-bold mb-4">Resultados de la búsqueda:</h3>
-                <ul>
-                  {movements.map((movement, index) => (
-                    <li key={index} className="mb-2">
-                      <p><strong>Fecha:</strong> {formatDate(movement.fecha)}</p>
-                      <p><strong>Descripción:</strong> {movement.descripcion}</p>
-                      <p><strong>Monto:</strong> {movement.monto}</p>
-                      <p><strong>Cuenta Origen:</strong> {movement.cuentaOrigen}</p>
-                      <p><strong>Cuenta Destino:</strong> {movement.cuentaDestino}</p>
-                    </li>
-                  ))}
-                </ul>
+
+              <div className="flex w-full justify-center space-x-4 mt-4">
                 <button
+                  className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                  onClick={fetchMovements}
+                >
+                  Buscar Movimientos
+                </button>
+                <button
+                  className={`px-4 py-2 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-600 ${searchPerformed ? 'bg-sky-900 text-white hover:bg-sky-600 cursor-pointer' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
                   onClick={handleGeneratePDF}
-                  className="w-full bg-green-600 text-white font-bold py-2 px-4 rounded mt-4 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  disabled={!searchPerformed}
                 >
                   Generar PDF
                 </button>
               </div>
-            ) : hasClickedSearch && movements.length === 0 ? (
-              <p className="mt-4">No se encontraron movimientos.</p>
-            ) : null}
+            </>
+          )}
+
+          <div className="w-full mt-6 max-w-4xl" ref={reportRef}>
+            {loading ? (
+              <p>Buscando movimientos...</p>
+            ) : (
+              movements.length > 0 ? (
+                Object.entries(
+                  movements.reduce((acc, movement) => {
+                    const dateStr = formatDate(movement.fecha);
+                    if (!acc[dateStr]) acc[dateStr] = [];
+                    acc[dateStr].push(movement);
+                    return acc;
+                  }, {})
+                ).map(([date, movements], index) => (
+                  <div key={index}>
+                    <h3 className="text-lg font-bold mb-2">{date}</h3>
+                    <table className="w-full mb-6 text-left border-collapse">
+                      <thead>
+                        <tr className="bg-gray-200">
+                          <th className="p-2 border-b">Descripción</th>
+                          <th className="p-2 border-b">Cuenta Origen</th>
+                          <th className="p-2 border-b">Cuenta Destino</th>
+                          <th className="p-2 border-b">Monto</th>
+                          <th className="p-2 border-b">Saldo Actualizado</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {movements.map((movement, index) => (
+                          <tr key={index} className="hover:bg-gray-100">
+                            <td className="p-2 border-b">
+                              {movement.tipo === 'transferencia' ? (
+                                movement.tipoMovimiento === 'debito' ?
+                                  `Transferencia a ${movement.nombreDestino || 'Desconocido'}` :
+                                  `Transferencia de ${movement.nombreOrigen || 'Desconocido'}`
+                              ) : (
+                                `Pago de ${movement.cuentaDestino.toLowerCase() || 'Desconocido'}`
+                              )}
+                            </td>
+                            <td className="p-2 border-b">{`******${movement.cuentaOrigen.slice(-4)}`}</td>
+                            <td className="p-2 border-b">
+                              {/* Verifica si la cuenta destino no tiene números */}
+                              {/^\D+$/.test(movement.cuentaDestino) ?
+                                `` :
+                                `******${movement.cuentaDestino.slice(-4)}`}
+
+                            </td>
+                            <td className="p-2 border-b" style={{ color: movement.tipoMovimiento === 'credito' ? '#228B22' : 'red' }}>
+                              {movement.monto !== undefined ? `${movement.monto.toFixed(2)}` : '0.00'}
+                            </td>
+                            <td className="p-2 border-b">{movement.saldoActualizado !== undefined ? `$${movement.saldoActualizado.toFixed(2)}` : 'N/A'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ))
+              ) : (
+                <p>No se encontraron movimientos.</p>
+              )
+            )}
           </div>
         </div>
       </div>

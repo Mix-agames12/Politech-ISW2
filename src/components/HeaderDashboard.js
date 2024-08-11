@@ -5,8 +5,8 @@ import { AuthContext } from '../context/AuthContext';
 import Logo from '../assets/images/neologo.png';
 
 const userNavigation = [
-  { name: 'Actualizar perfil', href: '/update-profile' },
-  { name: 'Cerrar sesión', href: '#' },
+  { name: 'Ver perfil', path: '/update-profile' },
+  { name: 'Cerrar sesión', path: '#' },
 ];
 
 export const HeaderDashboard = () => {
@@ -17,6 +17,12 @@ export const HeaderDashboard = () => {
     e.preventDefault();
     await logout();
     navigate('/login');
+  };
+
+  const handleNavigation = (path) => {
+    if (path !== '#') {
+      navigate(path);
+    }
   };
 
   return (
