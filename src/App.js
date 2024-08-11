@@ -38,7 +38,7 @@ const App = () => {
     <AuthProvider>
       <Router>
         <div className="App w-100 h-auto">
-          <div className="container">
+          <div className="flex-grow w-ful">
             <Routes>
               <Route path="/*" element={<AppRoutes />} />
               <Route path="/login" element={<Login />} />
