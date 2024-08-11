@@ -32,17 +32,19 @@ const Transaction = () => {
 
   useEffect(() => {
     if (!user) return;
-
+  
     const fetchData = async () => {
       try {
+        // Fetch the receiver's email from the 'clientes' collection using the user's ID
         const userDoc = await getDoc(doc(db, 'clientes', user.uid));
         if (userDoc.exists()) {
-          // Extrae el correo del usuario receptor y almacénalo en el estado
-          const receiverEmail = userDoc.data().email;
+          // Extract the correct field 'correo' instead of 'email'
+          const receiverEmail = userDoc.data().correo; // Corrected to match your collection field name
           console.log(receiverEmail);
           setReceiverEmail(receiverEmail);
         }
-
+  
+        // Query the 'cuentas' collection for accounts belonging to the user
         const q = query(collection(db, 'cuentas'), where('id', '==', user.uid));
         const querySnapshot = await getDocs(q);
         const accountsList = querySnapshot.docs.map(doc => doc.data());
@@ -51,7 +53,7 @@ const Transaction = () => {
         console.error("Error fetching data: ", error);
       }
     };
-
+  
     fetchData();
   }, [user]);
 
