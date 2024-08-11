@@ -222,9 +222,12 @@ const Movimientos = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <HeaderDashboard />
-      <div className="flex flex-grow">
-        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-        <div className={`main-content p-6 mx-auto flex flex-col items-center justify-center w-full pt-16 ${isSidebarOpen ? 'ml-0' : 'ml-0'}`}>
+      <div className="flex flex-grow justify-center items-center ">
+        <div className="xl:w-1/4 md:w-1/4 sm:w-6/12">
+          <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        </div>
+        {/* Cuerpo del formulario */}
+        <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center xl:w-full md:w-5/12 sm:w-4/12 ${isSidebarOpen ? 'ml-72' : 'ml-20'} md:ml-0`}>
           <h2 className="text-2xl font-bold mb-4 text-center">Consulta de Movimientos</h2>
 
           {!fromProducts && (
@@ -250,33 +253,41 @@ const Movimientos = () => {
                         setDropdownVisible(false);
                       }}
                     >
-                      {account.accountNumber}
+                      <div>
+                        <h4 className="text-sm font-bold">{account.accountNumber}</h4>
+                        <p>Tipo de Cuenta: {account.tipoCuenta}</p>
+                        <p>Saldo Disponible: ${account.accountBalance ? account.accountBalance.toFixed(2) : '0.00'}</p>
+                      </div>
                     </div>
                   ))}
                 </div>
               )}
             </div>
-            {accountError && <p className="text-red-500 text-sm mt-2">{accountError}</p>}
+            {hasClickedSearch && accountError && <p className="text-red-600 text-xs mt-1">{accountError}</p>}
           </div>
-          <div className="w-full max-w-lg mb-6">
+
+          <div className="w-full max-w-xl mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de inicio:</label>
             <input
               type="date"
+              className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
               max={getCurrentDate()}
             />
-            {startDateError && <p className="text-red-500 text-sm mt-2">{startDateError}</p>}
+            {hasClickedSearch && startDateError && <p className="text-red-600 text-xs mt-1">{startDateError}</p>}
           </div>
-          <div className="w-full max-w-lg mb-6">
+
+          <div className="w-full max-w-xl mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de fin:</label>
             <input
               type="date"
+              className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
               max={getCurrentDate()}
             />
-            {endDateError && <p className="text-red-500 text-sm mt-2">{endDateError}</p>}
+            {hasClickedSearch && endDateError && <p className="text-red-600 text-xs mt-1">{endDateError}</p>}
           </div>
 
               <div className="flex w-full justify-center space-x-4 mt-4">

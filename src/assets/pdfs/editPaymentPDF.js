@@ -65,7 +65,7 @@ export const generatePDF = async (transactionData) => {
     // Detalles de la transacción con números de cuenta completos y nombres
     const description = transactionData.description || 'N/A';
     const senderName = transactionData.senderName || 'N/A';
-    const receiverName = transactionData.receiverName || 'N/A';
+    const service = transactionData.service || 'N/A';
 
     firstPage.drawText(`Valor: $${transactionData.amount}`, {
       x: 70,
@@ -88,7 +88,7 @@ export const generatePDF = async (transactionData) => {
       font,
       color: textColor,
     });
-    firstPage.drawText(`Servicio: ${receiverName}`, {
+    firstPage.drawText(`Servicio: ${service}`, {
       x: 70,
       y: 560,
       size: 12,
