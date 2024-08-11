@@ -77,9 +77,9 @@ app.post('/send-code', async (req, res) => {
   }
 });
 
-// Ruta para verificar el código de verificación
-app.post('/verify-code', (req, res) => {
-  const { sessionId, code } = req.body;
+// Ruta para verificar el código de verificación y enviar correos post-transacción
+app.post('/verify-code', async (req, res) => {
+  const { sessionId, code, transactionData } = req.body;
 
   if (!sessionId || !code) {
     return res.status(400).json({ success: false, message: 'Session ID y código son requeridos' });
@@ -109,7 +109,44 @@ app.post('/verify-code', (req, res) => {
   if (verificationData.code === code) {
     // Marca el código como utilizado
     verificationCodes[sessionId].used = true;
-    res.status(200).json({ success: true, message: 'Código verificado correctamente' });
+
+    // Lógica para enviar correos
+    try {
+      const senderEmail = verificationData.email;
+      const receiverEmail = transactionData.receiverEmail; // Este dato debería venir en el cuerpo de la solicitud
+
+      // Correo al remitente con el comprobante adjunto
+      const senderMsg = {
+        to: senderEmail,
+        from: 'politechsw@gmail.com',
+        subject: 'Transacción Exitosa',
+        text: 'Tu transacción ha sido realizada con éxito.',
+        attachments: [
+          {
+            filename: 'comprobante.pdf',
+            path: '/path/to/generated-pdf.pdf', // Cambia esta ruta al archivo PDF generado
+            contentType: 'application/pdf'
+          }
+        ]
+      };
+
+      // Correo al receptor notificando la transacción
+      const receiverMsg = {
+        to: receiverEmail,
+        from: 'politechsw@gmail.com',
+        subject: 'Has Recibido una Transacción',
+        text: `Hola, has recibido una transacción de ${senderEmail}.`
+      };
+
+      // Envía ambos correos
+      await sgMail.send(senderMsg);
+      await sgMail.send(receiverMsg);
+
+      res.status(200).json({ success: true, message: 'Código verificado y correos enviados correctamente' });
+    } catch (error) {
+      console.error('Error al enviar los correos:', error);
+      res.status(500).json({ success: false, message: 'Código verificado pero no se pudieron enviar los correos' });
+    }
   } else {
     res.status(400).json({ success: false, message: 'Código incorrecto o expirado' });
   }

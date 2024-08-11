@@ -14,6 +14,7 @@ const Transaction = () => {
   const [description, setDescription] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [receiverName, setReceiverName] = useState('');
+  const [receiverEmail, setReceiverEmail] = useState(''); // Estado para almacenar el correo del receptor
   const [error, setError] = useState('');
   const [receiverError, setReceiverError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -114,7 +115,13 @@ const Transaction = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ sessionId, code: inputCode })
+        body: JSON.stringify({
+          sessionId,
+          code: inputCode,
+          transactionData: {
+            receiverEmail: receiverEmail // Pasar el correo del receptor
+          }
+        })
       });
 
       const data = await response.json();
@@ -268,11 +275,14 @@ const Transaction = () => {
 
           if (clienteData.nombre && clienteData.apellido) {
             const fullName = `${clienteData.nombre.trim()} ${clienteData.apellido.trim()}`;
+            const email = clienteData.email; // Obtén el correo del receptor
 
             setReceiverName(fullName);
+            setReceiverEmail(email); // Almacena el correo del receptor
             setTransactionData((prev) => ({
               ...prev,
-              receiverName: fullName
+              receiverName: fullName,
+              receiverEmail: email // Agrega el correo al transactionData
             }));
             setReceiverError('');
           } else {
@@ -295,7 +305,7 @@ const Transaction = () => {
       <HeaderDashboard />
       <div className="flex flex-grow">
         <div className="w-1/4">
-        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+          <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         </div>
 
         <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-16' : 'ml-16'}`}>
@@ -390,8 +400,6 @@ const Transaction = () => {
               <p className="text-green-600 text-xs mt-1">Transfiriendo todo el saldo disponible.</p>
             )}
           </div>
-
-
 
           <div className="w-full mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">Descripción (Opcional)</label>
