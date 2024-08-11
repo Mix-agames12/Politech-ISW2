@@ -210,11 +210,12 @@ const Movimientos = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <HeaderDashboard />
-      <div className="flex flex-grow">
+      <div className="flex flex-grow justify-center items-center">
         <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-        <div className={`main-content p-6 mx-auto flex flex-col items-center justify-center w-full pt-16 ${isSidebarOpen ? 'ml-72' : 'ml-20'}`}>
-          <h2 className="text-2xl font-bold mb-4">Consulta de Movimientos</h2>
-          <div className="w-full mb-6">
+        {/* Cuerpo del formulario */}
+        <div className={`main-content p-6 mx-auto flex flex-col items-center w-full pt-16 ${isSidebarOpen ? 'ml-72' : 'ml-20'} md:ml-0`}>
+          <h2 className="text-2xl font-bold mb-4 text-center">Consulta de Movimientos</h2>
+          <div className="w-full max-w-xl mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">Selecciona una cuenta:</label>
             <div className="relative">
               <button
@@ -248,7 +249,7 @@ const Movimientos = () => {
             {hasClickedSearch && accountError && <p className="text-red-600 text-xs mt-1">{accountError}</p>}
           </div>
 
-          <div className="w-full mb-6">
+          <div className="w-full max-w-xl mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de inicio:</label>
             <input
               type="date"
@@ -260,7 +261,7 @@ const Movimientos = () => {
             {hasClickedSearch && startDateError && <p className="text-red-600 text-xs mt-1">{startDateError}</p>}
           </div>
 
-          <div className="w-full mb-6">
+          <div className="w-full max-w-xl mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de fin:</label>
             <input
               type="date"
@@ -288,7 +289,7 @@ const Movimientos = () => {
             </button>
           </div>
 
-          <div className="w-full mt-6" ref={reportRef}>
+          <div className="w-full mt-6 max-w-4xl" ref={reportRef}>
             {loading ? (
               <p>Buscando movimientos...</p>
             ) : (

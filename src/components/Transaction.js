@@ -23,7 +23,7 @@ const Transaction = () => {
   const [hasClickedSubmit, setHasClickedSubmit] = useState(false);
 
   // Estados para manejar el código de verificación
-  const [verificationCode, setVerificationCode] = useState('');
+  //const [verificationCode, setVerificationCode] = useState('');
   const [isCodeSent, setIsCodeSent] = useState(false);
   const [inputCode, setInputCode] = useState('');
   const [isCodeVerified, setIsCodeVerified] = useState(false);
@@ -71,7 +71,7 @@ const Transaction = () => {
         },
         body: JSON.stringify({ email: user.email })
       });
-  
+
       const data = await response.json();
       console.log('Respuesta del servidor:', data); // Agrega este log
       if (data.success) {
@@ -85,20 +85,20 @@ const Transaction = () => {
       setError('No se pudo enviar el código de verificación.');
     }
   };
-  
-  
+
+
 
   const verifyCode = async () => {
     try {
       const sessionId = localStorage.getItem('sessionId'); // O donde lo hayas almacenado
       console.log('Session ID:', sessionId); // Verifica que el sessionId esté presente
       console.log('Código ingresado:', inputCode); // Verifica que el código esté correcto
-  
+
       if (!sessionId || !inputCode) {
         setError('Faltan datos para la verificación.'); // Maneja el caso donde faltan datos
         return;
       }
-  
+
       const response = await fetch('https://politech-isw2.onrender.com/verify-code', {
         method: 'POST',
         headers: {
@@ -106,10 +106,10 @@ const Transaction = () => {
         },
         body: JSON.stringify({ sessionId, code: inputCode })
       });
-  
+
       const data = await response.json();
       console.log('Respuesta del servidor:', data);
-  
+
       if (response.ok) {
         // Si la respuesta tiene un status 200
         setIsCodeVerified(true);
@@ -123,9 +123,9 @@ const Transaction = () => {
       setError('Error al verificar el código.');
     }
   };
-  
-  
-  
+
+
+
 
   const handleTransaction = async () => {
     setHasClickedSubmit(true);
@@ -284,12 +284,12 @@ const Transaction = () => {
     <div className="min-h-screen flex flex-col">
       <HeaderDashboard />
       <div className="flex flex-grow">
-        <div className="w-1/4">
-        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        <div className="xl:w-1/4 md:w-1/4 sm:w-6/12">
+          <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         </div>
 
-        <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-16' : 'ml-16'}`}>
-        <h2 className="text-2xl font-bold mb-4">Realizar Transferencia</h2>
+        <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center xl:w-full md:w-5/12 sm:w-4/12 ${isSidebarOpen ? 'ml-16' : 'ml-16'}`}>
+          <h2 className="text-2xl font-bold mb-4">Realizar Transferencia</h2>
 
           <div className="w-full mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">Cuenta de origen</label>
