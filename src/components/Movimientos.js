@@ -322,7 +322,7 @@ const Movimientos = () => {
                                   `Transferencia a ${movement.nombreDestino || 'Desconocido'}` :
                                   `Transferencia de ${movement.nombreOrigen || 'Desconocido'}`
                               ) : (
-                                `Pago de ${movement.nombreDestino || 'Desconocido'}`
+                                `Pago de ${movement.cuentaDestino.toLowerCase() || 'Desconocido'}`
                               )}
                             </td>
                             <td className="p-2 border-b">{`******${movement.cuentaOrigen.slice(-4)}`}</td>
