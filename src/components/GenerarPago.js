@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { db } from '../firebaseConfig';
-import { collection, getDocs, query, where, updateDoc, doc, addDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, query, where, updateDoc, doc, addDoc, serverTimestamp } from 'firebase/firestore';
 import { Sidebar } from './Sidebar';
 import { HeaderDashboard } from './HeaderDashboard';
 import { generatePDF } from '../assets/pdfs/editPaymentPDF';
@@ -68,7 +68,7 @@ const GenerarPago = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/send-code', {
+      const response = await fetch('https://politech-isw2.onrender.com/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: user.email })
@@ -96,7 +96,7 @@ const GenerarPago = () => {
         return;
       }
 
-      const response = await fetch('http://localhost:5000/verify-code', {
+      const response = await fetch('https://politech-isw2.onrender.com/verify-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId, code: inputCode })
@@ -173,10 +173,14 @@ const GenerarPago = () => {
 
           setPaymentData(paymentData);
 
-          await fetch('http://localhost:5000/send-payment-confirmation', {
+          await fetch('https://politech-isw2.onrender.com/process-transaction', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: user.email, paymentDetails: paymentData })
+            body: JSON.stringify({ 
+              senderEmail: user.email, 
+              receiverEmail: service,  // Ajusta esto según la lógica de tu aplicación
+              transactionDetails: paymentData 
+            })
           });
 
           setSuccessMessage('Pago de servicio realizado con éxito');
