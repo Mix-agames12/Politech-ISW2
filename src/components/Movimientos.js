@@ -239,12 +239,22 @@ const Movimientos = () => {
           <h2 className="text-2xl font-bold mb-4 text-center">Movimientos</h2>
 
           {fromProducts && (
-            <button
-              className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 mb-4"
-              onClick={handleFilterByDates}
-            >
-              Filtrar por fechas
-            </button>
+            <>
+              <div className="bg-white shadow-lg rounded-lg p-6 mb-6 w-full max-w-xl text-center">
+                <h3 className="text-xl font-semibold mb-4">Información de la Cuenta</h3>
+                <p><strong>Número de Cuenta:</strong> {selectedAccount.accountNumber}</p>
+                <p><strong>Tipo de Cuenta:</strong> {selectedAccount.tipoCuenta}</p>
+                <p><strong>Saldo Disponible:</strong> ${selectedAccount.accountBalance ? selectedAccount.accountBalance.toFixed(2) : '0.00'}</p>
+              </div>
+              <div className="w-full flex justify-center">
+                <button
+                  className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-600 mb-4"
+                  onClick={handleFilterByDates}
+                >
+                  Filtrar por fechas
+                </button>
+              </div>
+            </>
           )}
 
           {!fromProducts && (
