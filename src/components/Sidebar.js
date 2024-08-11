@@ -1,10 +1,5 @@
 import React from 'react';
 import { FiMenu } from 'react-icons/fi';
-import { BiStore } from "react-icons/bi";
-import { GoArrowSwitch } from "react-icons/go";
-import { GoHome } from "react-icons/go";
-import { BiTable } from "react-icons/bi";
-
 
 export const Sidebar = ({ isOpen, toggleSidebar }) => {
   return (
