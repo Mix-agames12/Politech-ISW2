@@ -11,6 +11,7 @@ import Movimientos from './components/Movimientos';
 import Home from './components/Home';
 import CrearCuenta from './components/CrearCuenta';
 import AccountMovements from './components/AccountMovements';
+import ForgotUsername from './components/ForgotUsername';
 import ForgotPassword from './components/ForgotPassword';
 import VerifyEmail from './components/VerifyEmail'; // Importar el componente VerifyEmail
 import BillsPayment from './components/BillsPayment';
@@ -49,6 +50,7 @@ const App = () => {
               <Route path="/cambio-contrasena" element={<CambioContrasena />} />
               <Route path="/movimientos" element={<Movimientos />} />
               <Route path="/crear-cuenta" element={<CrearCuenta />} />
+              <Route path="/forgot-username" element={<ForgotUsername/>}/>
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/movimientos/:accountNumber" element={<AccountMovements />} />
               <Route path="/verify-email" element={<VerifyEmail />} /> {/* Añadir la ruta de VerifyEmail */}
