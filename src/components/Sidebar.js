@@ -23,25 +23,25 @@ export const Sidebar = ({ isOpen, toggleSidebar }) => {
             <li>
               <a href="/gestionar-cuentas" className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-sky-200 dark:hover:bg-gray-700 group">
                 <GoHome className="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 22 21" />
-                {isOpen && <span className="ms-3">Mis Productos</span>}
+                {isOpen && <span className="ms-3">Misvsdvsdvsdvsvs</span>}
               </a>
             </li>
             <li>
               <a href="/transaction" className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-sky-200 dark:hover:bg-gray-700 group">
                 <GoArrowSwitch className="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 22 21" />
-                {isOpen && <span className="flex-1 ms-3 whitespace-nowrap">Transferencias</span>}
+                {isOpen && <span className="flex-1 ms-3 whitespace-nowrap">Transferenciasvssdvs</span>}
               </a>
             </li>
             <li>
               <a href="/pago-servicios" className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-sky-200 dark:hover:bg-gray-700 group">
                 <BiStore className="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 22 21" />
-                {isOpen && <span className="flex-1 ms-3 whitespace-nowrap">Pago de servicios</span>}
+                {isOpen && <span className="flex-1 ms-3 whitespace-nowrap">Pago de servicios sdvsdvsd</span>}
               </a>
             </li>
             <li>
               <a href="/movimientos" className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-sky-200 dark:hover:bg-gray-700 group">
                 <BiTable className="w-6 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 22 21" />
-                {isOpen && <span className="flex-1 ms-3 whitespace-nowrap">Movimientos</span>}
+                {isOpen && <span className="flex-1 ms-3 whitespace-nowrap">Movimientos bdskjvsd</span>}
               </a>
             </li>
           </ul>
