@@ -15,6 +15,7 @@ const GenerarPago = () => {
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [senderAccount, setSenderAccount] = useState('');
   const [description, setDescription] = useState('');
+  const [paymentDate, setPaymentDate] = useState('');
   const [error, setError] = useState('');
   const [paymentData, setPaymentData] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
@@ -23,7 +24,6 @@ const GenerarPago = () => {
   const [isCodeSent, setIsCodeSent] = useState(false);
   const [inputCode, setInputCode] = useState('');
   const [isCodeVerified, setIsCodeVerified] = useState(false);
-  const [paymentDate, setPaymentDate] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -104,7 +104,7 @@ const GenerarPago = () => {
 
       const data = await response.json();
 
-      if (response.ok) {
+      if (data.success) {
         setIsCodeVerified(true);
         setSuccessMessage('Código verificado correctamente.');
         setError('');
@@ -125,7 +125,6 @@ const GenerarPago = () => {
 
     setHasClickedSubmit(true);
     setError('');
-    setSuccessMessage('');
 
     if (!senderAccount) {
       setError('Por favor, proporcione la información solicitada.');
@@ -172,13 +171,6 @@ const GenerarPago = () => {
           };
 
           setPaymentData(paymentData);
-
-          await fetch('https://politech-isw2.onrender.com/process-payment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: user.email, paymentDetails: paymentData })
-          });
-
           setSuccessMessage('Pago de servicio realizado con éxito');
         } else {
           setError('Fondos insuficientes');
@@ -213,7 +205,7 @@ const GenerarPago = () => {
             <label className='block text-center text-xl font-medium text-gray-700 mb-5'>SERVICIO DE {service}</label>
             <label className="block text-sm font-medium text-gray-700 mb-3">Valor a pagar</label>
             <h2 className='text-center font-black text-3xl text-gray-950 mb-6'>$ {amount}</h2>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Desde</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Desde *</label>
             <div className="relative mb-6">
               <button
                 className="w-full mb-2 bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
@@ -246,20 +238,38 @@ const GenerarPago = () => {
               )}
               {hasClickedSubmit && !senderAccount && <p className="text-red-600 text-xs mt-1">Debe seleccionar una cuenta de origen.</p>}
             </div>
-            <div className="relative mb-6 w-full flex">
-              <label className="text-sm font-medium text-gray-700 mb-2">Fecha de pago</label>
-              <label className="flex-1 text-sm text-right font-medium text-gray-700 mb-2">{paymentDate}</label>
+            <div className="relative mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de pago</label>
+              <input
+                className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                type='text'
+                value={paymentDate}
+                disabled
+              />
             </div>
             <div className="relative mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Descripción (Opcional)</label>
               <input
-                className="w-full"
+                className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 type='text'
+                placeholder="Descripción"
+                value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
             </div>
 
-            {isCodeSent && (
+            {!isCodeSent && (
+              <div className="text-center">
+                <button
+                  className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                  onClick={sendVerificationCode}
+                >
+                  Enviar Código de Verificación
+                </button>
+              </div>
+            )}
+
+            {isCodeSent && !isCodeVerified && (
               <>
                 <div className="relative mb-6">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Ingrese el código de verificación</label>
@@ -281,23 +291,18 @@ const GenerarPago = () => {
             )}
 
             {error && <label className="block text-center text-red-600 mb-4">{error}</label>}
-            <div className="text-center">
-              {!isCodeSent ? (
-                <button
-                  className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
-                  onClick={sendVerificationCode}
-                >
-                  Enviar Código de Verificación
-                </button>
-              ) : (
+
+            {isCodeVerified && (
+              <div className="text-center">
                 <input
                   className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
                   type="button"
                   onClick={handlePayment}
                   value="Pagar"
                 />
-              )}
-            </div>
+              </div>
+            )}
+
             {successMessage && (
               <>
                 <div className="w-full mt-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative text-center" role="alert">
