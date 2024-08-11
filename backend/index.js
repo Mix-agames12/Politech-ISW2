@@ -1,3 +1,4 @@
+// index.js
 const express = require('express');
 const sgMail = require('@sendgrid/mail');
 const cors = require('cors');
@@ -110,7 +111,7 @@ app.post('/process-transaction', async (req, res) => {
   const { senderEmail, receiverEmail, transactionDetails } = req.body;
 
   try {
-    // Enviar correo al remitente
+    // Enviar correo al remitente con PDF adjunto
     const senderMsg = {
       to: senderEmail,
       from: 'politechsw@gmail.com',
@@ -130,6 +131,14 @@ app.post('/process-transaction', async (req, res) => {
           <p style="color: #555;">Gracias por usar nuestros servicios.</p>
         </div>
       `,
+      attachments: [
+        {
+          content: transactionDetails.pdfBase64, // Adjunta el PDF en formato base64
+          filename: 'comprobante.pdf',
+          type: 'application/pdf',
+          disposition: 'attachment',
+        }
+      ]
     };
 
     await sgMail.send(senderMsg);
