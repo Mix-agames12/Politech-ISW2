@@ -20,6 +20,9 @@ const GenerarPago = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [userAccounts, setUserAccounts] = useState([]);
   const [hasClickedSubmit, setHasClickedSubmit] = useState(false);
+  const [isCodeSent, setIsCodeSent] = useState(false);
+  const [inputCode, setInputCode] = useState('');
+  const [isCodeVerified, setIsCodeVerified] = useState(false);
   const [paymentDate, setPaymentDate] = useState(''); // Estado para la fecha de pago
   const navigate = useNavigate(); // Para navegar de vuelta a la selección de servicios
 
@@ -67,7 +70,72 @@ const GenerarPago = () => {
     return `CUENTA${suffix}`;
   };
 
+  const sendVerificationCode = async () => {
+    setHasClickedSubmit(true);
+    setError('');
+    setSuccessMessage('');
+
+    if (!senderAccount) {
+      setError('Por favor, proporcione la información solicitada.');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:5000/send-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        localStorage.setItem('sessionId', data.sessionId);
+        setIsCodeSent(true);
+        setError('');
+      } else {
+        setError('No se pudo enviar el código de verificación.');
+      }
+    } catch (error) {
+      console.error('Error al enviar el código de verificación:', error);
+      setError('No se pudo enviar el código de verificación.');
+    }
+  };
+
+  const verifyCode = async () => {
+    try {
+      const sessionId = localStorage.getItem('sessionId');
+      if (!sessionId || !inputCode) {
+        setError('Faltan datos para la verificación.');
+        return;
+      }
+
+      const response = await fetch('http://localhost:5000/verify-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId, code: inputCode })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setIsCodeVerified(true);
+        setSuccessMessage('Código verificado correctamente.');
+        setError('');
+      } else {
+        setError(data.message || 'Error al verificar el código.');
+      }
+    } catch (error) {
+      console.error('Error al verificar el código:', error);
+      setError('Error al verificar el código.');
+    }
+  };
+
   const handlePayment = async () => {
+    if (!isCodeVerified) {
+      setError('Debe verificar el código enviado a su correo antes de realizar el pago.');
+      return;
+    }
+
     setHasClickedSubmit(true);
     setError('');
     setSuccessMessage('');
@@ -193,16 +261,46 @@ const GenerarPago = () => {
                 type='text'
                 onChange={(e) => setDescription(e.target.value)}
               />
-
             </div>
+
+            {isCodeSent && (
+              <>
+                <div className="relative mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Ingrese el código de verificación</label>
+                  <input
+                    className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    type="text"
+                    placeholder="Código de verificación"
+                    value={inputCode}
+                    onChange={(e) => setInputCode(e.target.value)}
+                  />
+                  <button
+                    className="mt-2 px-4 py-2 bg-sky-900 text-white rounded-md shadow-sm hover:bg-sky-600"
+                    onClick={verifyCode}
+                  >
+                    Verificar Código
+                  </button>
+                </div>
+              </>
+            )}
+
             {error && <label className="block text-center text-red-600 mb-4">{error}</label>}
             <div className="text-center">
-              <input
-                className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
-                type="button"
-                onClick={handlePayment}
-                value="Pagar"
-              />
+              {!isCodeSent ? (
+                <button
+                  className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                  onClick={sendVerificationCode}
+                >
+                  Enviar Código de Verificación
+                </button>
+              ) : (
+                <input
+                  className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                  type="button"
+                  onClick={handlePayment}
+                  value="Pagar"
+                />
+              )}
             </div>
             {successMessage && (
               <>
