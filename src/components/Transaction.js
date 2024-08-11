@@ -294,8 +294,8 @@ const Transaction = () => {
           <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         </div>
 
-        <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center xl:w-full md:w-5/12 sm:w-4/12 ${isSidebarOpen ? 'ml-16' : 'ml-16'}`}>
-          <h2 className="text-2xl font-bold mb-4">Realizar Transferencia</h2>
+        <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center xl:w-full md:w-5/12 sm:w-4/12 ${isSidebarOpen ? 'sm:ml-16 md:mr-16 lg:mr-32' : 'sm:ml-16 md:mr-16 lg:mr-32'}`}>
+          <h2 className="text-2xl font-bold mb-4 sm:mt-16">Realizar Transferencia</h2>
 
           <div className="w-full mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">Cuenta de origen</label>

@@ -209,7 +209,7 @@ const GenerarPago = () => {
           <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         </div>
 
-        <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-16' : 'ml-16'}`}>
+        <div className={`main-content p-6 mx-auto flex flex-col items-center justify-center w-full pt-16 ${isSidebarOpen ? 'sm:ml-16 md:ml-16 lg:ml-32' : 'sm:w-8/12 md:ml-16 lg:ml-32'}`}>
           <div className="w-full flex">
             <h2 className="flex-1 w-64 text-center text-2xl font-bold mb-4">Paga tu factura</h2>
           </div>
