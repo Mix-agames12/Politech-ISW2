@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Login from './components/Login';
 import SignUp from './components/SignUp';
 import PasswordReset from './components/PasswordReset';
@@ -10,10 +10,29 @@ import Movimientos from './components/Movimientos';
 import Home from './components/Home';
 import CrearCuenta from './components/CrearCuenta';
 import ForgotPassword from './components/ForgotPassword';
-import VerifyEmail from './components/VerifyEmail';
+import VerifyEmail from './components/VerifyEmail'; // Importar el componente VerifyEmail
 import BillsPayment from './components/BillsPayment';
 import GenerarPago from './components/GenerarPago';
 import { AuthProvider } from './context/AuthContext';
+import { useLocation } from 'react-router-dom';
+
+const AppRoutes = () => {
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const mode = queryParams.get('mode');
+  const oobCode = queryParams.get('oobCode');
+
+  console.log({ mode, oobCode }); // Añade esto para ver qué valores tienes
+
+  if (mode === 'resetPassword' && oobCode) {
+    return <PasswordReset />;
+  } else if (mode === 'verifyEmail' && oobCode) {
+    return <VerifyEmail />;
+  } else {
+    return <Home />;
+  }
+};
+
 
 const App = () => {
   return (
@@ -22,7 +41,7 @@ const App = () => {
         <div className="App w-full h-auto min-h-screen flex flex-col">
           <div className="flex-grow w-full">
             <Routes>
-              <Route path="/*" element={<Home />} />
+              <Route path="/*" element={<AppRoutes />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<SignUp />} />
               <Route path="/update-profile" element={<UpdateProfile />} />
