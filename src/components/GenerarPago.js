@@ -24,6 +24,7 @@ const GenerarPago = () => {
   const [isCodeSent, setIsCodeSent] = useState(false);
   const [inputCode, setInputCode] = useState('');
   const [isCodeVerified, setIsCodeVerified] = useState(false);
+  const [isPaymentProcessed, setIsPaymentProcessed] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -122,32 +123,32 @@ const GenerarPago = () => {
       setError('Debe verificar el código enviado a su correo antes de realizar el pago.');
       return;
     }
-  
+
     setHasClickedSubmit(true);
     setError('');
-  
+
     if (!senderAccount) {
       setError('Por favor, proporcione la información solicitada.');
       return;
     }
-  
+
     try {
       const accountsCollection = collection(db, 'cuentas');
-  
+
       const senderQuery = query(accountsCollection, where('accountNumber', '==', senderAccount));
       const senderSnapshot = await getDocs(senderQuery);
       const senderDoc = senderSnapshot.docs[0];
-  
+
       if (senderDoc) {
         const senderData = senderDoc.data();
-  
+
         if (senderData.accountBalance >= amount) {
           const updatedSenderBalance = senderData.accountBalance - amount;
-  
+
           await updateDoc(doc(db, 'cuentas', senderDoc.id), {
             accountBalance: updatedSenderBalance
           });
-  
+
           const payment = {
             tipo: 'pagoServicio',
             tipoMovimiento: 'debito',
@@ -160,7 +161,7 @@ const GenerarPago = () => {
             saldoActualizado: updatedSenderBalance
           };
           await addDoc(collection(db, 'transacciones'), payment);
-  
+
           const paymentData = {
             senderAccount: senderData.accountNumber,
             senderName: `${user.nombre} ${user.apellido}`,
@@ -169,21 +170,23 @@ const GenerarPago = () => {
             description: payment.descripcion || 'N/A',
             date: new Date().toLocaleDateString(),
           };
-  
+
           setPaymentData(paymentData);
-  
+          
+
           // Enviar correo de confirmación de pago
           const response = await fetch('https://politech-isw2.onrender.com/process-payment', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: user.email, paymentDetails: paymentData })
           });
-  
+
           if (!response.ok) {
             throw new Error('Error al enviar el correo de confirmación');
           }
-  
+
           setSuccessMessage('Pago de servicio realizado con éxito');
+          setIsPaymentProcessed(true);
         } else {
           setError('Fondos insuficientes');
         }
@@ -192,7 +195,7 @@ const GenerarPago = () => {
       console.error('Error al procesar el pago del servicio:', error);
       setError('Error al procesar el pago del servicio');
     }
-  };  
+  };
 
   const goBackToServices = () => {
     navigate('/pago-servicios');
@@ -208,9 +211,6 @@ const GenerarPago = () => {
 
         <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-16' : 'ml-16'}`}>
           <div className="w-full flex">
-            <button className="flex-none w-18 text-blue-500" onClick={goBackToServices}>
-              Regresar
-            </button>
             <h2 className="flex-1 w-64 text-center text-2xl font-bold mb-4">Paga tu factura</h2>
           </div>
           <div className="w-1/2 bg-sky-50 p-5">
@@ -222,6 +222,7 @@ const GenerarPago = () => {
               <button
                 className="w-full mb-2 bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 onClick={() => setDropdownVisible(!dropdownVisible)}
+                disabled={isCodeSent} // Disable after code is sent
               >
                 {senderAccount ? `${senderAccount}` : 'Seleccione una cuenta'}
                 <span className="float-right">{dropdownVisible ? '▲' : '▼'}</span>
@@ -251,13 +252,7 @@ const GenerarPago = () => {
               {hasClickedSubmit && !senderAccount && <p className="text-red-600 text-xs mt-1">Debe seleccionar una cuenta de origen.</p>}
             </div>
             <div className="relative mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de pago</label>
-              <input
-                className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                type='text'
-                value={paymentDate}
-                disabled
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de pago: {paymentDate}</label>
             </div>
             <div className="relative mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">Descripción (Opcional)</label>
@@ -267,6 +262,7 @@ const GenerarPago = () => {
                 placeholder="Descripción"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                disabled={isCodeSent} // Disable after code is sent
               />
             </div>
 
@@ -304,28 +300,34 @@ const GenerarPago = () => {
 
             {error && <label className="block text-center text-red-600 mb-4">{error}</label>}
 
-            {isCodeVerified && (
-              <div className="text-center">
-                <input
-                  className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
-                  type="button"
-                  onClick={handlePayment}
-                  value="Pagar"
-                />
-              </div>
-            )}
-
-            {successMessage && (
+            {isCodeVerified && !isPaymentProcessed && (
               <>
                 <div className="w-full mt-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative text-center" role="alert">
-                  <span className="block sm:inline">{successMessage}</span>
+                  <span className="block sm:inline">Código verificado correctamente.</span>
+                </div>
+                <div className="text-center mt-4">
+                  <input
+                    className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                    type="button"
+                    onClick={handlePayment}
+                    value="Pagar"
+                  />
+                </div>
+              </>
+            )}
+
+            {isPaymentProcessed && (
+              <>
+                <div className="w-full mt-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative text-center" role="alert">
+                  <span className="block sm:inline">Pago de servicio realizado con éxito.</span>
                 </div>
                 <div className="text-center mt-4">
                   <button
-                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                    className="bg-sky-900 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded"
                     onClick={() => {
                       if (paymentData) {
                         generatePDF(paymentData);
+                        console.log(paymentData.service)
                       }
                     }}
                   >
@@ -342,4 +344,3 @@ const GenerarPago = () => {
 };
 
 export default GenerarPago;
-
