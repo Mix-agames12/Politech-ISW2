@@ -180,11 +180,6 @@ const CrearCuenta = () => {
                                 onChange={handleEmailChange}
                                 className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
-                            {validEmail !== null && (
-                                <span className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${validEmail ? 'text-green-500' : 'text-red-500'}`}>
-                                    {validEmail ? '✔️' : '❌'}
-                                </span>
-                            )}
                             {!validEmail && emailErrorMessage && (
                                 <p className="text-red-500 text-sm mt-1">{emailErrorMessage}</p>
                             )}
@@ -203,7 +198,7 @@ const CrearCuenta = () => {
                         </div>
                         <button 
                             onClick={handleAddAccount}
-                            className="w-full bg-blue-500 text-white font-semibold py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-300"
+                            className="w-full bg-sky-900 text-white font-semibold py-2 px-4 rounded hover:bg-sky-600 transition-colors duration-300"
                         >
                             Agregar Cuenta
                         </button>
