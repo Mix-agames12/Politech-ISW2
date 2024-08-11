@@ -123,14 +123,21 @@ export const generateMovementsPDF = async (user, selectedAccount, movements) => 
           yPosition = 800; // Iniciar en una posición adecuada para el nuevo contenido
         }
 
-        const description = movement.tipoMovimiento === 'debito'
-          ? `Transferencia a ${movement.nombreDestino || 'Desconocido'}`
-          : `Transferencia de ${movement.nombreOrigen || 'Desconocido'}`;
+        const description = movement.tipo === 'transferencia' ? (
+          movement.tipoMovimiento === 'debito' ?
+            `Transferencia a ${movement.nombreDestino || 'Desconocido'}` :
+            `Transferencia de ${movement.nombreOrigen || 'Desconocido'}`
+          ) : (
+            `Pago de ${movement.cuentaDestino.toLowerCase() || 'Desconocido'}`
+        );
+        const destino = /^\D+$/.test(movement.cuentaDestino) ?
+          `` :
+          `******${movement.cuentaDestino.slice(-4)}`;
         const tipo = movement.tipoMovimiento === 'credito' ? 'Crédito' : 'Débito';
         const amount = movement.monto !== undefined ? movement.monto.toFixed(2) : 'N/A';
         const balance = movement.saldoActualizado !== undefined ? `$${movement.saldoActualizado.toFixed(2)}` : 'N/A';
 
-        const rowData = [description, movement.cuentaOrigen, movement.cuentaDestino, tipo, amount, balance];
+        const rowData = [description, movement.cuentaOrigen, destino, tipo, amount, balance];
         xPosition = marginLeft;
 
         rowData.forEach((data, i) => {
