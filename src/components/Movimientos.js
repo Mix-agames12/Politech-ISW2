@@ -317,12 +317,22 @@ const Movimientos = () => {
                         {movements.map((movement, index) => (
                           <tr key={index} className="hover:bg-gray-100">
                             <td className="p-2 border-b">
-                              {movement.tipoMovimiento === 'debito' ?
-                                `Transferencia a ${movement.nombreDestino || 'Desconocido'}` :
-                                `Transferencia de ${movement.nombreOrigen || 'Desconocido'}`}
+                              {movement.tipo === 'transferencia' ? (
+                                movement.tipoMovimiento === 'debito' ?
+                                  `Transferencia a ${movement.nombreDestino || 'Desconocido'}` :
+                                  `Transferencia de ${movement.nombreOrigen || 'Desconocido'}`
+                              ) : (
+                                `Pago de ${movement.nombreDestino || 'Desconocido'}`
+                              )}
                             </td>
                             <td className="p-2 border-b">{`******${movement.cuentaOrigen.slice(-4)}`}</td>
-                            <td className="p-2 border-b">{`******${movement.cuentaDestino.slice(-4)}`}</td>
+                            <td className="p-2 border-b">
+                              {/* Verifica si la cuenta destino no tiene números */}
+                              {/^\D+$/.test(movement.cuentaDestino) ?
+                                `` :
+                                `******${movement.cuentaDestino.slice(-4)}`}
+
+                            </td>
                             <td className="p-2 border-b" style={{ color: movement.tipoMovimiento === 'credito' ? '#228B22' : 'red' }}>
                               {movement.monto !== undefined ? `${movement.monto.toFixed(2)}` : '0.00'}
                             </td>
