@@ -1,10 +1,8 @@
-// index.js
-
 const express = require('express');
 const sgMail = require('@sendgrid/mail');
 const cors = require('cors');
 const crypto = require('crypto');
-const admin = require('firebase-admin'); // Asegúrate de haber inicializado Firebase Admin
+const admin = require('firebase-admin');
 require('dotenv').config();
 
 const app = express();
@@ -13,7 +11,7 @@ const PORT = process.env.PORT || 5000;
 // Configuración de Firebase Admin
 admin.initializeApp({
   credential: admin.credential.applicationDefault(), // Asegúrate de que tu entorno esté configurado con las credenciales adecuadas
-  databaseURL: 'https://<your-database-name>.firebaseio.com'
+  // No necesitas databaseURL si estás utilizando Firestore
 });
 
 // Almacenamiento temporal en memoria (no recomendado para producción)
