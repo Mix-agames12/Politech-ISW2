@@ -184,7 +184,6 @@ app.post('/process-payment', async (req, res) => {
           <p><strong>Desde:</strong> ${paymentDetails.senderAccount}</p>
           <p><strong>Nombre del remitente:</strong> ${paymentDetails.senderName}</p>
           <p><strong>Servicio:</strong> ${paymentDetails.service}</p>
-          <p><strong>Descripción:</strong> ${paymentDetails.description || 'N/A'}</p>
           <p><strong>Fecha:</strong> ${paymentDetails.date}</p>
         </div>
       `,
