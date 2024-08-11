@@ -173,14 +173,10 @@ const GenerarPago = () => {
 
           setPaymentData(paymentData);
 
-          await fetch('https://politech-isw2.onrender.com/process-transaction', {
+          await fetch('https://politech-isw2.onrender.com/process-payment', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              senderEmail: user.email, 
-              receiverEmail: service,  // Ajusta esto según la lógica de tu aplicación
-              transactionDetails: paymentData 
-            })
+            body: JSON.stringify({ email: user.email, paymentDetails: paymentData })
           });
 
           setSuccessMessage('Pago de servicio realizado con éxito');
