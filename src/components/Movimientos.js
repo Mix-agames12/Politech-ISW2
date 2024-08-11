@@ -210,14 +210,11 @@ const Movimientos = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <HeaderDashboard />
-      <div className="flex flex-grow justify-center items-center ">
-        <div className="xl:w-1/4 md:w-1/4 sm:w-6/12">
-          <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-        </div>
-        {/* Cuerpo del formulario */}
-        <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center xl:w-full md:w-5/12 sm:w-4/12 ${isSidebarOpen ? 'ml-72' : 'ml-20'} md:ml-0`}>
+      <div className="flex flex-grow">
+        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        <div className={`main-content p-6 mx-auto flex flex-col items-center justify-center w-full pt-16 ${isSidebarOpen ? 'ml-0' : 'ml-0'}`}>
           <h2 className="text-2xl font-bold mb-4 text-center">Consulta de Movimientos</h2>
-          <div className="w-full max-w-xl mb-6">
+          <div className="w-full max-w-lg mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">Selecciona una cuenta:</label>
             <div className="relative">
               <button
@@ -238,108 +235,70 @@ const Movimientos = () => {
                         setDropdownVisible(false);
                       }}
                     >
-                      <div>
-                        <h4 className="text-sm font-bold">{account.accountNumber}</h4>
-                        <p>Tipo de Cuenta: {account.tipoCuenta}</p>
-                        <p>Saldo Disponible: ${account.accountBalance ? account.accountBalance.toFixed(2) : '0.00'}</p>
-                      </div>
+                      {account.accountNumber}
                     </div>
                   ))}
                 </div>
               )}
             </div>
-            {hasClickedSearch && accountError && <p className="text-red-600 text-xs mt-1">{accountError}</p>}
+            {accountError && <p className="text-red-500 text-sm mt-2">{accountError}</p>}
           </div>
-
-          <div className="w-full max-w-xl mb-6">
+          <div className="w-full max-w-lg mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de inicio:</label>
             <input
               type="date"
-              className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
               max={maxDate}
+              className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             />
-            {hasClickedSearch && startDateError && <p className="text-red-600 text-xs mt-1">{startDateError}</p>}
+            {startDateError && <p className="text-red-500 text-sm mt-2">{startDateError}</p>}
           </div>
-
-          <div className="w-full max-w-xl mb-6">
+          <div className="w-full max-w-lg mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de fin:</label>
             <input
               type="date"
-              className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
               max={maxDate}
+              className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             />
-            {hasClickedSearch && endDateError && <p className="text-red-600 text-xs mt-1">{endDateError}</p>}
+            {endDateError && <p className="text-red-500 text-sm mt-2">{endDateError}</p>}
           </div>
-
-          <div className="flex w-full justify-center space-x-4 mt-4">
+          <div className="flex flex-col items-center">
             <button
-              className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
               onClick={fetchMovements}
+              className="w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
-              Buscar Movimientos
+              Buscar
             </button>
-            <button
-              className={`px-4 py-2 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-600 ${searchPerformed ? 'bg-sky-900 text-white hover:bg-sky-600 cursor-pointer' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
-              onClick={handleGeneratePDF}
-              disabled={!searchPerformed}
-            >
-              Generar PDF
-            </button>
+            {loading && <p className="mt-4">Cargando...</p>}
           </div>
-
-          <div className="w-full mt-6 max-w-4xl" ref={reportRef}>
-            {loading ? (
-              <p>Buscando movimientos...</p>
-            ) : (
-              movements.length > 0 ? (
-                Object.entries(
-                  movements.reduce((acc, movement) => {
-                    const dateStr = formatDate(movement.fecha);
-                    if (!acc[dateStr]) acc[dateStr] = [];
-                    acc[dateStr].push(movement);
-                    return acc;
-                  }, {})
-                ).map(([date, movements], index) => (
-                  <div key={index}>
-                    <h3 className="text-lg font-bold mb-2">{date}</h3>
-                    <table className="w-full mb-6 text-left border-collapse">
-                      <thead>
-                        <tr className="bg-gray-200">
-                          <th className="p-2 border-b">Descripción</th>
-                          <th className="p-2 border-b">Cuenta Origen</th>
-                          <th className="p-2 border-b">Cuenta Destino</th>
-                          <th className="p-2 border-b">Monto</th>
-                          <th className="p-2 border-b">Saldo Actualizado</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {movements.map((movement, index) => (
-                          <tr key={index} className="hover:bg-gray-100">
-                            <td className="p-2 border-b">
-                              {movement.tipoMovimiento === 'debito' ?
-                                `Transferencia a ${movement.nombreDestino || 'Desconocido'}` :
-                                `Transferencia de ${movement.nombreOrigen || 'Desconocido'}`}
-                            </td>
-                            <td className="p-2 border-b">{`******${movement.cuentaOrigen.slice(-4)}`}</td>
-                            <td className="p-2 border-b">{`******${movement.cuentaDestino.slice(-4)}`}</td>
-                            <td className="p-2 border-b" style={{ color: movement.tipoMovimiento === 'credito' ? '#228B22' : 'red' }}>
-                              {movement.monto !== undefined ? `${movement.monto.toFixed(2)}` : '0.00'}
-                            </td>
-                            <td className="p-2 border-b">{movement.saldoActualizado !== undefined ? `$${movement.saldoActualizado.toFixed(2)}` : 'N/A'}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ))
-              ) : (
-                <p>No se encontraron movimientos.</p>
-              )
-            )}
+          <div className="w-full max-w-lg mt-6">
+            {searchPerformed && movements.length > 0 ? (
+              <div>
+                <h3 className="text-lg font-bold mb-4">Resultados de la búsqueda:</h3>
+                <ul>
+                  {movements.map((movement, index) => (
+                    <li key={index} className="mb-2">
+                      <p><strong>Fecha:</strong> {formatDate(movement.fecha)}</p>
+                      <p><strong>Descripción:</strong> {movement.descripcion}</p>
+                      <p><strong>Monto:</strong> {movement.monto}</p>
+                      <p><strong>Cuenta Origen:</strong> {movement.cuentaOrigen}</p>
+                      <p><strong>Cuenta Destino:</strong> {movement.cuentaDestino}</p>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  onClick={handleGeneratePDF}
+                  className="w-full bg-green-600 text-white font-bold py-2 px-4 rounded mt-4 focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  Generar PDF
+                </button>
+              </div>
+            ) : hasClickedSearch && movements.length === 0 ? (
+              <p className="mt-4">No se encontraron movimientos.</p>
+            ) : null}
           </div>
         </div>
       </div>
