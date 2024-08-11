@@ -21,17 +21,14 @@ const Transaction = () => {
   const [userAccounts, setUserAccounts] = useState([]);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [hasClickedSubmit, setHasClickedSubmit] = useState(false);
+  const [isTransferCompleted, setIsTransferCompleted] = useState(false);
+  const [showVerificationFields, setShowVerificationFields] = useState(false);
 
   // Estados para manejar el código de verificación
-  const [verificationCode, setVerificationCode] = useState('');
   const [isCodeSent, setIsCodeSent] = useState(false);
   const [inputCode, setInputCode] = useState('');
   const [isCodeVerified, setIsCodeVerified] = useState(false);
-  const [isTransferCompleted, setIsTransferCompleted] = useState(false);
-
-  // Refs para desplazamiento automático
   const codeInputRef = useRef(null);
-  const transferButtonRef = useRef(null);
 
   useEffect(() => {
     if (!user) {
@@ -68,6 +65,18 @@ const Transaction = () => {
   };
 
   const sendVerificationCode = async () => {
+    setHasClickedSubmit(true);
+
+    if (!senderAccount || !receiverAccount || !amount || !receiverName) {
+      setError('Debe completar todos los campos antes de enviar el código de verificación.');
+      return;
+    }
+
+    if (Number(amount) > (userAccounts.find(account => account.accountNumber === senderAccount)?.accountBalance || 0)) {
+      setError('El monto no puede exceder el saldo disponible en la cuenta de origen.');
+      return;
+    }
+
     try {
       const response = await fetch('https://politech-isw2.onrender.com/send-code', {
         method: 'POST',
@@ -76,15 +85,13 @@ const Transaction = () => {
         },
         body: JSON.stringify({ email: user.email })
       });
-  
+
       const data = await response.json();
-      console.log('Respuesta del servidor:', data); // Agrega este log
       if (data.success) {
         localStorage.setItem('sessionId', data.sessionId); // Almacena el sessionId
         setIsCodeSent(true);
-        if (codeInputRef.current) {
-          codeInputRef.current.scrollIntoView({ behavior: 'smooth' });
-        }
+        setShowVerificationFields(true);
+        setError('');
       } else {
         setError('No se pudo enviar el código de verificación.');
       }
@@ -93,20 +100,15 @@ const Transaction = () => {
       setError('No se pudo enviar el código de verificación.');
     }
   };
-  
-  
 
   const verifyCode = async () => {
     try {
-      const sessionId = localStorage.getItem('sessionId'); // O donde lo hayas almacenado
-      console.log('Session ID:', sessionId); // Verifica que el sessionId esté presente
-      console.log('Código ingresado:', inputCode); // Verifica que el código esté correcto
-  
+      const sessionId = localStorage.getItem('sessionId');
       if (!sessionId || !inputCode) {
-        setError('Faltan datos para la verificación.'); // Maneja el caso donde faltan datos
+        setError('Faltan datos para la verificación.');
         return;
       }
-  
+
       const response = await fetch('https://politech-isw2.onrender.com/verify-code', {
         method: 'POST',
         headers: {
@@ -114,19 +116,14 @@ const Transaction = () => {
         },
         body: JSON.stringify({ sessionId, code: inputCode })
       });
-  
+
       const data = await response.json();
-      console.log('Respuesta del servidor:', data);
-  
+
       if (response.ok) {
-        // Si la respuesta tiene un status 200
         setIsCodeVerified(true);
         setSuccessMessage('Código verificado correctamente.');
-        if (transferButtonRef.current) {
-          transferButtonRef.current.scrollIntoView({ behavior: 'smooth' });
-        }
+        setError('');
       } else {
-        // Si la respuesta tiene un status diferente de 200
         setError(data.message || 'Error al verificar el código.');
       }
     } catch (error) {
@@ -134,9 +131,6 @@ const Transaction = () => {
       setError('Error al verificar el código.');
     }
   };
-  
-  
-  
 
   const handleTransaction = async () => {
     setHasClickedSubmit(true);
@@ -216,7 +210,10 @@ const Transaction = () => {
             description: transaction.descripcion || 'N/A',
             date: new Date().toLocaleDateString()
           });
-          setIsTransferCompleted(true);
+          setIsTransferCompleted(true); // Marca que la transferencia se completó
+          setIsCodeVerified(false); // Oculta el mensaje de código verificado
+          setShowVerificationFields(false); // Oculta los campos de verificación
+          setIsCodeSent(false); // Desaparece el botón de enviar código de verificación
         } else {
           setError('Fondos insuficientes');
         }
@@ -249,8 +246,8 @@ const Transaction = () => {
   };
 
   const validateReceiverAccount = async () => {
-    setError('');
     setReceiverError('');
+    setSuccessMessage('');
     if (receiverAccount.length !== 10) {
       setReceiverError('La cuenta de destino debe tener exactamente 10 dígitos.');
       return;
@@ -277,6 +274,7 @@ const Transaction = () => {
               ...prev,
               receiverName: fullName
             }));
+            setReceiverError('');
           } else {
             setReceiverError('El cliente no tiene nombre o apellido definidos.');
           }
@@ -357,7 +355,7 @@ const Transaction = () => {
                 Validar
               </button>
             </div>
-            {hasClickedSubmit && (!receiverAccount || receiverAccount.length !== 10) && <p className="text-red-600 text-xs mt-1">Debe ingresar una cuenta de destino.</p>}
+            {hasClickedSubmit && (!receiverAccount || receiverAccount.length !== 10) && <p className="text-red-600 text-xs mt-1">Debe ingresar y validar una cuenta de destino.</p>}
             {receiverError && <p className="text-red-600 text-xs mt-1">{receiverError}</p>}
           </div>
 
@@ -382,11 +380,21 @@ const Transaction = () => {
               value={amount}
               onChange={handleAmountChange}
             />
-            {hasClickedSubmit && (!amount || Number(amount) <= 0) && <p className="text-red-600 text-xs mt-1">Debe ingresar un monto a transferir.</p>}
+            {hasClickedSubmit && (!amount || Number(amount) <= 0) && (
+              <p className="text-red-600 text-xs mt-1">Debe ingresar un monto a transferir.</p>
+            )}
+            {hasClickedSubmit && senderAccount && Number(amount) > (userAccounts.find(account => account.accountNumber === senderAccount)?.accountBalance || 0) && (
+              <p className="text-red-600 text-xs mt-1">El monto excede el saldo disponible en la cuenta de origen.</p>
+            )}
+            {hasClickedSubmit && senderAccount && Number(amount) === (userAccounts.find(account => account.accountNumber === senderAccount)?.accountBalance || 0) && (
+              <p className="text-green-600 text-xs mt-1">Transfiriendo todo el saldo disponible.</p>
+            )}
           </div>
 
+
+
           <div className="w-full mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Descripción (Opcional)</label>
             <input
               type="text"
               className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
@@ -395,10 +403,11 @@ const Transaction = () => {
             />
           </div>
 
-          {isCodeSent && (
+          {showVerificationFields && (
             <div className="w-full mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2" ref={codeInputRef}>Ingrese el código de verificación</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Ingrese el código de verificación</label>
               <input
+                ref={codeInputRef}
                 type="text"
                 className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="Código de verificación"
@@ -414,37 +423,42 @@ const Transaction = () => {
             </div>
           )}
 
+          {isCodeVerified && !isTransferCompleted && (
+            <div className="w-full mt-4 mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+              <p>Código verificado con éxito.</p>
+            </div>
+          )}
+
           {error && <label className="block text-red-600 mb-4">{error}</label>}
 
           <div className="text-center">
-            {!isCodeSent ? (
+            {!showVerificationFields && !isTransferCompleted && (
               <button
                 className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
                 onClick={sendVerificationCode}
               >
                 Enviar Código de Verificación
               </button>
-            ) : (
-              !isTransferCompleted && (
-                <input
-                  className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
-                  type="button"
-                  onClick={handleTransaction}
-                  value="Realizar Transferencia"
-                  ref={transferButtonRef}
-                />
-              )
+            )}
+            {isCodeVerified && !isTransferCompleted && (
+              <input
+                className={`bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600`}
+                type="button"
+                onClick={handleTransaction}
+                value="Realizar Transferencia"
+                disabled={!isCodeVerified}
+              />
             )}
           </div>
 
           {isTransferCompleted && (
             <>
               <div className="w-full mt-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-                <span className="block sm:inline">Transferencia realizada con éxito</span>
+                <span className="block sm:inline">{successMessage}</span>
               </div>
               <div className="text-center mt-4">
                 <button
-                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                  className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
                   onClick={() => {
                     if (transactionData) {
                       generatePDF(transactionData);
@@ -457,11 +471,6 @@ const Transaction = () => {
             </>
           )}
 
-          {successMessage && !isTransferCompleted && (
-            <div className="w-full mt-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-              <span className="block sm:inline">{successMessage}</span>
-            </div>
-          )}
         </div>
       </div>
     </div>
