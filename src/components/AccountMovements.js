@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { collection, query, where, getDocs, getDoc, doc, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { Sidebar } from '../components/Sidebar';
 import { HeaderDashboard } from './HeaderDashboard';
@@ -11,6 +11,8 @@ const AccountMovements = () => {
   const { accountNumber } = useParams();
   const [movements, setMovements] = useState([]);
   const [selectedAccount, setSelectedAccount] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [showBalance, setShowBalance] = useState(true);
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
@@ -27,33 +29,36 @@ const AccountMovements = () => {
       const savedMovements = localStorage.getItem('movements');
 
       if (savedAccount && savedMovements) {
-        setSelectedAccount(JSON.parse(savedAccount));
-        setMovements(JSON.parse(savedMovements));
-      } else {
-        try {
-          const userDoc = await getDoc(doc(db, 'clientes', user.uid));
-          if (userDoc.exists()) {
-            const userData = userDoc.data();
-
-            const accountsQuery = query(collection(db, 'cuentas'), where('id', '==', user.uid));
-            onSnapshot(accountsQuery, (accountsSnapshot) => {
-              const userAccounts = accountsSnapshot.docs.map(doc => doc.data());
-              const account = userAccounts.find(account => account.accountNumber === accountNumber);
-              setSelectedAccount(account);
-
-              if (account) {
-                fetchMovements(account.accountNumber);
-              } else {
-                console.error("No account found with the provided account number.");
-              }
-            });
-          } else {
-            console.log("No such document!");
-          }
-        } catch (error) {
-          console.error("Error fetching data:", error);
+        const parsedAccount = JSON.parse(savedAccount);
+        if (parsedAccount.accountNumber === accountNumber) {
+          setSelectedAccount(parsedAccount);
+          setMovements(JSON.parse(savedMovements));
+          setLoading(false);
+          return;
         }
       }
+
+      try {
+        const userDoc = await getDoc(doc(db, 'clientes', user.uid));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+
+          const accountsQuery = query(collection(db, 'cuentas'), where('id', '==', user.uid), where('accountNumber', '==', accountNumber));
+          const accountsSnapshot = await getDocs(accountsQuery);
+          if (!accountsSnapshot.empty) {
+            const account = accountsSnapshot.docs[0].data();
+            setSelectedAccount(account);
+            await fetchMovements(account.accountNumber);
+          } else {
+            console.error("No account found with the provided account number.");
+          }
+        } else {
+          console.log("No such document!");
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+      setLoading(false);
     };
 
     fetchUserData();
@@ -71,31 +76,25 @@ const AccountMovements = () => {
       where('cuentaDestino', '==', accountNumber)
     );
 
-    const allMovements = [];
+    const [snapshot1, snapshot2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+    let allMovements = [];
 
-    const snapshot1 = await getDocs(q1);
     snapshot1.forEach((doc) => {
       const data = doc.data();
-      if (data.fecha && data.fecha.toDate) {
-        data.fecha = data.fecha.toDate();
-      } else if (data.fecha && typeof data.fecha === 'string') {
-        data.fecha = new Date(data.fecha);
-      }
-      allMovements.push({ ...data, id: doc.id, tipoMovimiento: 'debito' });
+      allMovements.push({ ...data, id: doc.id, fecha: data.fecha.toDate(), tipoMovimiento: 'debito' });
     });
 
-    const snapshot2 = await getDocs(q2);
     snapshot2.forEach((doc) => {
       const data = doc.data();
-      if (data.fecha && data.fecha.toDate) {
-        data.fecha = data.fecha.toDate();
-      } else if (data.fecha && typeof data.fecha === 'string') {
-        data.fecha = new Date(data.fecha);
-      }
-      allMovements.push({ ...data, id: doc.id, tipoMovimiento: 'credito' });
+      allMovements.push({ ...data, id: doc.id, fecha: data.fecha.toDate(), tipoMovimiento: 'credito' });
     });
 
-    const movementsWithNames = await Promise.all(allMovements.map(async (movement) => {
+    // Ordenar los movimientos por fecha en orden descendente y tomar solo los primeros 10
+    const sortedMovements = allMovements
+      .sort((a, b) => b.fecha - a.fecha)
+      .slice(0, 10);
+
+    const movementsWithNames = await Promise.all(sortedMovements.map(async (movement) => {
       if (movement.tipoMovimiento === 'debito') {
         const receiverAccountQuery = query(collection(db, 'cuentas'), where('accountNumber', '==', movement.cuentaDestino));
         const receiverAccountSnapshot = await getDocs(receiverAccountQuery);
@@ -130,16 +129,15 @@ const AccountMovements = () => {
       return movement;
     }));
 
-    const sortedMovements = movementsWithNames.sort((a, b) => b.fecha - a.fecha).slice(0, 10);
-    setMovements(sortedMovements);
+    setMovements(movementsWithNames);
 
-    const newBalance = sortedMovements.reduce((acc, movement) => {
+    const newBalance = movementsWithNames.reduce((acc, movement) => {
       return movement.tipoMovimiento === 'credito' ? acc + movement.monto : acc - movement.monto;
-    }, selectedAccount.accountBalance || 0);
+    }, selectedAccount?.accountBalance || 0);
 
     setSelectedAccount(prevAccount => ({ ...prevAccount, accountBalance: newBalance }));
 
-    localStorage.setItem('movements', JSON.stringify(sortedMovements));
+    localStorage.setItem('movements', JSON.stringify(movementsWithNames));
     localStorage.setItem('selectedAccount', JSON.stringify(selectedAccount));
   };
 
@@ -159,6 +157,10 @@ const AccountMovements = () => {
     navigate(`/movimientos?account=${accountNumber}`);
   };
 
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
   const accountTypeDisplay = (tipoCuenta, accountNumber) => {
     const lastFourDigits = accountNumber.slice(-4);
     const tipo = tipoCuenta.toLowerCase();
@@ -169,6 +171,7 @@ const AccountMovements = () => {
     }
     return lastFourDigits;
   };
+
   const movementsContent = useMemo(() => {
     if (movements.length > 0) {
       return Object.entries(
@@ -229,11 +232,11 @@ const AccountMovements = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col pt-24">
       {user && <HeaderDashboard firstName={user.nombre} lastName={user.apellido} />}
       <div className="flex flex-grow">
         <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-        <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-72' : 'ml-20'}`}>
+        <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-72' : 'ml-72'}`}>
           {selectedAccount && (
             <div className="account-card text-center mb-8 bg-white shadow-md rounded-lg p-6 w-full max-w-md">
               <h2 className="text-2xl font-bold">{accountTypeDisplay(selectedAccount.tipoCuenta, selectedAccount.accountNumber)}</h2>
@@ -258,4 +261,5 @@ const AccountMovements = () => {
     </div>
   );
 };
+
 export default AccountMovements;
