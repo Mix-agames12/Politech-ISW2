@@ -6,7 +6,7 @@ import { AuthContext } from '../context/AuthContext';
 import Logo from '../assets/images/neologo.png';
 
 const userNavigation = [
-  { name: 'Actualizar perfil', path: '/update-profile' },
+  { name: 'Ver perfil', path: '/update-profile' },
   { name: 'Cerrar sesión', path: '#' },
 ];
 
