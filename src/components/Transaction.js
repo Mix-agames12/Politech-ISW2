@@ -213,10 +213,7 @@ const Transaction = () => {
             saldoActualizado: updatedReceiverBalance
           });
 
-          // Generar PDF y convertirlo a base64
-          const pdfBase64 = generatePDF(transactionData);
-
-          // Enviar correos de confirmación de transacción con el PDF adjunto
+          // Enviar correos de confirmación de transacción
           await fetch('https://politech-isw2.onrender.com/process-transaction', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -229,7 +226,6 @@ const Transaction = () => {
                 amount,
                 description,
                 date: new Date().toLocaleDateString(),
-                pdfBase64 // Envía el PDF como base64
               }
             })
           });

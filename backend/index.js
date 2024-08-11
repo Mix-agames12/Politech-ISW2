@@ -1,4 +1,3 @@
-// index.js
 const express = require('express');
 const sgMail = require('@sendgrid/mail');
 const cors = require('cors');
@@ -111,7 +110,7 @@ app.post('/process-transaction', async (req, res) => {
   const { senderEmail, receiverEmail, transactionDetails } = req.body;
 
   try {
-    // Enviar correo al remitente con PDF adjunto
+    // Enviar correo al remitente
     const senderMsg = {
       to: senderEmail,
       from: 'politechsw@gmail.com',
@@ -124,6 +123,7 @@ app.post('/process-transaction', async (req, res) => {
           <ul>
             <li>Cuenta de Origen: ${transactionDetails.senderAccount}</li>
             <li>Cuenta de Destino: ${transactionDetails.receiverAccount}</li>
+            <li>Nombre del beneficiario: $${transactionDetails.receiverName}</li>
             <li>Monto: $${transactionDetails.amount}</li>
             <li>Descripción: ${transactionDetails.description}</li>
             <li>Fecha: ${transactionDetails.date}</li>
@@ -131,14 +131,6 @@ app.post('/process-transaction', async (req, res) => {
           <p style="color: #555;">Gracias por usar nuestros servicios.</p>
         </div>
       `,
-      attachments: [
-        {
-          content: transactionDetails.pdfBase64, // Adjunta el PDF en formato base64
-          filename: 'comprobante.pdf',
-          type: 'application/pdf',
-          disposition: 'attachment',
-        }
-      ]
     };
 
     await sgMail.send(senderMsg);
@@ -156,8 +148,8 @@ app.post('/process-transaction', async (req, res) => {
           <ul>
             <li>Cuenta de Origen: ${transactionDetails.senderAccount}</li>
             <li>Cuenta de Destino: ${transactionDetails.receiverAccount}</li>
+            <li>Nombre del remitente: ${transactionDetails.senderName}</li>
             <li>Monto: $${transactionDetails.amount}</li>
-            <li>Descripción: ${transactionDetails.description}</li>
             <li>Fecha: ${transactionDetails.date}</li>
           </ul>
           <p style="color: #555;">Gracias por usar nuestros servicios.</p>
