@@ -25,6 +25,7 @@
     "flowbite": "^2.4.1",
     "flowbite-react": "^0.10.1",
     "jspdf": "^2.5.1",
+    "moment-timezone": "^0.5.45",
     "path-browserify": "^1.0.1",
     "pdf-lib": "^1.17.1",
     "postcss-cli": "^11.0.0",

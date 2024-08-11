@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { db } from '../firebaseConfig';
 import { collection, getDocs, query, where, getDoc, doc } from 'firebase/firestore';
 import { Sidebar } from './Sidebar';
 import { HeaderDashboard } from './HeaderDashboard';
 import { generateMovementsPDF } from '../assets/pdfs/generateMovementsPDF';
 import { AuthContext } from '../context/AuthContext';
+import moment from 'moment-timezone';
 
 const Movimientos = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user } = useContext(AuthContext);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [movements, setMovements] = useState([]);
@@ -45,11 +47,11 @@ const Movimientos = () => {
 
           const params = new URLSearchParams(location.search);
           const account = params.get('account');
-          console.log("Account param:", account);  // Verifica que el parámetro de la cuenta se está leyendo correctamente
+          console.log("Account param:", account);
 
           if (account) {
             const foundAccount = userAccounts.find(acc => acc.accountNumber === account);
-            console.log("Found Account:", foundAccount);  // Verifica que la cuenta se está encontrando en las cuentas del usuario
+            console.log("Found Account:", foundAccount);
             setSelectedAccount(foundAccount);
           }
         }
@@ -64,7 +66,7 @@ const Movimientos = () => {
   useEffect(() => {
     if (fromProducts) {
       if (selectedAccount) {
-        fetchMovements(true); // Llamar a fetchMovements con true para obtener solo los últimos 10 movimientos
+        fetchMovements(true); // Obtener solo los últimos 10 movimientos
       } else {
         console.error("No se seleccionó ninguna cuenta al intentar cargar movimientos.");
       }
@@ -72,7 +74,7 @@ const Movimientos = () => {
   }, [fromProducts, selectedAccount]);
 
   const formatDate = (fecha) => {
-    return fecha.toLocaleDateString();
+    return moment(fecha).tz('America/Guayaquil').format('DD/MM/YYYY');
   };
 
   const fetchMovements = async (onlyLastTen = false) => {
@@ -94,7 +96,7 @@ const Movimientos = () => {
       let q1, q2;
 
       if (fromProducts) {
-        // Para "Mis Productos": Obtener los últimos 10 movimientos sin fechas
+        // Obtener los últimos 10 movimientos sin fechas (para "Mis Productos")
         q1 = query(
           transaccionesCollection,
           where('cuentaOrigen', '==', selectedAccount.accountNumber),
@@ -106,20 +108,23 @@ const Movimientos = () => {
           where('tipoMovimiento', '==', 'credito')
         );
       } else {
-        // Para "Movimientos" en el Sidebar: Obtener movimientos dentro de las fechas
+        // Obtener movimientos dentro de las fechas (para "Movimientos" en el Sidebar)
+        const start = moment.tz(startDate, 'America/Guayaquil').startOf('day').toDate();
+        const end = moment.tz(endDate, 'America/Guayaquil').endOf('day').toDate();
+
         q1 = query(
           transaccionesCollection,
           where('cuentaOrigen', '==', selectedAccount.accountNumber),
           where('tipoMovimiento', '==', 'debito'),
-          where('fecha', '>=', new Date(startDate)),
-          where('fecha', '<=', new Date(`${endDate}T23:59:59`))
+          where('fecha', '>=', start),
+          where('fecha', '<=', end)
         );
         q2 = query(
           transaccionesCollection,
           where('cuentaDestino', '==', selectedAccount.accountNumber),
           where('tipoMovimiento', '==', 'credito'),
-          where('fecha', '>=', new Date(startDate)),
-          where('fecha', '<=', new Date(`${endDate}T23:59:59`))
+          where('fecha', '>=', start),
+          where('fecha', '<=', end)
         );
       }
 
@@ -139,7 +144,7 @@ const Movimientos = () => {
 
       let sortedMovements = movementsArray.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
-      if (onlyLastTen) {
+      if (fromProducts && onlyLastTen) {
         sortedMovements = sortedMovements.slice(0, 10);
         console.log("Mostrando los últimos 10 movimientos:", sortedMovements);
       }
@@ -190,11 +195,7 @@ const Movimientos = () => {
   };
 
   const getCurrentDate = () => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return moment().tz('America/Guayaquil').format('YYYY-MM-DD');
   };
 
   useEffect(() => {
@@ -219,16 +220,32 @@ const Movimientos = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
+  const handleFilterByDates = () => {
+    navigate('/movimientos', {
+      state: {
+        fromProducts: false,
+        showLastOnly: false
+      },
+      search: `?account=${selectedAccount.accountNumber}`
+    });
+  };
+
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col pt-24">
       <HeaderDashboard />
-      <div className="flex flex-grow justify-center items-center ">
-        <div className="xl:w-1/4 md:w-1/4 sm:w-6/12">
-          <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-        </div>
-        {/* Cuerpo del formulario */}
-        <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center xl:w-full md:w-5/12 sm:w-4/12 ${isSidebarOpen ? 'sm:ml-16 md:mr-16 lg:mr-32' : 'sm:ml-16 md:mr-16 lg:mr-32'} md:ml-0`}>
-          <h2 className="text-2xl font-bold mb-4 text-center">Consulta de Movimientos</h2>
+      <div className="flex flex-grow justify-center items-center">
+        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-80' : 'ml-20'} md:ml-0`}>
+          <h2 className="text-2xl font-bold mb-4 text-center">Movimientos</h2>
+
+          {fromProducts && (
+            <button
+              className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 mb-4"
+              onClick={handleFilterByDates}
+            >
+              Filtrar por fechas
+            </button>
+          )}
 
           {!fromProducts && (
             <>
@@ -293,7 +310,10 @@ const Movimientos = () => {
               <div className="flex w-full justify-center space-x-4 mt-4">
                 <button
                   className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
-                  onClick={fetchMovements}
+                  onClick={() => {
+                    setHasClickedSearch(true);
+                    fetchMovements(false); // Obtener todos los movimientos entre las fechas
+                  }}
                 >
                   Buscar Movimientos
                 </button>
@@ -347,11 +367,7 @@ const Movimientos = () => {
                             </td>
                             <td className="p-2 border-b">{`******${movement.cuentaOrigen.slice(-4)}`}</td>
                             <td className="p-2 border-b">
-                              {/* Verifica si la cuenta destino no tiene números */}
-                              {/^\D+$/.test(movement.cuentaDestino) ?
-                                `` :
-                                `******${movement.cuentaDestino.slice(-4)}`}
-
+                              {/^\D+$/.test(movement.cuentaDestino) ? '' : `******${movement.cuentaDestino.slice(-4)}`}
                             </td>
                             <td className="p-2 border-b" style={{ color: movement.tipoMovimiento === 'credito' ? '#228B22' : 'red' }}>
                               {movement.monto !== undefined ? `${movement.monto.toFixed(2)}` : '0.00'}

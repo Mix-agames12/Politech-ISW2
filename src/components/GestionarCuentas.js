@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../firebaseConfig';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { HeaderDashboard } from './HeaderDashboard';
-import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa';
+import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa'; // Importar el icono de añadir cuenta
+import { IoMdPersonAdd } from "react-icons/io";
 import { AuthContext } from '../context/AuthContext';
 
 const GestionarCuentas = () => {
@@ -79,7 +80,7 @@ const GestionarCuentas = () => {
     const renderAccountCard = (account, index) => (
         <div
             key={index}
-            className="account-card bg-sky-50 shadow-md rounded-lg p-6 lg:p-5 xl:p-7 hover:scale-105 transition-transform duration-300 cursor-pointer border border-gray-300 w-full max-w-xs"
+            className="account-card bg-sky-50 shadow-md rounded-lg p-6 lg:p-5 xl:p-7 hover:scale-105 transition-transform duration-300 cursor-pointer border border-gray-300 w-full max-w-full sm:max-w-xs"
             onClick={() => handleAccountClick(account.accountNumber)}
         >
             <h4 className="account-number font-bold text-lg">{account.accountName || generateAccountName(account.tipoCuenta, account.accountNumber)}</h4>
@@ -117,11 +118,16 @@ const GestionarCuentas = () => {
             <HeaderDashboard />
             <div className="flex flex-grow">
                 <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-                <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-72' : 'ml-72 '}`}>
-                    <h2 className="text-2xl font-bold mb-4">Mis Productos</h2>
-                    <button className="bg-sky-900 text-white font-semibold py-2 px-4 rounded mb-4 hover:bg-sky-600 transition-colors duration-300"onClick={handleCreateAccountClick}>
-                        Agregar Cuenta
-                    </button>
+                <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-72' : 'ml-20'}`}>
+                    <div className="flex justify-between items-center w-full">
+                        <h2 className="text-3xl font-bold mb-4 text-center lg:text-left">Mis Productos</h2>
+                        <button 
+                            className="bg-sky-900 text-white font-semibold p-2 rounded-lg hover:bg-sky-600 transition-colors duration-300"
+                            onClick={handleCreateAccountClick}
+                        >
+                            <IoMdPersonAdd className="h-6 w-6" />
+                        </button>
+                    </div>
                     <div className="w-full space-y-8">
                         {renderAccountSection('Cuentas de Ahorros', savingsAccounts)}
                         {renderAccountSection('Cuentas Corrientes', currentAccounts)}
