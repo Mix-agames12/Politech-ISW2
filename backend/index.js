@@ -1,13 +1,23 @@
+// index.js
+
 const express = require('express');
 const sgMail = require('@sendgrid/mail');
 const cors = require('cors');
 const crypto = require('crypto');
+const admin = require('firebase-admin'); // Asegúrate de haber inicializado Firebase Admin
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+// Configuración de Firebase Admin
+admin.initializeApp({
+  credential: admin.credential.applicationDefault(), // Asegúrate de que tu entorno esté configurado con las credenciales adecuadas
+  databaseURL: 'https://<your-database-name>.firebaseio.com'
+});
+
+// Almacenamiento temporal en memoria (no recomendado para producción)
+let verificationCodes = {};
 
 // Configuración de CORS
 app.use(cors({
@@ -16,8 +26,8 @@ app.use(cors({
 
 app.use(express.json());
 
-// Almacenamiento temporal en memoria (no recomendado para producción)
-let verificationCodes = {};
+// Configurar la API Key de SendGrid
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // Ruta para la raíz ("/")
 app.get('/', (req, res) => {
@@ -57,7 +67,7 @@ app.post('/send-code', async (req, res) => {
 
   const msg = {
     to: email,
-    from: 'politechsw@gmail.com', 
+    from: 'politechsw@gmail.com',
     subject: 'Código de Verificación',
     html: htmlContent,
   };
@@ -105,63 +115,52 @@ app.post('/verify-code', (req, res) => {
   }
 });
 
-// Ruta para procesar la transacción y enviar correos de confirmación
+// Nueva ruta para procesar la transacción y enviar correos electrónicos
 app.post('/process-transaction', async (req, res) => {
-  const { senderEmail, receiverEmail, transactionDetails } = req.body;
+  const { senderEmail, receiverAccount, transactionDetails } = req.body;
 
   try {
+    // Obtener la colección `clientes` y buscar el correo del receptor
+    const receiverSnapshot = await admin.firestore().collection('clientes').where('accountNumber', '==', receiverAccount).get();
+
+    if (receiverSnapshot.empty) {
+      return res.status(404).json({ success: false, message: 'Cuenta de destino no encontrada.' });
+    }
+
+    const receiverData = receiverSnapshot.docs[0].data();
+    const receiverEmail = receiverData.email;
+
     // Enviar correo al remitente
-    const senderMsg = {
+    const senderMessage = {
       to: senderEmail,
       from: 'politechsw@gmail.com',
       subject: 'Transferencia Exitosa',
-      html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-          <h2 style="color: #333;">Hola,</h2>
-          <p style="color: #555;">Tu transferencia fue realizada con éxito.</p>
-          <p style="color: #555;">Detalles de la transacción:</p>
-          <ul>
-            <li>Cuenta de Origen: ${transactionDetails.senderAccount}</li>
-            <li>Cuenta de Destino: ${transactionDetails.receiverAccount}</li>
-            <li>Monto: $${transactionDetails.amount}</li>
-            <li>Descripción: ${transactionDetails.description}</li>
-            <li>Fecha: ${transactionDetails.date}</li>
-          </ul>
-          <p style="color: #555;">Gracias por usar nuestros servicios.</p>
-        </div>
-      `,
+      text: `Hola, tu transferencia de ${transactionDetails.amount} a la cuenta ${transactionDetails.receiverAccount} fue exitosa.`,
+      attachments: [
+        {
+          content: transactionDetails.pdfBase64,
+          filename: 'comprobante.pdf',
+          type: 'application/pdf',
+          disposition: 'attachment',
+        }
+      ]
     };
-
-    await sgMail.send(senderMsg);
 
     // Enviar correo al receptor
-    const receiverMsg = {
+    const receiverMessage = {
       to: receiverEmail,
       from: 'politechsw@gmail.com',
-      subject: 'Has Recibido una Transferencia',
-      html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-          <h2 style="color: #333;">Hola,</h2>
-          <p style="color: #555;">Has recibido una transferencia en tu cuenta.</p>
-          <p style="color: #555;">Detalles de la transacción:</p>
-          <ul>
-            <li>Cuenta de Origen: ${transactionDetails.senderAccount}</li>
-            <li>Cuenta de Destino: ${transactionDetails.receiverAccount}</li>
-            <li>Monto: $${transactionDetails.amount}</li>
-            <li>Descripción: ${transactionDetails.description}</li>
-            <li>Fecha: ${transactionDetails.date}</li>
-          </ul>
-          <p style="color: #555;">Gracias por usar nuestros servicios.</p>
-        </div>
-      `,
+      subject: 'Has recibido una transferencia',
+      text: `Hola, has recibido una transferencia de ${transactionDetails.amount} desde la cuenta ${transactionDetails.senderAccount}.`,
     };
 
-    await sgMail.send(receiverMsg);
+    await sgMail.send(senderMessage);
+    await sgMail.send(receiverMessage);
 
     res.status(200).json({ success: true, message: 'Correos enviados con éxito' });
   } catch (error) {
-    console.error('Error al enviar correos de confirmación:', error.response ? error.response.body : error.message);
-    res.status(500).json({ success: false, message: 'No se pudo enviar los correos de confirmación' });
+    console.error('Error al procesar la transacción y enviar correos:', error.message);
+    res.status(500).json({ success: false, message: 'Error al procesar la transacción y enviar correos' });
   }
 });
 

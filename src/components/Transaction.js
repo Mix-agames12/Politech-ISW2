@@ -1,3 +1,5 @@
+// Transaction.js
+
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { db } from '../firebaseConfig';
 import { collection, getDocs, query, where, updateDoc, doc, addDoc, getDoc, serverTimestamp } from 'firebase/firestore';
@@ -14,7 +16,6 @@ const Transaction = () => {
   const [description, setDescription] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [receiverName, setReceiverName] = useState('');
-  const [receiverEmail, setReceiverEmail] = useState(''); // Nuevo estado para el correo del receptor
   const [error, setError] = useState('');
   const [receiverError, setReceiverError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -25,21 +26,22 @@ const Transaction = () => {
   const [isTransferCompleted, setIsTransferCompleted] = useState(false);
   const [showVerificationFields, setShowVerificationFields] = useState(false);
 
+  // Estados para manejar el código de verificación
   const [isCodeSent, setIsCodeSent] = useState(false);
   const [inputCode, setInputCode] = useState('');
   const [isCodeVerified, setIsCodeVerified] = useState(false);
   const codeInputRef = useRef(null);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      return;
+    }
 
     const fetchData = async () => {
       try {
         const userDoc = await getDoc(doc(db, 'clientes', user.uid));
         if (userDoc.exists()) {
-          // Extrae el correo del usuario receptor y almacénalo en el estado
-          const receiverEmail = userDoc.data().email;
-          setReceiverEmail(receiverEmail);
+          // No necesitas usar `userData`, así que elimínalo
         }
 
         const q = query(collection(db, 'cuentas'), where('id', '==', user.uid));
@@ -56,8 +58,11 @@ const Transaction = () => {
 
   const generateAccountName = (tipoCuenta, accountNumber) => {
     const suffix = accountNumber.slice(-4);
-    if (tipoCuenta.toLowerCase() === 'ahorros') return `AHO${suffix}`;
-    if (tipoCuenta.toLowerCase() === 'corriente') return `CORR${suffix}`;
+    if (tipoCuenta.toLowerCase() === 'ahorros') {
+      return `AHO${suffix}`;
+    } else if (tipoCuenta.toLowerCase() === 'corriente') {
+      return `CORR${suffix}`;
+    }
     return `CUENTA${suffix}`;
   };
 
@@ -77,13 +82,15 @@ const Transaction = () => {
     try {
       const response = await fetch('https://politech-isw2.onrender.com/send-code', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ email: user.email })
       });
 
       const data = await response.json();
       if (data.success) {
-        localStorage.setItem('sessionId', data.sessionId);
+        localStorage.setItem('sessionId', data.sessionId); // Almacena el sessionId
         setIsCodeSent(true);
         setShowVerificationFields(true);
         setError('');
@@ -106,7 +113,9 @@ const Transaction = () => {
 
       const response = await fetch('https://politech-isw2.onrender.com/verify-code', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ sessionId, code: inputCode })
       });
 
@@ -160,7 +169,9 @@ const Transaction = () => {
           const updatedSenderBalance = senderData.accountBalance - Number(amount);
           const updatedReceiverBalance = receiverData.accountBalance + Number(amount);
 
-          await updateDoc(doc(db, 'cuentas', senderDoc.id), { accountBalance: updatedSenderBalance });
+          await updateDoc(doc(db, 'cuentas', senderDoc.id), {
+            accountBalance: updatedSenderBalance
+          });
 
           const transaction = {
             tipo: 'transferencia',
@@ -175,7 +186,9 @@ const Transaction = () => {
           };
           await addDoc(collection(db, 'transacciones'), transaction);
 
-          await updateDoc(doc(db, 'cuentas', receiverDoc.id), { accountBalance: updatedReceiverBalance });
+          await updateDoc(doc(db, 'cuentas', receiverDoc.id), {
+            accountBalance: updatedReceiverBalance
+          });
 
           await addDoc(collection(db, 'transacciones'), {
             tipo: 'transferencia',
@@ -189,21 +202,33 @@ const Transaction = () => {
             saldoActualizado: updatedReceiverBalance
           });
 
-          // Enviar correos de confirmación de transacción
+          const pdfData = await generatePDF({
+            senderAccount: senderData.accountNumber,
+            senderName: `${user.nombre} ${user.apellido}`,
+            receiverAccount: receiverData.accountNumber,
+            receiverName: receiverName || 'N/A',
+            amount: transaction.monto,
+            description: transaction.descripcion || 'N/A',
+            date: new Date().toLocaleDateString()
+          });
+
+          const pdfBase64 = pdfData.toString('base64');
+
           await fetch('https://politech-isw2.onrender.com/process-transaction', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+            },
             body: JSON.stringify({
               senderEmail: user.email,
-              receiverEmail: receiverEmail,
+              receiverAccount: receiverAccount,
               transactionDetails: {
-                senderAccount,
-                receiverAccount,
-                amount,
-                description,
-                date: new Date().toLocaleDateString(),
+                amount: transaction.monto,
+                senderAccount: senderAccount,
+                receiverAccount: receiverAccount,
+                pdfBase64: pdfBase64,
               }
-            })
+            }),
           });
 
           setSuccessMessage('Transferencia realizada con éxito');
@@ -474,6 +499,7 @@ const Transaction = () => {
               </div>
             </>
           )}
+
         </div>
       </div>
     </div>
