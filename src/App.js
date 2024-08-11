@@ -6,11 +6,9 @@ import PasswordReset from './components/PasswordReset';
 import UpdateProfile from './components/UpdateProfile';
 import Transaction from './components/Transaction';
 import GestionarCuentas from './components/GestionarCuentas';
-import CambioContrasena from './components/CambioContrasena';
 import Movimientos from './components/Movimientos';
 import Home from './components/Home';
 import CrearCuenta from './components/CrearCuenta';
-import AccountMovements from './components/AccountMovements';
 import ForgotUsername from './components/ForgotUsername';
 import ForgotPassword from './components/ForgotPassword';
 import VerifyEmail from './components/VerifyEmail'; // Importar el componente VerifyEmail
@@ -25,6 +23,8 @@ const AppRoutes = () => {
   const mode = queryParams.get('mode');
   const oobCode = queryParams.get('oobCode');
 
+  console.log({ mode, oobCode }); // Añade esto para ver qué valores tienes
+
   if (mode === 'resetPassword' && oobCode) {
     return <PasswordReset />;
   } else if (mode === 'verifyEmail' && oobCode) {
@@ -34,12 +34,13 @@ const AppRoutes = () => {
   }
 };
 
+
 const App = () => {
   return (
     <AuthProvider>
       <Router>
-        <div className="App w-100 h-auto">
-          <div className="container">
+        <div className="App w-full h-auto min-h-screen flex flex-col">
+          <div className="flex-grow w-full">
             <Routes>
               <Route path="/*" element={<AppRoutes />} />
               <Route path="/login" element={<Login />} />
@@ -47,13 +48,12 @@ const App = () => {
               <Route path="/update-profile" element={<UpdateProfile />} />
               <Route path="/transaction" element={<Transaction />} />
               <Route path="/gestionar-cuentas" element={<GestionarCuentas />} />
-              <Route path="/cambio-contrasena" element={<CambioContrasena />} />
               <Route path="/movimientos" element={<Movimientos />} />
+              <Route path="/reset-password" element={<PasswordReset />} />
               <Route path="/crear-cuenta" element={<CrearCuenta />} />
               <Route path="/forgot-username" element={<ForgotUsername/>}/>
               <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/movimientos/:accountNumber" element={<AccountMovements />} />
-              <Route path="/verify-email" element={<VerifyEmail />} /> {/* Añadir la ruta de VerifyEmail */}
+              <Route path="/verify-email" element={<VerifyEmail />} /> 
               <Route path="/pago-servicios" element={<BillsPayment />} />
               <Route path="/generar-pago" element={<GenerarPago />} />
             </Routes>

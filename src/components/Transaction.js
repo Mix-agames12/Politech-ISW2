@@ -14,7 +14,7 @@ const Transaction = () => {
   const [description, setDescription] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [receiverName, setReceiverName] = useState('');
-  const [receiverEmail, setReceiverEmail] = useState(''); // Nuevo estado para el correo del receptor
+  const [receiverEmail, setReceiverEmail] = useState(''); 
   const [error, setError] = useState('');
   const [receiverError, setReceiverError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -35,13 +35,6 @@ const Transaction = () => {
 
     const fetchData = async () => {
       try {
-        const userDoc = await getDoc(doc(db, 'clientes', user.uid));
-        if (userDoc.exists()) {
-          // Extrae el correo del usuario receptor y almacénalo en el estado
-          const receiverEmail = userDoc.data().email;
-          setReceiverEmail(receiverEmail);
-        }
-
         const q = query(collection(db, 'cuentas'), where('id', '==', user.uid));
         const querySnapshot = await getDocs(q);
         const accountsList = querySnapshot.docs.map(doc => doc.data());
@@ -53,6 +46,33 @@ const Transaction = () => {
 
     fetchData();
   }, [user]);
+
+  const fetchReceiverEmail = async (accountNumber) => {
+    try {
+      const q = query(collection(db, 'cuentas'), where('accountNumber', '==', accountNumber));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        const accountDoc = querySnapshot.docs[0];
+        const accountData = accountDoc.data();
+
+        const clientDoc = await getDoc(doc(db, 'clientes', accountData.id));
+        if (clientDoc.exists()) {
+          const receiverEmail = clientDoc.data().correo; 
+          const receiverName = `${clientDoc.data().nombre} ${clientDoc.data().apellido}`; 
+
+          setReceiverEmail(receiverEmail);
+          setReceiverName(receiverName);
+        } else {
+          console.error('No client found with the provided ID.');
+        }
+      } else {
+        console.error('No account found with the provided account number.');
+      }
+    } catch (error) {
+      console.error('Error fetching receiver email:', error);
+    }
+  };
 
   const generateAccountName = (tipoCuenta, accountNumber) => {
     const suffix = accountNumber.slice(-4);
@@ -111,7 +131,6 @@ const Transaction = () => {
       });
 
       const data = await response.json();
-
       if (response.ok) {
         setIsCodeVerified(true);
         setSuccessMessage('Código verificado correctamente.');
@@ -189,8 +208,7 @@ const Transaction = () => {
             saldoActualizado: updatedReceiverBalance
           });
 
-          // Enviar correos de confirmación de transacción
-          await fetch('https://politech-isw2.onrender.com/process-transaction', {
+          await fetch('https://politech-isw2.onrender.com/process-transfer', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -199,6 +217,8 @@ const Transaction = () => {
               transactionDetails: {
                 senderAccount,
                 receiverAccount,
+                receiverName, 
+                senderName: `${user.nombre} ${user.apellido}`, 
                 amount,
                 description,
                 date: new Date().toLocaleDateString(),
@@ -259,37 +279,7 @@ const Transaction = () => {
       return;
     }
     try {
-      const accountsCollection = collection(db, 'cuentas');
-      const receiverQuery = query(accountsCollection, where('accountNumber', '==', receiverAccount));
-      const receiverSnapshot = await getDocs(receiverQuery);
-      const receiverDoc = receiverSnapshot.docs[0];
-
-      if (receiverDoc) {
-        const receiverData = receiverDoc.data();
-
-        const clienteDoc = await getDoc(doc(db, 'clientes', receiverData.id));
-
-        if (clienteDoc.exists()) {
-          const clienteData = clienteDoc.data();
-
-          if (clienteData.nombre && clienteData.apellido) {
-            const fullName = `${clienteData.nombre.trim()} ${clienteData.apellido.trim()}`;
-
-            setReceiverName(fullName);
-            setTransactionData((prev) => ({
-              ...prev,
-              receiverName: fullName
-            }));
-            setReceiverError('');
-          } else {
-            setReceiverError('El cliente no tiene nombre o apellido definidos.');
-          }
-        } else {
-          setReceiverError('Cliente no encontrado.');
-        }
-      } else {
-        setReceiverError('Cuenta de destino no encontrada.');
-      }
+      await fetchReceiverEmail(receiverAccount);
     } catch (error) {
       console.error('Error al validar la cuenta de destino:', error);
       setReceiverError('Error al validar la cuenta de destino.');
@@ -300,19 +290,20 @@ const Transaction = () => {
     <div className="min-h-screen flex flex-col">
       <HeaderDashboard />
       <div className="flex flex-grow">
-        <div className="w-1/4">
+        <div className="xl:w-1/4 md:w-1/4 sm:w-6/12">
           <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         </div>
 
-        <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-16' : 'ml-16'}`}>
-          <h2 className="text-2xl font-bold mb-4">Realizar Transferencia</h2>
+        <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center xl:w-full md:w-5/12 sm:w-4/12 ${isSidebarOpen ? 'sm:ml-16 md:mr-16 lg:mr-32' : 'sm:ml-16 md:mr-16 lg:mr-32'}`}>
+          <h2 className="text-2xl font-bold mb-4 sm:mt-16">Realizar Transferencia</h2>
 
           <div className="w-full mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">Cuenta de origen</label>
             <div className="relative">
               <button
-                className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                onClick={() => setDropdownVisible(!dropdownVisible)}
+                className={`w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${isCodeSent ? 'bg-gray-200 cursor-not-allowed' : ''}`}
+                onClick={() => !isCodeSent && setDropdownVisible(!dropdownVisible)}
+                disabled={isCodeSent}
               >
                 {senderAccount ? `${senderAccount}` : 'Seleccione una cuenta'}
                 <span className="float-right">{dropdownVisible ? '▲' : '▼'}</span>
@@ -348,15 +339,16 @@ const Transaction = () => {
             <div className="flex items-center">
               <input
                 type="text"
-                className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className={`w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${isCodeSent ? 'bg-gray-200 cursor-not-allowed' : ''}`}
                 placeholder="Cuenta de destino"
                 value={receiverAccount}
                 onChange={handleReceiverAccountChange}
+                disabled={isCodeSent}
               />
               <button
-                className={`ml-2 px-3 py-2 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-600 ${receiverAccount.length !== 10 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-sky-900 text-white hover:bg-sky-600 cursor-pointer'}`}
+                className={`ml-2 px-3 py-2 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-600 ${receiverAccount.length !== 10 || isCodeSent ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-sky-900 text-white hover:bg-sky-600 cursor-pointer'}`}
                 onClick={validateReceiverAccount}
-                disabled={receiverAccount.length !== 10}
+                disabled={receiverAccount.length !== 10 || isCodeSent}
               >
                 Validar
               </button>
@@ -370,7 +362,7 @@ const Transaction = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">Nombre del receptor</label>
               <input
                 type="text"
-                className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className={`w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${isCodeSent ? 'bg-gray-200 cursor-not-allowed' : ''}`}
                 value={receiverName}
                 readOnly
               />
@@ -381,10 +373,11 @@ const Transaction = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">Monto</label>
             <input
               type="text"
-              className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className={`w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${isCodeSent ? 'bg-gray-200 cursor-not-allowed' : ''}`}
               placeholder="Monto"
               value={amount}
               onChange={handleAmountChange}
+              disabled={isCodeSent}
             />
             {hasClickedSubmit && (!amount || Number(amount) <= 0) && (
               <p className="text-red-600 text-xs mt-1">Debe ingresar un monto a transferir.</p>
@@ -401,9 +394,10 @@ const Transaction = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">Descripción (Opcional)</label>
             <input
               type="text"
-              className="w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className={`w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${isCodeSent ? 'bg-gray-200 cursor-not-allowed' : ''}`}
               placeholder="Descripción"
               onChange={(e) => setDescription(e.target.value)}
+              disabled={isCodeSent}
             />
           </div>
 

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { auth, db } from '../firebaseConfig'; // Asegúrate de exportar `db` desde `firebaseConfig`
+import { auth, db } from '../firebaseConfig'; // Asegúrate de exportar db desde firebaseConfig
 import { useLocation, useNavigate } from 'react-router-dom';
 import { applyActionCode } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore'; // Importar para actualizar Firestore
@@ -20,36 +20,46 @@ const VerifyEmail = () => {
           // Email verified successfully
           console.log('Correo electrónico verificado');
 
-          // Obtener el usuario actual y actualizar el campo `verified` en Firestore
+          // Obtener el usuario actual y actualizar el campo verified en Firestore
           const user = auth.currentUser;
           if (user) {
             const userRef = doc(db, 'users', user.uid); // Referencia al documento del usuario en Firestore
             updateDoc(userRef, { verified: true })
               .then(() => {
                 console.log('Campo verified actualizado a true en Firestore');
-                navigate('/login');
+                setTimeout(() => {
+                  navigate('/login');
+                }, 2000);
               })
               .catch((error) => {
                 console.error('Error al actualizar el campo verified:', error);
-                navigate('/login');
+                setTimeout(() => {
+                  navigate('/login');
+                }, 2000);
               });
           } else {
-            navigate('/login');
+            setTimeout(() => {
+              navigate('/login');
+            }, 2000);
           }
         })
         .catch((error) => {
           console.error('Error al verificar el correo electrónico:', error);
-          navigate('/login');
+          setTimeout(() => {
+            navigate('/login');
+          }, 2000);
         });
     } else {
-      navigate('/login');
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
     }
   }, [location.search, navigate]);
 
   return (
     <>
       <HeaderHome />
-      <div className="min-w-full min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="mx-auto min-w-full min-h-screen flex items-center justify-center bg-gray-100">
         <div className="w-full max-w-md mx-auto flex flex-col items-center py-5 bg-white shadow-lg rounded-lg">
           <img className="mx-auto h-10 w-auto" src={Buho} alt="Your Company" />
           <h2 className="mt-5 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">Verificación de Correo</h2>

@@ -11,7 +11,7 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // Configuración de CORS
 app.use(cors({
-  origin: '*', // Asegúrate de configurar esto correctamente para producción
+  origin: '*',
 }));
 
 app.use(express.json());
@@ -105,8 +105,8 @@ app.post('/verify-code', (req, res) => {
   }
 });
 
-// Ruta para procesar la transacción y enviar correos de confirmación
-app.post('/process-transaction', async (req, res) => {
+// Ruta para procesar la transferencia bancaria y enviar correos de confirmación
+app.post('/process-transfer', async (req, res) => {
   const { senderEmail, receiverEmail, transactionDetails } = req.body;
 
   try {
@@ -123,6 +123,7 @@ app.post('/process-transaction', async (req, res) => {
           <ul>
             <li>Cuenta de Origen: ${transactionDetails.senderAccount}</li>
             <li>Cuenta de Destino: ${transactionDetails.receiverAccount}</li>
+            <li>Nombre del Beneficiario: ${transactionDetails.receiverName}</li>
             <li>Monto: $${transactionDetails.amount}</li>
             <li>Descripción: ${transactionDetails.description}</li>
             <li>Fecha: ${transactionDetails.date}</li>
@@ -147,8 +148,8 @@ app.post('/process-transaction', async (req, res) => {
           <ul>
             <li>Cuenta de Origen: ${transactionDetails.senderAccount}</li>
             <li>Cuenta de Destino: ${transactionDetails.receiverAccount}</li>
+            <li>Nombre del Remitente: ${transactionDetails.senderName}</li>
             <li>Monto: $${transactionDetails.amount}</li>
-            <li>Descripción: ${transactionDetails.description}</li>
             <li>Fecha: ${transactionDetails.date}</li>
           </ul>
           <p style="color: #555;">Gracias por usar nuestros servicios.</p>
@@ -162,6 +163,38 @@ app.post('/process-transaction', async (req, res) => {
   } catch (error) {
     console.error('Error al enviar correos de confirmación:', error.response ? error.response.body : error.message);
     res.status(500).json({ success: false, message: 'No se pudo enviar los correos de confirmación' });
+  }
+});
+
+// Ruta para procesar el pago de servicios y enviar correos de confirmación
+app.post('/process-payment', async (req, res) => {
+  const { email, paymentDetails } = req.body;
+
+  try {
+    // Enviar correo de confirmación al remitente (cliente que hizo el pago)
+    const confirmationMsg = {
+      to: email,
+      from: 'politechsw@gmail.com',
+      subject: 'Confirmación de Pago Realizado',
+      html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+          <h2 style="color: #333;">Hola,</h2>
+          <p style="color: #555;">Tu pago ha sido realizado con éxito. Aquí están los detalles:</p>
+          <p><strong>Valor:</strong> $${paymentDetails.amount}</p>
+          <p><strong>Desde:</strong> ${paymentDetails.senderAccount}</p>
+          <p><strong>Nombre del remitente:</strong> ${paymentDetails.senderName}</p>
+          <p><strong>Servicio:</strong> ${paymentDetails.service}</p>
+          <p><strong>Fecha:</strong> ${paymentDetails.date}</p>
+        </div>
+      `,
+    };
+
+    await sgMail.send(confirmationMsg);
+
+    res.status(200).json({ success: true, message: 'Correo de confirmación enviado con éxito' });
+  } catch (error) {
+    console.error('Error al enviar correo de confirmación:', error.response ? error.response.body : error.message);
+    res.status(500).json({ success: false, message: 'No se pudo enviar el correo de confirmación' });
   }
 });
 

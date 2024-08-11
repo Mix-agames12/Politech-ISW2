@@ -25,18 +25,22 @@ const ForgotPassword = () => {
   };
 
   const checkEmailExistsAndVerified = async (email) => {
-    // Verificar la existencia del correo electrónico y si está verificado en Firestore
     const usersCollection = collection(db, 'users');
     const emailQuery = query(usersCollection, where('correo', '==', email));
     const emailSnapshot = await getDocs(emailQuery);
-
+  
     if (emailSnapshot.empty) {
+      console.log("No existe el correo en la base de datos");
       return { exists: false, verified: false };
     }
-
+  
     const userDoc = emailSnapshot.docs[0].data();
+    console.log("Usuario encontrado:", userDoc);
+    console.log("Estado de verificación:", userDoc.verified);
+  
     return { exists: true, verified: userDoc.verified === true };
   };
+  
 
   const handlePasswordReset = async () => {
     setError('');
