@@ -41,7 +41,7 @@ export const HeaderDashboard = () => {
                 <>
                   {/* Saludo en pantallas medianas y grandes */}
                   <span className="hidden md:flex text-white items-center space-x-2 ml-4">
-                    <span>Hola, {user.nombre} {user.apellido}</span>
+                    <span>{user.nombre} {user.apellido}</span>
                   </span>
                   {/* Icono del usuario, visible en todos los tamaños */}
                 </>
