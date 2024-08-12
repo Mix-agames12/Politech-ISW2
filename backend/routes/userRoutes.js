@@ -1,8 +1,9 @@
 const express = require('express');
-const { sendCode, verifyCode } = require('../controllers/userController');
 const router = express.Router();
+const userController = require('../controllers/userController');
 
-router.post('/send-code', sendCode);
-router.post('/verify-code', verifyCode);
+// Rutas para códigos de verificación
+router.post('/send-code', userController.sendCode);
+router.post('/verify-code', userController.verifyCode);
 
 module.exports = router;
