@@ -27,15 +27,16 @@ const Movimientos = () => {
   const [searchPerformed, setSearchPerformed] = useState(false);
   const [hasClickedSearch, setHasClickedSearch] = useState(false);
 
+  const getCurrentDate = () => {
+    return moment().tz('America/Guayaquil').format('YYYY-MM-DD');
+  };
+
   const showLastOnly = location.state?.showLastOnly || false;
   const fromProducts = location.state?.fromProducts || false;
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!user) {
-        console.error("No user is currently logged in.");
-        return;
-      }
+    const fetchUserData = async () => {
+      if (!user) return;
 
       try {
         const userDoc = await getDoc(doc(db, 'clientes', user.uid));
@@ -45,13 +46,9 @@ const Movimientos = () => {
           const userAccounts = accountsSnapshot.docs.map(doc => doc.data());
           setAccounts(userAccounts);
 
-          const params = new URLSearchParams(location.search);
-          const account = params.get('account');
-          console.log("Account param:", account);
-
+          const account = new URLSearchParams(location.search).get('account');
           if (account) {
             const foundAccount = userAccounts.find(acc => acc.accountNumber === account);
-            console.log("Found Account:", foundAccount);
             setSelectedAccount(foundAccount);
           }
         }
@@ -60,22 +57,16 @@ const Movimientos = () => {
       }
     };
 
-    fetchData();
+    fetchUserData();
   }, [location, user]);
 
   useEffect(() => {
-    if (fromProducts) {
-      if (selectedAccount) {
-        fetchMovements(true); // Obtener solo los últimos 10 movimientos
-      } else {
-        console.error("No se seleccionó ninguna cuenta al intentar cargar movimientos.");
-      }
+    if (fromProducts && selectedAccount) {
+      fetchMovements(true);
     }
   }, [fromProducts, selectedAccount]);
 
-  const formatDate = (fecha) => {
-    return moment(fecha).tz('America/Guayaquil').format('DD/MM/YYYY');
-  };
+  const formatDate = (date) => moment(date).tz('America/Guayaquil').format('DD/MM/YYYY');
 
   const fetchMovements = async (onlyLastTen = false) => {
     if (!selectedAccount) {
@@ -93,68 +84,38 @@ const Movimientos = () => {
 
     try {
       const transaccionesCollection = collection(db, 'transacciones');
-      let q1, q2;
+      const queries = [];
 
       if (fromProducts) {
-        // Obtener los últimos 10 movimientos sin fechas (para "Mis Productos")
-        q1 = query(
-          transaccionesCollection,
-          where('cuentaOrigen', '==', selectedAccount.accountNumber),
-          where('tipoMovimiento', '==', 'debito')
-        );
-        q2 = query(
-          transaccionesCollection,
-          where('cuentaDestino', '==', selectedAccount.accountNumber),
-          where('tipoMovimiento', '==', 'credito')
+        queries.push(
+          query(transaccionesCollection, where('cuentaOrigen', '==', selectedAccount.accountNumber), where('tipoMovimiento', '==', 'debito')),
+          query(transaccionesCollection, where('cuentaDestino', '==', selectedAccount.accountNumber), where('tipoMovimiento', '==', 'credito'))
         );
       } else {
-        // Obtener movimientos dentro de las fechas (para "Movimientos" en el Sidebar)
         const start = moment.tz(startDate, 'America/Guayaquil').startOf('day').toDate();
         const end = moment.tz(endDate, 'America/Guayaquil').endOf('day').toDate();
 
-        q1 = query(
-          transaccionesCollection,
-          where('cuentaOrigen', '==', selectedAccount.accountNumber),
-          where('tipoMovimiento', '==', 'debito'),
-          where('fecha', '>=', start),
-          where('fecha', '<=', end)
-        );
-        q2 = query(
-          transaccionesCollection,
-          where('cuentaDestino', '==', selectedAccount.accountNumber),
-          where('tipoMovimiento', '==', 'credito'),
-          where('fecha', '>=', start),
-          where('fecha', '<=', end)
+        queries.push(
+          query(transaccionesCollection, where('cuentaOrigen', '==', selectedAccount.accountNumber), where('tipoMovimiento', '==', 'debito'), where('fecha', '>=', start), where('fecha', '<=', end)),
+          query(transaccionesCollection, where('cuentaDestino', '==', selectedAccount.accountNumber), where('tipoMovimiento', '==', 'credito'), where('fecha', '>=', start), where('fecha', '<=', end))
         );
       }
 
-      const [querySnapshot1, querySnapshot2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+      const [querySnapshot1, querySnapshot2] = await Promise.all(queries.map(getDocs));
 
-      let movementsArray = [];
-
-      querySnapshot1.forEach((doc) => {
-        const data = doc.data();
-        movementsArray.push({ ...data, id: doc.id, fecha: data.fecha.toDate() });
-      });
-
-      querySnapshot2.forEach((doc) => {
-        const data = doc.data();
-        movementsArray.push({ ...data, id: doc.id, fecha: data.fecha.toDate() });
-      });
+      const movementsArray = [
+        ...querySnapshot1.docs.map(doc => ({ ...doc.data(), id: doc.id, fecha: doc.data().fecha.toDate() })),
+        ...querySnapshot2.docs.map(doc => ({ ...doc.data(), id: doc.id, fecha: doc.data().fecha.toDate() }))
+      ];
 
       let sortedMovements = movementsArray.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
       if (fromProducts && onlyLastTen) {
         sortedMovements = sortedMovements.slice(0, 10);
-        console.log("Mostrando los últimos 10 movimientos:", sortedMovements);
       }
 
-      // Llamada a la función para obtener nombres de usuarios
       const movementsWithNames = await fetchNamesForMovements(sortedMovements);
-
       setMovements(movementsWithNames);
-      console.log("Movimientos finales asignados:", movementsWithNames);
-
       setSearchPerformed(true);
     } catch (error) {
       console.error("Error al buscar movimientos:", error);
@@ -165,19 +126,14 @@ const Movimientos = () => {
 
   const fetchNamesForMovements = async (movements) => {
     return await Promise.all(movements.map(async (movement) => {
-      let accountNumberToLookup = movement.tipoMovimiento === 'debito' ? movement.cuentaDestino : movement.cuentaOrigen;
-      let nombreCampo = movement.tipoMovimiento === 'debito' ? 'nombreDestino' : 'nombreOrigen';
+      const accountNumberToLookup = movement.tipoMovimiento === 'debito' ? movement.cuentaDestino : movement.cuentaOrigen;
+      const nombreCampo = movement.tipoMovimiento === 'debito' ? 'nombreDestino' : 'nombreOrigen';
 
       const accountSnapshot = await getDocs(query(collection(db, 'cuentas'), where('accountNumber', '==', accountNumberToLookup)));
       if (!accountSnapshot.empty) {
         const accountData = accountSnapshot.docs[0].data();
         const userDoc = await getDoc(doc(db, 'clientes', accountData.id));
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          movement[nombreCampo] = `${userData.nombre} ${userData.apellido}`;
-        } else {
-          movement[nombreCampo] = 'Usuario desconocido';
-        }
+        movement[nombreCampo] = userDoc.exists() ? `${userDoc.data().nombre} ${userDoc.data().apellido}` : 'Usuario desconocido';
       } else {
         movement[nombreCampo] = 'Cuenta desconocida';
       }
@@ -189,32 +145,8 @@ const Movimientos = () => {
   const handleGeneratePDF = async () => {
     if (user && selectedAccount && movements.length > 0) {
       await generateMovementsPDF(user, selectedAccount, movements);
-    } else {
-      console.error("Información insuficiente para generar el PDF.");
     }
   };
-
-  const getCurrentDate = () => {
-    return moment().tz('America/Guayaquil').format('YYYY-MM-DD');
-  };
-
-  useEffect(() => {
-    if (selectedAccount) {
-      setAccountError('');
-    }
-  }, [selectedAccount]);
-
-  useEffect(() => {
-    if (startDate) {
-      setStartDateError('');
-    }
-  }, [startDate]);
-
-  useEffect(() => {
-    if (endDate) {
-      setEndDateError('');
-    }
-  }, [endDate]);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -322,7 +254,7 @@ const Movimientos = () => {
                   className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
                   onClick={() => {
                     setHasClickedSearch(true);
-                    fetchMovements(false); // Obtener todos los movimientos entre las fechas
+                    fetchMovements(false);
                   }}
                 >
                   Buscar Movimientos
@@ -364,8 +296,8 @@ const Movimientos = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {movements.map((movement, index) => (
-                          <tr key={index} className="hover:bg-gray-100">
+                        {movements.map((movement, idx) => (
+                          <tr key={idx} className="hover:bg-gray-100">
                             <td className="p-2 border-b">
                               {movement.tipo === 'transferencia' ? (
                                 movement.tipoMovimiento === 'debito' ?
