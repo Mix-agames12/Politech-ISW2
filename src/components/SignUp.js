@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaRegEye, FaRegEyeSlash, FaArrowLeft } from 'react-icons/fa';
 import Buho from '../assets/images/buho.png';
 import { HeaderLogin } from './HeaderLogin';
-import  Footer  from './Footer';
+import Footer from './Footer';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -204,20 +204,23 @@ const SignUp = () => {
   };
 
   const handleFirstNameChange = (value) => {
-    const formattedValue = value.replace(/[^a-zA-Z\s]/g, '').toLowerCase().replace(/^\w/, c => c.toUpperCase()).slice(0, 25);
+    const formattedValue = value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '').toLowerCase().replace(/^\w/, c => c.toUpperCase()).slice(0, 25);
     setFirstName(formattedValue);
-  };
+};
 
-  const handleLastNameChange = (value) => {
-    const formattedValue = value.replace(/[^a-zA-Z\s]/g, '').toLowerCase().replace(/^\w/, c => c.toUpperCase()).slice(0, 25);
+const handleLastNameChange = (value) => {
+    const formattedValue = value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '').toLowerCase().replace(/^\w/, c => c.toUpperCase()).slice(0, 25);
     setLastName(formattedValue);
-  };
+};
 
   const handleUsernameChange = (value) => {
     const hasUppercase = /[A-Z]/.test(value);
     setUsernameHasUppercase(hasUppercase);
 
-    const formattedValue = value.replace(/[^a-z0-9]/g, '').toLowerCase().slice(0, 25);
+    const formattedValue = value
+      .replace(/[^a-z0-9ñÑ_-]/g, '')  // Permite letras minúsculas, números, 'ñ', '_', y '-'
+      .toLowerCase()
+      .slice(0, 25);
     setUsername(formattedValue);
   };
 
