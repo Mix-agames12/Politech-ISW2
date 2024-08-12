@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import { HeaderHome } from './HeaderHome';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '../firebaseConfig';
 import { FaArrowLeft } from 'react-icons/fa';
 
 const Alerta = React.forwardRef(function Alerta(props, ref) {
@@ -13,6 +15,7 @@ const ForgotUsername = () => {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [open, setOpen] = useState(false);
+  const [isCodeSent, setIsCodeSent] = useState(false);
   const navigate = useNavigate();
 
   const validateEmail = (email) => {
@@ -20,7 +23,20 @@ const ForgotUsername = () => {
     return emailRegex.test(email);
   };
 
-  const sendResetLink = async () => {
+  const checkEmailExistsAndVerified = async (email) => {
+    const usersCollection = collection(db, 'users');
+    const emailQuery = query(usersCollection, where('correo', '==', email));
+    const emailSnapshot = await getDocs(emailQuery);
+
+    if (emailSnapshot.empty) {
+      return { exists: false, verified: false };
+    }
+
+    const userDoc = emailSnapshot.docs[0].data();
+    return { exists: true, verified: userDoc.verified === true };
+  };
+
+  const sendVerificationCode = async () => {
     setError('');
 
     if (!validateEmail(email)) {
@@ -28,22 +44,25 @@ const ForgotUsername = () => {
       return;
     }
 
-    try {
-      const response = await fetch('https://politech-isw2.onrender.com/users/request-username-reset', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
+    const { exists, verified } = await checkEmailExistsAndVerified(email);
+    if (!exists) {
+      setError('El correo electrónico no está registrado.');
+      return;
+    }
 
-      if (response.ok) {
-        setOpen(true);
-      } else {
-        const data = await response.json();
-        setError(data.message || 'No se pudo enviar el correo. Inténtalo de nuevo.');
-      }
+    if (!verified) {
+      setError('El usuario no está verificado. Por favor verifica tu cuenta antes de cambiar el nombre de usuario.');
+      return;
+    }
+
+    try {
+      // Simula el envío del código
+      localStorage.setItem('email', email);  // Almacenar el correo en localStorage
+      setIsCodeSent(true);
+      setError('');
     } catch (error) {
-      console.error('Error al enviar el enlace de restablecimiento:', error);
-      setError('Error al enviar el enlace de restablecimiento. Inténtalo de nuevo.');
+      console.error('Error al enviar el código de verificación:', error);
+      setError('No se pudo enviar el código de verificación.');
     }
   };
 
@@ -99,11 +118,35 @@ const ForgotUsername = () => {
                 Enviar correo electrónico
               </button>
             </div>
+            {isCodeSent && (
+              <div className="mt-4">
+                <label htmlFor="verificationCode" className="block text-sm font-medium text-gray-700">
+                  Ingresa el código de verificación:
+                </label>
+                <div className="mt-1 flex">
+                  <input
+                    id="verificationCode"
+                    name="verificationCode"
+                    type="text"
+                    autoComplete="off"
+                    required
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm"
+                    placeholder="Código de verificación"
+                  />
+                  <button
+                    onClick={() => navigate('/change-username')}
+                    className="ml-2 bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-600"
+                  >
+                    Validar
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
         <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
           <Alerta onClose={handleClose} severity="success" sx={{ width: '100%' }}>
-            ¡Correo de restablecimiento enviado con éxito!
+            ¡Correo de cambio de nombre de usuario enviado exitosamente!
           </Alerta>
         </Snackbar>
       </div>
