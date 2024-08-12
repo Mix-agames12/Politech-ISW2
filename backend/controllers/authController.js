@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const { sendEmail } = require('../utils/sendEmail');
 
-let verificationCodes = {}; // Temporal storage
+let verificationCodes = {}; // Almacenamiento temporal
 
 exports.sendCode = async (req, res) => {
   const { email } = req.body;
