@@ -11,8 +11,11 @@ const Alerta = React.forwardRef(function Alerta(props, ref) {
 
 const ForgotUsername = () => {
   const [email, setEmail] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
   const [error, setError] = useState('');
   const [open, setOpen] = useState(false);
+  const [isCodeSent, setIsCodeSent] = useState(false);
+  const [sessionId, setSessionId] = useState('');
   const navigate = useNavigate();
 
   const validateEmail = (email) => {
@@ -20,7 +23,7 @@ const ForgotUsername = () => {
     return emailRegex.test(email);
   };
 
-  const sendResetLink = async () => {
+  const sendVerificationCode = async () => {
     setError('');
 
     if (!validateEmail(email)) {
@@ -29,21 +32,51 @@ const ForgotUsername = () => {
     }
 
     try {
-      const response = await fetch('https://politech-isw2.onrender.com/users/request-username-reset', {
+      const response = await fetch('https://politech-isw2.onrender.com/auth/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
 
-      if (response.ok) {
+      const data = await response.json();
+
+      if (data.success) {
+        setSessionId(data.sessionId);
+        setIsCodeSent(true);
         setOpen(true);
       } else {
-        const data = await response.json();
-        setError(data.message || 'No se pudo enviar el correo. Inténtalo de nuevo.');
+        setError(data.message || 'No se pudo enviar el código. Inténtalo de nuevo.');
       }
     } catch (error) {
-      console.error('Error al enviar el enlace de restablecimiento:', error);
-      setError('Error al enviar el enlace de restablecimiento. Inténtalo de nuevo.');
+      console.error('Error al enviar el código de verificación:', error);
+      setError('Error al enviar el código de verificación. Inténtalo de nuevo.');
+    }
+  };
+
+  const verifyCode = async () => {
+    if (!verificationCode) {
+      setError('Por favor, ingresa el código de verificación.');
+      return;
+    }
+
+    try {
+      const response = await fetch('https://politech-isw2.onrender.com/users/verify-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId, code: verificationCode }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        localStorage.setItem('email', data.email);
+        navigate('/change-username');
+      } else {
+        setError(data.message || 'Código incorrecto.');
+      }
+    } catch (error) {
+      console.error('Error al verificar el código de verificación:', error);
+      setError('Error al verificar el código de verificación. Inténtalo de nuevo.');
     }
   };
 
@@ -69,7 +102,7 @@ const ForgotUsername = () => {
           <div className="text-center mb-6">
             <h2 className="mt-6 text-3xl font-bold text-gray-900">¿Olvidaste tu usuario?</h2>
             <p className="mt-2 text-sm text-gray-600">
-              Te enviaremos un correo para que puedas cambiar tu nombre de usuario.
+              Te enviaremos un código para que puedas cambiar tu nombre de usuario.
             </p>
           </div>
           <div className="space-y-6 w-full">
@@ -93,17 +126,40 @@ const ForgotUsername = () => {
             </div>
             <div>
               <button
-                onClick={sendResetLink}
+                onClick={sendVerificationCode}
                 className="flex w-full justify-center rounded-md bg-sky-900 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-sky-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
-                Enviar correo electrónico
+                Enviar código de verificación
               </button>
             </div>
+            {isCodeSent && (
+              <div className="mt-6 w-full">
+                <label htmlFor="verificationCode" className="block text-sm font-medium text-gray-700">
+                  Ingresa el código de verificación:
+                </label>
+                <div className="mt-1 flex">
+                  <input
+                    id="verificationCode"
+                    name="verificationCode"
+                    type="text"
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-l-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm"
+                    placeholder="Código de verificación"
+                    onChange={(e) => setVerificationCode(e.target.value)}
+                  />
+                  <button
+                    onClick={verifyCode}
+                    className="flex justify-center rounded-r-md bg-sky-900 px-3 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-sky-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                  >
+                    Validar
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
         <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
           <Alerta onClose={handleClose} severity="success" sx={{ width: '100%' }}>
-            ¡Correo de restablecimiento enviado con éxito!
+            ¡Código de verificación enviado con éxito!
           </Alerta>
         </Snackbar>
       </div>

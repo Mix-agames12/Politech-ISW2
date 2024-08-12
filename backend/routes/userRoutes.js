@@ -1,8 +1,8 @@
 const express = require('express');
-const { requestUsernameReset } = require('../controllers/userController');
-
+const { sendVerificationCode, verifyCode } = require('../controllers/userController');
 const router = express.Router();
 
-router.post('/request-username-reset', requestUsernameReset);
+router.post('/send-code', sendVerificationCode);
+router.post('/verify-code', verifyCode);
 
 module.exports = router;
