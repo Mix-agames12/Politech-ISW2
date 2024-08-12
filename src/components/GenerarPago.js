@@ -174,7 +174,7 @@ const GenerarPago = () => {
           setPaymentData(paymentData);
 
           // Enviar correo de confirmación de pago
-          const response = await fetch('https://politech-isw2.onrender.com/process-payment', {
+          const response = await fetch('https://politech-isw2.onrender.com/payments/process-payment', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: user.email, paymentDetails: paymentData })
