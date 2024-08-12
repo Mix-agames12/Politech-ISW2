@@ -294,11 +294,11 @@ const Transaction = () => {
           <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         </div>
 
-        <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center xl:w-full md:w-5/12 sm:w-4/12 ${isSidebarOpen ? 'sm:ml-16 md:mr-16 lg:mr-32' : 'sm:ml-16 md:mr-16 lg:mr-32'}`}>
+        <div className={`mt-12 main-content p-5 mx-auto flex flex-col items-center justify-center xl:w-full md:w-5/12 sm:w-4/12 ${isSidebarOpen ? 'sm:ml-16 md:mr-16 lg:mr-32' : 'sm:ml-16 md:mr-16 lg:mr-32'}`}>
           <h2 className="text-2xl font-bold mb-4 sm:mt-16">Realizar Transferencia</h2>
 
           <div className="w-full mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Cuenta de origen</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Cuenta de origen *</label>
             <div className="relative">
               <button
                 className={`w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${isCodeSent ? 'bg-gray-200 cursor-not-allowed' : ''}`}
@@ -335,7 +335,7 @@ const Transaction = () => {
           </div>
 
           <div className="w-full mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Cuenta de destino</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Cuenta de destino *</label>
             <div className="flex items-center">
               <input
                 type="text"
@@ -370,7 +370,7 @@ const Transaction = () => {
           )}
 
           <div className="w-full mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Monto</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Monto *</label>
             <input
               type="text"
               className={`w-full bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${isCodeSent ? 'bg-gray-200 cursor-not-allowed' : ''}`}

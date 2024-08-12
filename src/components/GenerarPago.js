@@ -25,7 +25,6 @@ const GenerarPago = () => {
   const [inputCode, setInputCode] = useState('');
   const [isCodeVerified, setIsCodeVerified] = useState(false);
   const [isPaymentProcessed, setIsPaymentProcessed] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (!user) return;
@@ -196,10 +195,6 @@ const GenerarPago = () => {
     }
   };
 
-  const goBackToServices = () => {
-    navigate('/pago-servicios');
-  };
-
   return (
     <div className="min-h-screen flex flex-col">
       <HeaderDashboard />
@@ -208,7 +203,7 @@ const GenerarPago = () => {
           <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         </div>
 
-        <div className={`main-content p-6 mx-auto flex flex-col items-center justify-center w-full pt-16 ${isSidebarOpen ? 'ml-50' : 'ml-20'}`}>
+        <div className={`mt-12 main-content p-6 mx-auto flex flex-col items-center justify-center w-full pt-16 ${isSidebarOpen ? 'ml-50' : 'ml-20'}`}>
           <div className="w-full flex">
             <h2 className="flex-1 w-64 mt-4 text-center text-2xl font-bold mb-4">Paga tu factura</h2>
           </div>

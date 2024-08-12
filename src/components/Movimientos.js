@@ -163,11 +163,14 @@ const Movimientos = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col pt-24">
+    <div className="min-h-screen flex flex-col">
       <HeaderDashboard />
-      <div className="flex flex-grow justify-center items-center">
-        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-        <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-80' : 'ml-20'} md:ml-0`}>
+      <div className="flex flex-grow">
+        <div className="xl:w-1/4 md:w-1/4 sm:w-6/12">
+          <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        </div>
+
+        <div className={`mt-20 main-content p-5 mx-auto flex flex-col items-center justify-center xl:w-full md:w-8/12 sm:w-4/12 ${isSidebarOpen ? 'sm:ml-16 md:mr-16 lg:mr-32' : 'sm:ml-16 md:mr-16 lg:mr-32'}`}>
           <h2 className="text-2xl font-bold mb-4 text-center">Movimientos</h2>
 
           {fromProducts && (

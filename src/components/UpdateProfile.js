@@ -105,117 +105,117 @@ const UpdateProfile = () => {
     }
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <div className="min-h-screen flex flex-col mt-16">
       <HeaderDashboard />
       <div className="flex flex-grow">
         <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         <main className="flex flex-col flex-grow items-center justify-center p-6 sm:p-10">
-          <div className="w-full max-w-3xl">
-            <h2 className="text-3xl font-bold text-center mb-8">MI PERFIL</h2>
+          {loading ? (
+            <div>Cargando información del perfil...</div>
+          ) : (
+            <div className="w-full max-w-3xl">
+              <h2 className="text-3xl font-bold text-center mb-8">MI PERFIL</h2>
 
-            <section className="bg-white shadow-md rounded-lg p-6 mb-6">
-              <h3 className="text-xl font-semibold mb-4">Información personal</h3>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Nombre</label>
-                <p className="px-4 py-2">{client.nombre} {client.apellido}</p>
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Cédula</label>
-                <p className="px-4 py-2">{client.cedula}</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Fecha de nacimiento</label>
-                <p className="px-4 py-2">{client.fechaNacimiento}</p>
-              </div>
-            </section>
+              <section className="bg-white shadow-md rounded-lg p-6 mb-6">
+                <h3 className="text-xl font-semibold mb-4">Información personal</h3>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700">Nombre</label>
+                  <p className="px-4 py-2">{client.nombre} {client.apellido}</p>
+                </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700">Cédula</label>
+                  <p className="px-4 py-2">{client.cedula}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Fecha de nacimiento</label>
+                  <p className="px-4 py-2">{client.fechaNacimiento}</p>
+                </div>
+              </section>
 
-            <section className="bg-white shadow-md rounded-lg p-6">
-              <h3 className="text-xl font-semibold mb-4">Mantén actualizada tu información</h3>
+              <section className="bg-white shadow-md rounded-lg p-6">
+                <h3 className="text-xl font-semibold mb-4">Mantén actualizada tu información</h3>
 
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Nombre de usuario</label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  placeholder={user.username}
-                  onChange={(e) => setUsername(e.target.value)}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="relative">
-                  <label className="block text-sm font-medium text-gray-700">Nueva contraseña</label>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700">Nombre de usuario</label>
                   <input
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => validatePassword(e.target.value)}
+                    type="text"
                     className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    placeholder="Contraseña"
+                    placeholder={user.username}
+                    onChange={(e) => setUsername(e.target.value)}
                   />
-                  <button
-                    type="button"
-                    className="absolute right-3 top-9 transform -translate-y-1/2"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <FaRegEye /> : <FaRegEyeSlash />}
-                  </button>
                 </div>
 
-                <div className="relative">
-                  <label className="block text-sm font-medium text-gray-700">Repetir contraseña</label>
-                  <input
-                    type={showConfirmPassword ? "text" : "password"}
-                    value={confirmPassword}
-                    onChange={(e) => handleConfirmPassword(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    placeholder="Repetir contraseña"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="relative">
+                    <label className="block text-sm font-medium text-gray-700">Nueva contraseña</label>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => validatePassword(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      placeholder="Contraseña"
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-9 transform -translate-y-1/2"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <FaRegEye /> : <FaRegEyeSlash />}
+                    </button>
+                  </div>
+
+                  <div className="relative">
+                    <label className="block text-sm font-medium text-gray-700">Repetir contraseña</label>
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={confirmPassword}
+                      onChange={(e) => handleConfirmPassword(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      placeholder="Repetir contraseña"
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-9 transform -translate-y-1/2"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      {showConfirmPassword ? <FaRegEye /> : <FaRegEyeSlash />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="my-4 text-sm text-gray-600">
+                  <ul>
+                    <li className={`${passwordConditions.length ? 'text-green-600' : ''}`}>
+                      {passwordConditions.length ? '✔' : '✘'} Al menos 8 caracteres
+                    </li>
+                    <li className={`${passwordConditions.uppercase ? 'text-green-600' : ''}`}>
+                      {passwordConditions.uppercase ? '✔' : '✘'} Contiene mayúsculas
+                    </li>
+                    <li className={`${passwordConditions.number ? 'text-green-600' : ''}`}>
+                      {passwordConditions.number ? '✔' : '✘'} Contiene números
+                    </li>
+                    <li className={`${passwordConditions.specialChar ? 'text-green-600' : ''}`}>
+                      {passwordConditions.specialChar ? '✔' : '✘'} Contiene caracteres especiales
+                    </li>
+                  </ul>
+                </div>
+
+                {!passwordsMatch && <p className="text-red-600">Las contraseñas no coinciden</p>}
+                {error && <p className="text-red-600">{error}</p>}
+                {success && <p className="text-green-600 text-center">{success}</p>}
+
+                <div className="text-center">
                   <button
-                    type="button"
-                    className="absolute right-3 top-9 transform -translate-y-1/2"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    onClick={handleUpdate}
                   >
-                    {showConfirmPassword ? <FaRegEye /> : <FaRegEyeSlash />}
+                    Actualizar datos
                   </button>
                 </div>
-              </div>
-
-              <div className="my-4 text-sm text-gray-600">
-                <ul>
-                  <li className={`${passwordConditions.length ? 'text-green-600' : ''}`}>
-                    {passwordConditions.length ? '✔' : '✘'} Al menos 8 caracteres
-                  </li>
-                  <li className={`${passwordConditions.uppercase ? 'text-green-600' : ''}`}>
-                    {passwordConditions.uppercase ? '✔' : '✘'} Contiene mayúsculas
-                  </li>
-                  <li className={`${passwordConditions.number ? 'text-green-600' : ''}`}>
-                    {passwordConditions.number ? '✔' : '✘'} Contiene números
-                  </li>
-                  <li className={`${passwordConditions.specialChar ? 'text-green-600' : ''}`}>
-                    {passwordConditions.specialChar ? '✔' : '✘'} Contiene caracteres especiales
-                  </li>
-                </ul>
-              </div>
-
-              {!passwordsMatch && <p className="text-red-600">Las contraseñas no coinciden</p>}
-              {error && <p className="text-red-600">{error}</p>}
-              {success && <p className="text-green-600 text-center">{success}</p>}
-
-              <div className="text-center">
-                <button
-                  className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  onClick={handleUpdate}
-                >
-                  Actualizar datos
-                </button>
-              </div>
-            </section>
-          </div>
+              </section>
+            </div>
+          )}
         </main>
       </div>
     </div>
