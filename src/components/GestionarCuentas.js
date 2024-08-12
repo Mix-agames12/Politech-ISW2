@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../firebaseConfig';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { HeaderDashboard } from './HeaderDashboard';
-import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa'; // Importar el icono de añadir cuenta
+import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa';
 import { IoMdPersonAdd } from "react-icons/io";
 import { AuthContext } from '../context/AuthContext';
 
@@ -40,8 +40,8 @@ const GestionarCuentas = () => {
         );
 
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
-            const allAccounts = querySnapshot.docs.map(doc => ({
-                id: doc.id,
+            const allAccounts = querySnapshot.docs.map((doc, index) => ({
+                id: `${doc.id}-${index}`, // Usar una combinación de id y el índice para garantizar que la clave sea única
                 ...doc.data()
             }));
             console.log('Cuentas obtenidas:', allAccounts);
@@ -69,7 +69,7 @@ const GestionarCuentas = () => {
     const handleAccountClick = (accountNumber) => {
         navigate(`/movimientos?account=${accountNumber}`, { state: { fromProducts: true } });
     };
-    
+
     const handleCreateAccountClick = () => navigate('/crear-cuenta');
 
     if (authLoading) return <p>Cargando...</p>;
@@ -77,9 +77,9 @@ const GestionarCuentas = () => {
     const savingsAccounts = accounts.filter(account => account.tipoCuenta.toLowerCase() === 'ahorros');
     const currentAccounts = accounts.filter(account => account.tipoCuenta.toLowerCase() === 'corriente');
 
-    const renderAccountCard = (account, index) => (
+    const renderAccountCard = (account) => (
         <div
-            key={index}
+            key={account.id}  // Asegúrate de que 'id' sea único para cada cuenta
             className="account-card bg-sky-50 shadow-md rounded-lg p-6 lg:p-5 xl:p-7 hover:scale-105 transition-transform duration-300 cursor-pointer border border-gray-300 w-full max-w-full sm:max-w-xs"
             onClick={() => handleAccountClick(account.accountNumber)}
         >
@@ -122,7 +122,7 @@ const GestionarCuentas = () => {
                     <div className="flex justify-between items-center w-full">
                         <h2 className="text-3xl font-bold mb-4 text-center lg:text-left">Mis Productos</h2>
                         <button 
-                            className="bg-sky-900 text-white font-semibold p-2 rounded-lg hover:bg-sky-600 transition-colors duration-300"
+                            className="bg-sky-900 text-white font-semibold p-2 rounded-lg hover:bg-sky-600 transition-colors duration-300 fixed right-10 top-24 z-50"
                             onClick={handleCreateAccountClick}
                         >
                             <IoMdPersonAdd className="h-6 w-6" />
