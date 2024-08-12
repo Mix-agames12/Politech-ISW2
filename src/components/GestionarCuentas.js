@@ -27,13 +27,10 @@ const GestionarCuentas = () => {
     }, [user, authLoading, navigate]);
 
     const navigateToLogin = useCallback(() => {
-        console.log('No user found, redirecting to login');
         navigate('/login');
     }, [navigate]);
 
     const subscribeToAccounts = useCallback((userId) => {
-        console.log('Subscribing to accounts for user:', userId);
-
         const q = query(
             collection(db, 'cuentas'),
             where('id', '==', userId)
@@ -44,7 +41,6 @@ const GestionarCuentas = () => {
                 id: `${doc.id}-${index}`, // Usar una combinación de id y el índice para garantizar que la clave sea única
                 ...doc.data()
             }));
-            console.log('Cuentas obtenidas:', allAccounts);
             setAccounts(allAccounts);
         });
 
@@ -120,13 +116,15 @@ const GestionarCuentas = () => {
                 <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
                 <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-72' : 'ml-20'}`}>
                     <div className="flex justify-between items-center w-full">
-                        <h2 className="text-3xl font-bold mb-4 text-center lg:text-left">Mis Productos</h2>
-                        <button 
-                            className="bg-sky-900 text-white font-semibold p-2 rounded-lg hover:bg-sky-600 transition-colors duration-300 fixed md:right-20 md:top-25 lg:right-20 lg:bottom-20 z-50"
-                            onClick={handleCreateAccountClick}
-                        >
-                            <IoMdPersonAdd className="h-6 w-6 " />
-                        </button>
+                        <div className="flex items-center space-x-4">
+                            <h2 className="text-3xl font-bold mb-4 lg:text-left">Mis Productos</h2>
+                            <button 
+                                className="bg-sky-900 text-white font-semibold p-2 rounded-lg hover:bg-sky-600 transition-colors duration-300"
+                                onClick={handleCreateAccountClick}
+                            >
+                                <IoMdPersonAdd className="h-6 w-6" />
+                            </button>
+                        </div>
                     </div>
                     <div className="w-full space-y-8">
                         {renderAccountSection('Cuentas de Ahorros', savingsAccounts)}
