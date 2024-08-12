@@ -1,17 +1,17 @@
 {
   "files": {
-    "main.css": "./static/css/main.a48c7781.css",
-    "main.js": "./static/js/main.bfd42256.js",
+    "main.css": "./static/css/main.ec018839.css",
+    "main.js": "./static/js/main.ee1bfb2f.js",
     "static/media/neologo.png": "./static/media/neologo.a8d5df7c27351826b3e3.png",
     "static/media/logolargo.png": "./static/media/logolargo.51a69aba70d38f6a06e7.png",
     "static/media/eye-closed.png": "./static/media/eye-closed.853afb2de5099e79aa28.png",
     "static/media/eye-open.png": "./static/media/eye-open.22bbc82f38339c45010e.png",
     "index.html": "./index.html",
-    "main.a48c7781.css.map": "./static/css/main.a48c7781.css.map",
-    "main.bfd42256.js.map": "./static/js/main.bfd42256.js.map"
+    "main.ec018839.css.map": "./static/css/main.ec018839.css.map",
+    "main.ee1bfb2f.js.map": "./static/js/main.ee1bfb2f.js.map"
   },
   "entrypoints": [
-    "static/css/main.a48c7781.css",
-    "static/js/main.bfd42256.js"
+    "static/css/main.ec018839.css",
+    "static/js/main.ee1bfb2f.js"
   ]
 }

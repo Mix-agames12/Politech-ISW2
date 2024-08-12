@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
+import { AuthContext } from '../context/AuthContext';
 import { HeaderHome } from './HeaderHome';
 import { FaArrowLeft } from 'react-icons/fa';
 
@@ -10,24 +11,20 @@ const Alerta = React.forwardRef(function Alerta(props, ref) {
 });
 
 const ForgotUsername = () => {
+  const { user } = useContext(AuthContext);
   const [email, setEmail] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [error, setError] = useState('');
   const [open, setOpen] = useState(false);
   const [isCodeSent, setIsCodeSent] = useState(false);
-  const [sessionId, setSessionId] = useState('');
+  const [isCodeVerified, setIsCodeVerified] = useState(false);
+  const [showVerificationFields, setShowVerificationFields] = useState(false);
+  const codeInputRef = useRef(null);
   const navigate = useNavigate();
 
-  const validateEmail = (email) => {
-    const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
-    return emailRegex.test(email);
-  };
-
   const sendVerificationCode = async () => {
-    setError('');
-
-    if (!validateEmail(email)) {
-      setError('Por favor, ingresa un correo electrónico válido.');
+    if (!email) {
+      setError('Por favor, ingresa un correo electrónico.');
       return;
     }
 
@@ -39,23 +36,27 @@ const ForgotUsername = () => {
       });
 
       const data = await response.json();
-
       if (data.success) {
-        setSessionId(data.sessionId);
+        localStorage.setItem('sessionId', data.sessionId);
         setIsCodeSent(true);
+        setShowVerificationFields(true);
+        setError('');
         setOpen(true);
       } else {
-        setError(data.message || 'No se pudo enviar el código. Inténtalo de nuevo.');
+        setError(data.message || 'No se pudo enviar el código de verificación.');
       }
     } catch (error) {
       console.error('Error al enviar el código de verificación:', error);
-      setError('Error al enviar el código de verificación. Inténtalo de nuevo.');
+      setError('No se pudo enviar el código de verificación.');
+      console.log(email)
     }
   };
 
   const verifyCode = async () => {
-    if (!verificationCode) {
-      setError('Por favor, ingresa el código de verificación.');
+    const sessionId = localStorage.getItem('sessionId');
+
+    if (!sessionId || !verificationCode) {
+      setError('Faltan datos para la verificación.');
       return;
     }
 
@@ -69,14 +70,15 @@ const ForgotUsername = () => {
       const data = await response.json();
 
       if (data.success) {
-        localStorage.setItem('email', email); // Guarda el email para usarlo después
-        navigate('/change-username'); // Redirige a la página para cambiar el nombre de usuario
+        setIsCodeVerified(true);
+        setError('');
+        navigate('/change-username'); // Redirige a la página de cambio de nombre de usuario
       } else {
         setError(data.message || 'Código incorrecto.');
       }
     } catch (error) {
       console.error('Error al verificar el código de verificación:', error);
-      setError('Error al verificar el código de verificación. Inténtalo de nuevo.');
+      setError('Error al verificar el código de verificación.');
     }
   };
 
@@ -132,23 +134,25 @@ const ForgotUsername = () => {
                 Enviar código de verificación
               </button>
             </div>
-            {isCodeSent && (
+            {showVerificationFields && (
               <div className="mt-6 w-full">
                 <label htmlFor="verificationCode" className="block text-sm font-medium text-gray-700">
                   Ingresa el código de verificación:
                 </label>
                 <div className="mt-1 flex">
                   <input
+                    ref={codeInputRef}
                     id="verificationCode"
                     name="verificationCode"
                     type="text"
                     className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-l-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm"
                     placeholder="Código de verificación"
+                    value={verificationCode}
                     onChange={(e) => setVerificationCode(e.target.value)}
                   />
                   <button
                     onClick={verifyCode}
-                    className="flex justify-center rounded-r-md bg-sky-900 px-3 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-sky-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    className="ml-2 bg-sky-900 text-white px-4 py-2 rounded-r-md shadow-sm hover:bg-sky-600"
                   >
                     Validar
                   </button>
