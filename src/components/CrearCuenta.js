@@ -156,7 +156,7 @@ const CrearCuenta = () => {
             )}
             <div className="flex flex-grow">
                 <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-                <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-72' : 'ml-72'}`}>
+                <div className={`main-content p-5 mx-auto flex flex-col items-center justify-center w-full ${isSidebarOpen ? 'ml-50' : 'ml-20'}`}>
                     <h2 className="text-3xl font-bold mb-6">Crear Nueva Cuenta</h2>
                     <div className="bg-white p-8 rounded shadow-md w-full max-w-lg">
                         {error && <p className="text-red-500 mb-4">{error}</p>}
