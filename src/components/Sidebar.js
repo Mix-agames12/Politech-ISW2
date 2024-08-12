@@ -12,9 +12,9 @@ export const Sidebar = ({ isOpen, toggleSidebar }) => {
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 768) {
-        setIsCollapsed(true);
-      } else {
         setIsCollapsed(false);
+      } else {
+        setIsCollapsed(true);
       }
     };
 
