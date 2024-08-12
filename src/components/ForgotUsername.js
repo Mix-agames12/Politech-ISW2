@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import { HeaderHome } from './HeaderHome';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '../firebaseConfig'; // Importa Firestore desde tu configuración
 import { FaArrowLeft } from 'react-icons/fa';
 
 const Alerta = React.forwardRef(function Alerta(props, ref) {
@@ -15,7 +13,8 @@ const ForgotUsername = () => {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [open, setOpen] = useState(false);
-  const [isCodeSent, setIsCodeSent] = useState(false);
+  const [isCodeSent, setIsCodeSent] = useState(false); // Estado para saber si se ha enviado el código
+  const [verificationCode, setVerificationCode] = useState(''); // Estado para almacenar el código de verificación
   const navigate = useNavigate();
 
   const validateEmail = (email) => {
@@ -23,20 +22,7 @@ const ForgotUsername = () => {
     return emailRegex.test(email);
   };
 
-  const checkEmailExistsAndVerified = async (email) => {
-    const usersCollection = collection(db, 'users');
-    const emailQuery = query(usersCollection, where('correo', '==', email));
-    const emailSnapshot = await getDocs(emailQuery);
-
-    if (emailSnapshot.empty) {
-      return { exists: false, verified: false };
-    }
-
-    const userDoc = emailSnapshot.docs[0].data();
-    return { exists: true, verified: userDoc.verified === true };
-  };
-
-  const sendVerificationCode = async () => {
+  const sendVerificationCode = () => {
     setError('');
 
     if (!validateEmail(email)) {
@@ -44,40 +30,14 @@ const ForgotUsername = () => {
       return;
     }
 
-    const { exists, verified } = await checkEmailExistsAndVerified(email);
-    if (!exists) {
-      setError('El correo electrónico no está registrado.');
-      return;
-    }
+    // Simula el envío del código y activa el campo de validación
+    setIsCodeSent(true);
+    setError('');
+    setOpen(true);
+  };
 
-    if (!verified) {
-      setError('El usuario no está verificado. Por favor verifica tu cuenta antes de cambiar el nombre de usuario.');
-      return;
-    }
-
-    try {
-      const response = await fetch('https://politech-isw2.onrender.com/send-username-code', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        localStorage.setItem('sessionId', data.sessionId);
-        setIsCodeSent(true);
-        setError('');
-        setOpen(true);
-        setTimeout(() => {
-          navigate('/change-username'); // Redirige a la página donde el usuario puede cambiar su nombre de usuario
-        }, 2000);
-      } else {
-        setError('No se pudo enviar el código de verificación.');
-      }
-    } catch (error) {
-      console.error('Error al enviar el código de verificación:', error);
-      setError('No se pudo enviar el código de verificación.');
-    }
+  const handleVerificationCodeChange = (e) => {
+    setVerificationCode(e.target.value);
   };
 
   const handleClose = (event, reason) => {
@@ -85,6 +45,15 @@ const ForgotUsername = () => {
       return;
     }
     setOpen(false);
+  };
+
+  const validateCode = () => {
+    // Simula la validación del código y redirige a la interfaz de cambio de nombre de usuario
+    if (verificationCode === "481530") {  // Ejemplo de validación, reemplaza esto con tu lógica
+      navigate('/change-username'); // Redirige a la página para cambiar el nombre de usuario
+    } else {
+      setError('Código de verificación incorrecto.');
+    }
   };
 
   return (
@@ -132,11 +101,34 @@ const ForgotUsername = () => {
                 Enviar correo electrónico
               </button>
             </div>
+            {isCodeSent && (
+              <div className="mt-6 w-full">
+                <label htmlFor="verificationCode" className="block text-sm font-medium text-gray-700">
+                  Ingresa el código de verificación:
+                </label>
+                <div className="mt-1 flex">
+                  <input
+                    id="verificationCode"
+                    name="verificationCode"
+                    type="text"
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-l-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm"
+                    placeholder="Código de verificación"
+                    onChange={handleVerificationCodeChange}
+                  />
+                  <button
+                    onClick={validateCode}
+                    className="flex justify-center rounded-r-md bg-sky-900 px-3 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-sky-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                  >
+                    Validar
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
         <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
           <Alerta onClose={handleClose} severity="success" sx={{ width: '100%' }}>
-            ¡Correo de cambio de nombre de usuario enviado exitosamente!
+            ¡Campo de verificación activado!
           </Alerta>
         </Snackbar>
       </div>
@@ -145,3 +137,5 @@ const ForgotUsername = () => {
 };
 
 export default ForgotUsername;
+
+

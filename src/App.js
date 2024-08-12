@@ -12,6 +12,7 @@ import CrearCuenta from './components/CrearCuenta';
 import ForgotUsername from './components/ForgotUsername';
 import ForgotPassword from './components/ForgotPassword';
 import VerifyEmail from './components/VerifyEmail'; // Importar el componente VerifyEmail
+import ChangeUsername from './components/ChangeUsername';
 import BillsPayment from './components/BillsPayment';
 import GenerarPago from './components/GenerarPago';
 import { AuthProvider } from './context/AuthContext';
@@ -45,6 +46,7 @@ const App = () => {
               <Route path="/*" element={<AppRoutes />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<SignUp />} />
+              <Route path="/change-username" element={<ChangeUsername/>}/>
               <Route path="/update-profile" element={<UpdateProfile />} />
               <Route path="/transaction" element={<Transaction />} />
               <Route path="/gestionar-cuentas" element={<GestionarCuentas />} />
