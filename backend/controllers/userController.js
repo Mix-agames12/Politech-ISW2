@@ -1,4 +1,4 @@
-const { db } = require('../firebaseConfig');
+const { db } = require('../config/firebaseConfig');
 const { doc, setDoc, getDoc } = require('firebase/firestore');
 const crypto = require('crypto');
 const sgMail = require('@sendgrid/mail');
