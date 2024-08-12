@@ -11,17 +11,18 @@ const Alerta = React.forwardRef(function Alerta(props, ref) {
 });
 
 const ForgotUsername = () => {
-  const { user } = useContext(AuthContext);
-  const [email, setEmail] = useState('');
-  const [verificationCode, setVerificationCode] = useState('');
-  const [error, setError] = useState('');
-  const [open, setOpen] = useState(false);
-  const [isCodeSent, setIsCodeSent] = useState(false);
-  const [isCodeVerified, setIsCodeVerified] = useState(false);
-  const [showVerificationFields, setShowVerificationFields] = useState(false);
-  const codeInputRef = useRef(null);
-  const navigate = useNavigate();
+  const { user } = useContext(AuthContext);  // Contexto de autenticación, útil para manejar el usuario autenticado
+  const [email, setEmail] = useState('');  // Estado para almacenar el email
+  const [verificationCode, setVerificationCode] = useState('');  // Estado para almacenar el código de verificación
+  const [error, setError] = useState('');  // Estado para manejar errores
+  const [open, setOpen] = useState(false);  // Estado para manejar el Snackbar
+  const [isCodeSent, setIsCodeSent] = useState(false);  // Estado para verificar si el código ha sido enviado
+  const [isCodeVerified, setIsCodeVerified] = useState(false);  // Estado para verificar si el código ha sido validado
+  const [showVerificationFields, setShowVerificationFields] = useState(false);  // Estado para mostrar el campo de verificación
+  const codeInputRef = useRef(null);  // Referencia para el campo de entrada del código
+  const navigate = useNavigate();  // Hook para la navegación
 
+  // Función para enviar el código de verificación
   const sendVerificationCode = async () => {
     if (!email) {
       setError('Por favor, ingresa un correo electrónico.');
@@ -32,28 +33,29 @@ const ForgotUsername = () => {
       const response = await fetch('https://politech-isw2.onrender.com/users/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email }),  // Envía el correo electrónico al backend
       });
 
       const data = await response.json();
       if (data.success) {
-        localStorage.setItem('sessionId', data.sessionId);
-        setIsCodeSent(true);
-        setShowVerificationFields(true);
+        localStorage.setItem('sessionId', data.sessionId);  // Guarda el sessionId en el localStorage
+        setIsCodeSent(true);  // Marca como que el código ha sido enviado
+        setShowVerificationFields(true);  // Muestra el campo de verificación
         setError('');
-        setOpen(true);
+        setOpen(true);  // Muestra el Snackbar
       } else {
         setError(data.message || 'No se pudo enviar el código de verificación.');
       }
     } catch (error) {
       console.error('Error al enviar el código de verificación:', error);
       setError('No se pudo enviar el código de verificación.');
-      console.log(email)
+      console.log(email);
     }
   };
 
+  // Función para verificar el código de verificación
   const verifyCode = async () => {
-    const sessionId = localStorage.getItem('sessionId');
+    const sessionId = localStorage.getItem('sessionId');  // Obtén el sessionId del localStorage
 
     if (!sessionId || !verificationCode) {
       setError('Faltan datos para la verificación.');
@@ -64,7 +66,7 @@ const ForgotUsername = () => {
       const response = await fetch('https://politech-isw2.onrender.com/users/verify-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, code: verificationCode }),
+        body: JSON.stringify({ sessionId, code: verificationCode }),  // Envía el sessionId y el código de verificación al backend
       });
 
       const data = await response.json();
@@ -72,7 +74,7 @@ const ForgotUsername = () => {
       if (data.success) {
         setIsCodeVerified(true);
         setError('');
-        navigate('/change-username'); // Redirige a la página de cambio de nombre de usuario
+        navigate('/change-username');  // Redirige a la página de cambio de nombre de usuario
       } else {
         setError(data.message || 'Código incorrecto.');
       }
@@ -82,6 +84,7 @@ const ForgotUsername = () => {
     }
   };
 
+  // Función para cerrar el Snackbar
   const handleClose = (event, reason) => {
     if (reason === 'clickaway') {
       return;
@@ -121,14 +124,14 @@ const ForgotUsername = () => {
                   required
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm"
                   placeholder="Correo Electrónico"
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value)}  // Actualiza el estado con el valor del email
                 />
               </div>
               {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
             </div>
             <div>
               <button
-                onClick={sendVerificationCode}
+                onClick={sendVerificationCode}  // Llama a la función para enviar el código de verificación
                 className="flex w-full justify-center rounded-md bg-sky-900 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-sky-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
                 Enviar código de verificación
@@ -148,10 +151,10 @@ const ForgotUsername = () => {
                     className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-l-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm"
                     placeholder="Código de verificación"
                     value={verificationCode}
-                    onChange={(e) => setVerificationCode(e.target.value)}
+                    onChange={(e) => setVerificationCode(e.target.value)}  // Actualiza el estado con el valor del código de verificación
                   />
                   <button
-                    onClick={verifyCode}
+                    onClick={verifyCode}  // Llama a la función para verificar el código
                     className="ml-2 bg-sky-900 text-white px-4 py-2 rounded-r-md shadow-sm hover:bg-sky-600"
                   >
                     Validar
