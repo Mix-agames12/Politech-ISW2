@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { db } from '../firebaseConfig';
+import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import { HeaderHome } from './HeaderHome';
@@ -31,29 +33,29 @@ const ChangeUsername = () => {
 
     try {
       const email = localStorage.getItem('email'); // Recuperar el correo almacenado
-
       if (!email) {
-        throw new Error('Correo no encontrado');
+        throw new Error('Correo no encontrado en localStorage');
       }
 
-      const response = await fetch('https://politech-isw2.onrender.com/users/reset-username', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, newUsername }),
-      });
+      const usersCollection = collection(db, 'users');
+      const userQuery = query(usersCollection, where('correo', '==', email));
+      const userSnapshot = await getDocs(userQuery);
 
-      if (response.ok) {
+      if (!userSnapshot.empty) {
+        const userDoc = userSnapshot.docs[0];
+        const userRef = doc(db, 'users', userDoc.id);
+
+        await updateDoc(userRef, { username: newUsername }); // Actualizar el nombre de usuario
         setOpen(true);
         setTimeout(() => {
-          navigate('/login');
+          navigate('/login'); // Redirigir al login después de la actualización
         }, 2000);
       } else {
-        const data = await response.json();
-        setError(data.message || 'Error al cambiar el nombre de usuario. Inténtalo de nuevo.');
+        setError('Usuario no encontrado.');
       }
     } catch (error) {
       console.error('Error al cambiar el nombre de usuario:', error);
-      setError('Error al cambiar el nombre de usuario. Por favor, inténtalo de nuevo.');
+      setError('Error al obtener el correo electrónico del usuario.');
     }
   };
 
