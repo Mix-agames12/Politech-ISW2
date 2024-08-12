@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { auth, db } from '../firebaseConfig';
 import { signInWithEmailAndPassword, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { collection, query, where, getDocs, getDoc, doc } from 'firebase/firestore';
@@ -19,30 +19,17 @@ const Login = (props) => {
   const [passwordError, setPasswordError] = useState('');
   const { setUser } = useContext(AuthContext);
 
-  const validateInputs = () => {
-    let isValid = true;
-    setUsernameError('');
-    setPasswordError('');
-
-    if (username === '') {
-      setUsernameError('Por favor, ingresa tu nombre de usuario');
-      isValid = false;
-    }
-
-    if (password === '') {
-      setPasswordError('Por favor, ingresa una contraseña');
-      isValid = false;
-    } else if (password.length < 8) {
-      setPasswordError('La contraseña debe tener al menos 8 caracteres');
-      isValid = false;
-    }
-
-    return isValid;
-  };
-
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!validateInputs()) {
+
+    // Validaciones básicas
+    if (!username) {
+      setUsernameError('Por favor, ingresa tu nombre de usuario');
+      return;
+    }
+
+    if (!password) {
+      setPasswordError('Por favor, ingresa una contraseña');
       return;
     }
 
@@ -101,58 +88,44 @@ const Login = (props) => {
             Inicio de Sesión
           </h2>
           <form className="space-y-6 w-full" onSubmit={handleLogin}>
-            <div>
+            <div className="relative">
               <label htmlFor="username" className="block text-sm font-medium leading-6 text-gray-900">
                 Nombre de usuario
               </label>
-              <div className="mt-2">
-                <input
-                  id="username"
-                  name="username"
-                  type="text"
-                  value={username}
-                  onChange={(ev) => setUsername(ev.target.value)}
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  placeholder="Ingresa tu nombre de usuario"
-                  required
-                />
-                {usernameError && <p className="mt-2 text-sm text-red-600">{usernameError}</p>}
-              </div>
+              <input
+                id="username"
+                name="username"
+                type="text"
+                value={username}
+                onChange={(ev) => setUsername(ev.target.value)}
+                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                placeholder="Ingresa tu nombre de usuario"
+                required
+              />
+              {usernameError && <p className="mt-2 text-sm text-red-600">{usernameError}</p>}
+              <Link to="/forgot-username" className="text-sm font-semibold text-sky-500 hover:text-indigo-500 absolute right-0 mt-1">
+                ¿Olvidaste tu usuario?
+              </Link>
             </div>
 
-            <div>
-              <div className="flex items-center justify-between">
-                <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">
-                  Contraseña
-                </label>
-                <div className="text-sm">
-                  <a href="/forgot-password" className="font-semibold text-sky-500 hover:text-indigo-500">
-                    ¿Olvidaste tu contraseña?
-                  </a>
-                </div>
-              </div>
-              <div className="mt-2 relative">
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(ev) => setPassword(ev.target.value)}
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  placeholder="Ingresa tu contraseña"
-                  required
-                />
-                {password && (
-                  <img
-                    src={showPassword ? EyeOpenIcon : EyeClosedIcon}
-                    alt={showPassword ? "Hide password" : "Show password"}
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-2 top-5 transform -translate-y-1/2 cursor-pointer"
-                    style={{ height: '24px', width: '24px' }}
-                  />
-                )}
-                {passwordError && <p className="mt-2 text-sm text-red-600">{passwordError}</p>}
-              </div>
+            <div className="relative">
+              <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">
+                Contraseña
+              </label>
+              <input
+                id="password"
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(ev) => setPassword(ev.target.value)}
+                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                placeholder="Ingresa tu contraseña"
+                required
+              />
+              {passwordError && <p className="mt-2 text-sm text-red-600">{passwordError}</p>}
+              <Link to="/forgot-password" className="text-sm font-semibold text-sky-500 hover:text-indigo-500 absolute right-0 mt-1">
+                ¿Olvidaste tu contraseña?
+              </Link>
             </div>
 
             <div>
@@ -167,9 +140,9 @@ const Login = (props) => {
 
           <p className="mt-10 text-center text-sm text-gray-500">
             ¿No tienes una cuenta?{' '}
-            <a href="/SignUp" className="font-semibold leading-6 text-sky-500 hover:text-indigo-500">
+            <Link to="/SignUp" className="font-semibold leading-6 text-sky-500 hover:text-indigo-500">
               Registrarse
-            </a>
+            </Link>
           </p>
         </div>
         <Footer />
@@ -179,3 +152,4 @@ const Login = (props) => {
 };
 
 export default Login;
+
