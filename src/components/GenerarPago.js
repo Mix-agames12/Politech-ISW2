@@ -97,7 +97,7 @@ const GenerarPago = () => {
         return;
       }
 
-      const response = await fetch('https://politech-isw2.onrender.com/verify-code', {
+      const response = await fetch('https://politech-isw2.onrender.com/auth/verify-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId, code: inputCode })
@@ -172,7 +172,6 @@ const GenerarPago = () => {
           };
 
           setPaymentData(paymentData);
-
 
           // Enviar correo de confirmación de pago
           const response = await fetch('https://politech-isw2.onrender.com/process-payment', {
