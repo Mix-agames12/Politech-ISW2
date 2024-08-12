@@ -17,12 +17,4 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-setPersistence(auth, browserLocalPersistence)
-  .then(() => {
-    console.log("Persistence set to browserLocalPersistence");
-  })
-  .catch((error) => {
-    console.error("Error setting persistence:", error);
-  });
-
 module.exports = { auth, db };
