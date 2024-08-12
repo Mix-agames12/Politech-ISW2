@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { db } from '../firebaseConfig';
+import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import { HeaderHome } from './HeaderHome';
-import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
-import { db } from '../firebaseConfig'; // Importa Firestore desde tu configuración
 import { FaArrowLeft } from 'react-icons/fa';
 
 const Alerta = React.forwardRef(function Alerta(props, ref) {
@@ -18,52 +18,45 @@ const ChangeUsername = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
-  const validateUsername = () => {
+  const handleChangeUsername = async () => {
+    setError('');
+
+    // Validación básica para el nuevo nombre de usuario
+    if (!newUsername || !confirmUsername) {
+      setError('Ambos campos son obligatorios.');
+      return;
+    }
+
     if (newUsername !== confirmUsername) {
       setError('Los nombres de usuario no coinciden.');
-      return false;
+      return;
     }
-    if (newUsername.trim().length < 3) {
-      setError('El nombre de usuario debe tener al menos 3 caracteres.');
-      return false;
-    }
-    setError('');
-    return true;
-  };
 
-  const handleChangeUsername = async () => {
-    if (validateUsername()) {
-      try {
-        // Supongamos que el correo electrónico del usuario está almacenado en localStorage
-        const email = localStorage.getItem('email');
-        if (!email) {
-          setError('Error al obtener el correo electrónico del usuario.');
-          return;
-        }
-
-        const usersCollection = collection(db, 'users');
-        const emailQuery = query(usersCollection, where('correo', '==', email));
-        const emailSnapshot = await getDocs(emailQuery);
-
-        if (!emailSnapshot.empty) {
-          const userDoc = emailSnapshot.docs[0];
-          const userRef = doc(db, 'users', userDoc.id);
-
-          await updateDoc(userRef, {
-            username: newUsername
-          });
-
-          setOpen(true);
-          setTimeout(() => {
-            navigate('/login');
-          }, 2000); // Redirige al login después de 2 segundos
-        } else {
-          setError('No se encontró el usuario.');
-        }
-      } catch (error) {
-        console.error('Error al cambiar el nombre de usuario:', error);
-        setError('Error al cambiar el nombre de usuario. Por favor, inténtalo de nuevo.');
+    try {
+      const email = localStorage.getItem('email'); // Recuperar el correo almacenado
+      if (!email) {
+        throw new Error('Correo no encontrado en localStorage');
       }
+
+      const usersCollection = collection(db, 'users');
+      const userQuery = query(usersCollection, where('correo', '==', email));
+      const userSnapshot = await getDocs(userQuery);
+
+      if (!userSnapshot.empty) {
+        const userDoc = userSnapshot.docs[0];
+        const userRef = doc(db, 'users', userDoc.id);
+
+        await updateDoc(userRef, { username: newUsername }); // Actualizar el nombre de usuario
+        setOpen(true);
+        setTimeout(() => {
+          navigate('/login'); // Redirigir al login después de la actualización
+        }, 2000);
+      } else {
+        setError('Usuario no encontrado.');
+      }
+    } catch (error) {
+      console.error('Error al cambiar el nombre de usuario:', error);
+      setError('Error al obtener el correo electrónico del usuario.');
     }
   };
 
@@ -80,7 +73,7 @@ const ChangeUsername = () => {
       <div className="min-w-full min-h-screen absolute flex items-center justify-center bg-gray-100">
         <div className="relative w-full max-w-xl flex flex-col items-center justify-center p-10 bg-white shadow-lg rounded-lg">
           <button
-            onClick={() => navigate('/login')}
+            onClick={() => navigate('/forgot-username')}
             className="absolute top-4 left-4 flex items-center text-sky-900 hover:text-sky-600 z-50"
           >
             <FaArrowLeft className="mr-2" />
@@ -102,6 +95,7 @@ const ChangeUsername = () => {
                   id="newUsername"
                   name="newUsername"
                   type="text"
+                  autoComplete="username"
                   required
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm"
                   placeholder="Nuevo Nombre de Usuario"
@@ -118,6 +112,7 @@ const ChangeUsername = () => {
                   id="confirmUsername"
                   name="confirmUsername"
                   type="text"
+                  autoComplete="username"
                   required
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm"
                   placeholder="Confirmar Nombre de Usuario"
@@ -131,7 +126,7 @@ const ChangeUsername = () => {
                 onClick={handleChangeUsername}
                 className="flex w-full justify-center rounded-md bg-sky-900 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-sky-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
-                Cambiar
+                Cambiar Nombre de Usuario
               </button>
             </div>
           </div>
