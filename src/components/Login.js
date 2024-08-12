@@ -96,7 +96,7 @@ const Login = (props) => {
       <HeaderLogin />
       <div className="min-w-full min-h-screen absolute flex-col items-center justify-center bg-gray-100">
         <div className="w-full max-w-sm mx-auto flex flex-col items-center p-5 my-28 bg-white shadow-lg rounded-lg">
-          <img className="h-20 w-auto mb-6" src={Buho} alt="Your Company" />
+          <img className="h-12 w-auto mb-6" src={Buho} alt="Your Company" />
           <h2 className="text-center text-2xl font-bold leading-9 tracking-tight text-gray-900 mb-6">
             Inicio de Sesión
           </h2>
