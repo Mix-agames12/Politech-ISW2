@@ -122,7 +122,7 @@ const GestionarCuentas = () => {
                     <div className="flex justify-between items-center w-full">
                         <h2 className="text-3xl font-bold mb-4 text-center lg:text-left">Mis Productos</h2>
                         <button 
-                            className="bg-sky-900 text-white font-semibold p-2 rounded-lg hover:bg-sky-600 transition-colors duration-300 fixed right-20 top-40 z-50"
+                            className="bg-sky-900 text-white font-semibold p-2 rounded-lg hover:bg-sky-600 transition-colors duration-300 fixed right-20 bottom-20 z-50"
                             onClick={handleCreateAccountClick}
                         >
                             <IoMdPersonAdd className="h-6 w-6 " />

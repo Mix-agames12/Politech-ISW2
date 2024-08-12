@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { auth, db } from '../firebaseConfig';
-
 import { updatePassword, updateProfile } from 'firebase/auth';
-import { FaRegEye, FaRegEyeSlash, FaArrowLeft } from 'react-icons/fa';
+import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { Sidebar } from '../components/Sidebar';
-import { useNavigate } from 'react-router-dom'; // Importar useNavigate
+import { useNavigate } from 'react-router-dom';
 import { HeaderDashboard } from './HeaderDashboard';
 
 const UpdateProfile = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [client, setClient] = useState(null);
@@ -19,9 +19,8 @@ const UpdateProfile = () => {
   const [loading, setLoading] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordsMatch, setPasswordsMatch] = useState(true);
-  const navigate = useNavigate(); // Usar useNavigate
+  const navigate = useNavigate();
   const [passwordConditions, setPasswordConditions] = useState({
     length: false,
     uppercase: false,
@@ -42,11 +41,8 @@ const UpdateProfile = () => {
         const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
 
         if (clientDoc.exists() && userDoc.exists()) {
-          const clientData = clientDoc.data();
-          const userData = userDoc.data();
-
-          setClient(clientData);
-          setUser(userData);
+          setClient(clientDoc.data());
+          setUser(userDoc.data());
         }
       } catch (error) {
         console.error("Error fetching user data: ", error);
@@ -58,17 +54,16 @@ const UpdateProfile = () => {
     fetchUserData();
   }, [navigate]);
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   const validatePassword = (password) => {
-    const length = password.length >= 8;
-    const uppercase = /[A-Z]/.test(password);
-    const number = /[0-9]/.test(password);
-    const specialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-
-    setPasswordConditions({ length, uppercase, number, specialChar });
+    const conditions = {
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      number: /[0-9]/.test(password),
+      specialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+    };
+    setPasswordConditions(conditions);
     setPassword(password);
   };
 
@@ -80,35 +75,33 @@ const UpdateProfile = () => {
   const handleUpdate = async () => {
     setError('');
     setSuccess('');
-    const currentUser = auth.currentUser;
 
-    let usernameChanged = false;
-    let passwordChanged = false;
+    if (!auth.currentUser) return;
 
-    if (currentUser) {
-      try {
-        if (username && username !== user.username) {
-          await updateProfile(currentUser, { displayName: username });
-          await updateDoc(doc(db, 'users', currentUser.uid), { username });
-          usernameChanged = true;
-          setSuccess('Nombre de usuario actualizado correctamente');
-        }
-        if (password) {
-          if (password !== confirmPassword) {
-            setError('Debes colocar la misma contraseña en ambos campos')
-            return;
-          }
-          await updatePassword(currentUser, password);
-          passwordChanged = true;
-          setSuccess('Contraseña actualizada correctamente');
-        }
-        if (usernameChanged && passwordChanged) {
-          setSuccess('Datos actualizados correctamente');
-        }
-      } catch (error) {
-        setError('Error al actualizar el perfil. Por favor, intenta de nuevo.');
-        console.error('Error updating profile:', error);
+    try {
+      let updated = false;
+
+      if (username && username !== user.username) {
+        await updateProfile(auth.currentUser, { displayName: username });
+        await updateDoc(doc(db, 'users', auth.currentUser.uid), { username });
+        setSuccess((prev) => prev ? `${prev}, nombre de usuario actualizado` : 'Nombre de usuario actualizado');
+        updated = true;
       }
+
+      if (password && passwordsMatch) {
+        await updatePassword(auth.currentUser, password);
+        setSuccess((prev) => prev ? `${prev}, contraseña actualizada` : 'Contraseña actualizada');
+        updated = true;
+      } else if (!passwordsMatch) {
+        setError('Las contraseñas no coinciden');
+      }
+
+      if (updated) {
+        setSuccess('Datos actualizados correctamente');
+      }
+    } catch (error) {
+      setError('Error al actualizar el perfil. Por favor, intenta de nuevo.');
+      console.error('Error updating profile:', error);
     }
   };
 
@@ -117,37 +110,35 @@ const UpdateProfile = () => {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex flex-col">
       <HeaderDashboard />
-      <div className="flex flex-grow w-full">
-        <div className="w-1/4">
-          <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-        </div>
-        <div className="mx-auto flex flex-col items-center justify-end w-2/5 bg-gray-100">
-          <div className="w-full p-8">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-900">MI PERFIL</h2>
-            </div>
-            <h2 className="mb-4 text-black font-bold text-lg">Información personal</h2>
-            <div className="border border-gray-300 rounded-md p-4 mb-6">
+      <div className="flex flex-grow">
+        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        <main className="flex flex-col flex-grow items-center justify-center p-6 sm:p-10">
+          <div className="w-full max-w-3xl">
+            <h2 className="text-3xl font-bold text-center mb-8">MI PERFIL</h2>
+
+            <section className="bg-white shadow-md rounded-lg p-6 mb-6">
+              <h3 className="text-xl font-semibold mb-4">Información personal</h3>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
-                <h3 className="w-full px-4 py-2">{client.nombre} {client.apellido}</h3>
+                <label className="block text-sm font-medium text-gray-700">Nombre</label>
+                <p className="px-4 py-2">{client.nombre} {client.apellido}</p>
               </div>
               <div className="mb-4">
-                <label className="block text-sm fclientmedium text-gray-700 mb-2">Cédula</label>
-                <h3 className="w-full px-4 py-2">{client.cedula}</h3>
+                <label className="block text-sm font-medium text-gray-700">Cédula</label>
+                <p className="px-4 py-2">{client.cedula}</p>
               </div>
               <div>
-                <label className="block text-sm fclientmedium text-gray-700 mb-2">Fecha de nacimiento</label>
-                <h3 className="w-full px-4 py-2">{client.fechaNacimiento}</h3>
+                <label className="block text-sm font-medium text-gray-700">Fecha de nacimiento</label>
+                <p className="px-4 py-2">{client.fechaNacimiento}</p>
               </div>
-            </div>
+            </section>
 
-            <h2 className="mb-4 text-black font-bold text-lg">Mantén actualizada tu información</h2>
-            <div className="border border-gray-300 rounded-md p-4 mb-6">
+            <section className="bg-white shadow-md rounded-lg p-6">
+              <h3 className="text-xl font-semibold mb-4">Mantén actualizada tu información</h3>
+
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Nombre de usuario</label>
+                <label className="block text-sm font-medium text-gray-700">Nombre de usuario</label>
                 <input
                   type="text"
                   className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -155,80 +146,77 @@ const UpdateProfile = () => {
                   onChange={(e) => setUsername(e.target.value)}
                 />
               </div>
-              <div className="grid grid-cols-2  gap-3 ">
-                <label className=" block text-sm font-medium text-gray-700">Nueva contraseña</label>
-                <label className=" block text-sm font-medium text-gray-700">Nueva contraseña</label>
-                <div className="flex items-center relative">
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="relative">
+                  <label className="block text-sm font-medium text-gray-700">Nueva contraseña</label>
                   <input
-                    id="password"
-                    name="password"
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => validatePassword(e.target.value)}
-                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                     placeholder="Contraseña"
-                    required
                   />
                   <button
                     type="button"
-                    className="absolute right-0 pr-3 flex items-center top-1/2 transform -translate-y-1/2"
+                    className="absolute right-3 top-9 transform -translate-y-1/2"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? <FaRegEye /> : <FaRegEyeSlash />}
                   </button>
                 </div>
-                
-                <div className="flex items-center relative">
+
+                <div className="relative">
+                  <label className="block text-sm font-medium text-gray-700">Repetir contraseña</label>
                   <input
-                    id="confirmPassword"
-                    name="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
                     value={confirmPassword}
                     onChange={(e) => handleConfirmPassword(e.target.value)}
-                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                     placeholder="Repetir contraseña"
-                    required
                   />
                   <button
                     type="button"
-                    className="absolute right-0 pr-3 flex items-center top-1/2 transform -translate-y-1/2"
+                    className="absolute right-3 top-9 transform -translate-y-1/2"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
                     {showConfirmPassword ? <FaRegEye /> : <FaRegEyeSlash />}
                   </button>
                 </div>
-                <div className="col-span-2 mt-2 mb-4">
-                  <ul className="text-sm text-gray-600">
-                    <li className={`flex items-center ${passwordConditions.length ? 'text-green-600' : ''}`}>
-                      {passwordConditions.length ? '✔' : '✘'} Al menos 8 caracteres
-                    </li>
-                    <li className={`flex items-center ${passwordConditions.uppercase ? 'text-green-600' : ''}`}>
-                      {passwordConditions.uppercase ? '✔' : '✘'} Contiene mayúsculas
-                    </li>
-                    <li className={`flex items-center ${passwordConditions.number ? 'text-green-600' : ''}`}>
-                      {passwordConditions.number ? '✔' : '✘'} Contiene números
-                    </li>
-                    <li className={`flex items-center ${passwordConditions.specialChar ? 'text-green-600' : ''}`}>
-                      {passwordConditions.specialChar ? '✔' : '✘'} Contiene caracteres especiales
-                    </li>
-                  </ul>
-                </div>
+              </div>
 
+              <div className="my-4 text-sm text-gray-600">
+                <ul>
+                  <li className={`${passwordConditions.length ? 'text-green-600' : ''}`}>
+                    {passwordConditions.length ? '✔' : '✘'} Al menos 8 caracteres
+                  </li>
+                  <li className={`${passwordConditions.uppercase ? 'text-green-600' : ''}`}>
+                    {passwordConditions.uppercase ? '✔' : '✘'} Contiene mayúsculas
+                  </li>
+                  <li className={`${passwordConditions.number ? 'text-green-600' : ''}`}>
+                    {passwordConditions.number ? '✔' : '✘'} Contiene números
+                  </li>
+                  <li className={`${passwordConditions.specialChar ? 'text-green-600' : ''}`}>
+                    {passwordConditions.specialChar ? '✔' : '✘'} Contiene caracteres especiales
+                  </li>
+                </ul>
               </div>
-              {!passwordsMatch && <p className="my-2 text-sm text-red-600">Las contraseñas no coinciden</p>}
-              {error && <label className="block text-red-600 mb-4">{error}</label>}
-              {success && <label className="block text-green-600 mb-4 text-center">{success}</label>}
+
+              {!passwordsMatch && <p className="text-red-600">Las contraseñas no coinciden</p>}
+              {error && <p className="text-red-600">{error}</p>}
+              {success && <p className="text-green-600 text-center">{success}</p>}
+
               <div className="text-center">
-                <input
-                  className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                  type="button"
+                <button
+                  className="bg-sky-900 text-white px-4 py-2 rounded-md shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   onClick={handleUpdate}
-                  value="Actualizar datos"
-                />
+                >
+                  Actualizar datos
+                </button>
               </div>
-            </div>
+            </section>
           </div>
-        </div>
+        </main>
       </div>
     </div>
   );
