@@ -14,6 +14,7 @@ const Login = (props) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [passwordInputTouched, setPasswordInputTouched] = useState(false);
   const navigate = useNavigate();
   const [usernameError, setUsernameError] = useState('');
   const [passwordError, setPasswordError] = useState('');
@@ -112,16 +113,34 @@ const Login = (props) => {
               <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">
                 Contraseña
               </label>
-              <input
-                id="password"
-                name="password"
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(ev) => setPassword(ev.target.value)}
-                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                placeholder="Ingresa tu contraseña"
-                required
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(ev) => {
+                    setPassword(ev.target.value);
+                    setPasswordInputTouched(true);
+                  }}
+                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  placeholder="Ingresa tu contraseña"
+                  required
+                />
+                {passwordInputTouched && (
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    <img
+                      src={showPassword ? EyeOpenIcon : EyeClosedIcon}
+                      alt="Toggle Password Visibility"
+                      className="h-5 w-5"
+                    />
+                  </button>
+                )}
+              </div>
               {passwordError && <p className="mt-2 text-sm text-red-600">{passwordError}</p>}
               <Link to="/forgot-password" className="text-sm font-semibold text-sky-500 hover:text-indigo-500 absolute right-0 mt-1">
                 ¿Olvidaste tu contraseña?
@@ -152,4 +171,3 @@ const Login = (props) => {
 };
 
 export default Login;
-
