@@ -69,8 +69,8 @@ const ForgotUsername = () => {
       const data = await response.json();
 
       if (data.success) {
-        localStorage.setItem('email', data.email);
-        navigate('/change-username');
+        localStorage.setItem('email', email); // Guarda el email para usarlo después
+        navigate('/change-username'); // Redirige a la página para cambiar el nombre de usuario
       } else {
         setError(data.message || 'Código incorrecto.');
       }

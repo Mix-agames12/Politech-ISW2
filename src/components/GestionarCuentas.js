@@ -9,35 +9,35 @@ import { IoMdPersonAdd } from "react-icons/io";
 import { AuthContext } from '../context/AuthContext';
 
 const GestionarCuentas = () => {
-  const { user, loading: authLoading } = useContext(AuthContext);
-  const [accounts, setAccounts] = useState([]);
-  const [showAccountNumbers, setShowAccountNumbers] = useState({});
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const navigate = useNavigate();
+    const { user, loading: authLoading } = useContext(AuthContext);
+    const [accounts, setAccounts] = useState([]);
+    const [showAccountNumbers, setShowAccountNumbers] = useState({});
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const navigate = useNavigate();
 
-  useEffect(() => {
-    if (authLoading) return;
+    useEffect(() => {
+        if (authLoading) return;
 
-    if (!user) {
-      navigateToLogin();
-      return;
-    }
+        if (!user) {
+            navigateToLogin();
+            return;
+        }
 
-    subscribeToAccounts(user.uid);
-  }, [user, authLoading, navigate]);
+        subscribeToAccounts(user.uid);
+    }, [user, authLoading, navigate]);
 
-  const navigateToLogin = useCallback(() => {
-    console.log('No user found, redirecting to login');
-    navigate('/login');
-  }, [navigate]);
+    const navigateToLogin = useCallback(() => {
+        console.log('No user found, redirecting to login');
+        navigate('/login');
+    }, [navigate]);
 
-  const subscribeToAccounts = useCallback((userId) => {
-    console.log('Subscribing to accounts for user:', userId);
+    const subscribeToAccounts = useCallback((userId) => {
+        console.log('Subscribing to accounts for user:', userId);
 
-    const q = query(
-      collection(db, 'cuentas'),
-      where('id', '==', userId)
-    );
+        const q = query(
+            collection(db, 'cuentas'),
+            where('id', '==', userId)
+        );
 
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
             const allAccounts = querySnapshot.docs.map((doc, index) => ({
@@ -48,23 +48,23 @@ const GestionarCuentas = () => {
             setAccounts(allAccounts);
         });
 
-    return () => unsubscribe();
-  }, []);
+        return () => unsubscribe();
+    }, []);
 
-  const generateAccountName = (tipoCuenta, accountNumber) => {
-    const suffix = accountNumber.slice(-4);
-    const prefix = tipoCuenta.toLowerCase() === 'ahorros' ? 'AHO' : 'CORR';
-    return `${prefix}${suffix}`;
-  };
+    const generateAccountName = (tipoCuenta, accountNumber) => {
+        const suffix = accountNumber.slice(-4);
+        const prefix = tipoCuenta.toLowerCase() === 'ahorros' ? 'AHO' : 'CORR';
+        return `${prefix}${suffix}`;
+    };
 
-  const toggleAccountNumberVisibility = (accountId) => {
-    setShowAccountNumbers(prevState => ({
-      ...prevState,
-      [accountId]: !prevState[accountId]
-    }));
-  };
+    const toggleAccountNumberVisibility = (accountId) => {
+        setShowAccountNumbers(prevState => ({
+            ...prevState,
+            [accountId]: !prevState[accountId]
+        }));
+    };
 
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+    const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
     const handleAccountClick = (accountNumber) => {
         navigate(`/movimientos?account=${accountNumber}`, { state: { fromProducts: true } });
@@ -72,10 +72,10 @@ const GestionarCuentas = () => {
 
     const handleCreateAccountClick = () => navigate('/crear-cuenta');
 
-  if (authLoading) return <p>Cargando...</p>;
+    if (authLoading) return <p>Cargando...</p>;
 
-  const savingsAccounts = accounts.filter(account => account.tipoCuenta.toLowerCase() === 'ahorros');
-  const currentAccounts = accounts.filter(account => account.tipoCuenta.toLowerCase() === 'corriente');
+    const savingsAccounts = accounts.filter(account => account.tipoCuenta.toLowerCase() === 'ahorros');
+    const currentAccounts = accounts.filter(account => account.tipoCuenta.toLowerCase() === 'corriente');
 
     const renderAccountCard = (account) => (
         <div
@@ -104,14 +104,14 @@ const GestionarCuentas = () => {
         </div>
     );
 
-  const renderAccountSection = (title, accounts) => (
-    <>
-      <h3 className="text-xl font-semibold mb-4 text-left">{title}</h3>
-      <div className="account-cards grid gap-5 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {accounts.length > 0 ? accounts.map(renderAccountCard) : <p>No se encontraron cuentas.</p>}
-      </div>
-    </>
-  );
+    const renderAccountSection = (title, accounts) => (
+        <>
+            <h3 className="text-xl font-semibold mb-4 text-left">{title}</h3>
+            <div className="account-cards grid gap-5 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {accounts.length > 0 ? accounts.map(renderAccountCard) : <p>No se encontraron cuentas.</p>}
+            </div>
+        </>
+    );
 
     return (
         <div className="min-h-screen flex flex-col pt-16">
@@ -122,7 +122,7 @@ const GestionarCuentas = () => {
                     <div className="flex justify-between items-center w-full">
                         <h2 className="text-3xl font-bold mb-4 text-center lg:text-left">Mis Productos</h2>
                         <button 
-                            className="bg-sky-900 text-white font-semibold p-2 rounded-lg hover:bg-sky-600 transition-colors duration-300 fixed right-20 top-40 z-50"
+                            className="bg-sky-900 text-white font-semibold p-2 rounded-lg hover:bg-sky-600 transition-colors duration-300 fixed right-20 top-25 z-50"
                             onClick={handleCreateAccountClick}
                         >
                             <IoMdPersonAdd className="h-6 w-6 " />
