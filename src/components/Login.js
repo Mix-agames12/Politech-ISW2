@@ -4,8 +4,7 @@ import { auth, db } from '../firebaseConfig';
 import { signInWithEmailAndPassword, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { collection, query, where, getDocs, getDoc, doc } from 'firebase/firestore';
 import Buho from '../assets/images/buho.png';
-import EyeOpenIcon from '../assets/images/eye-open.png';
-import EyeClosedIcon from '../assets/images/eye-closed.png';
+import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa';
 import { HeaderLogin } from './HeaderLogin';
 import { AuthContext } from '../context/AuthContext';
 import Footer from './Footer';
@@ -88,7 +87,7 @@ const Login = (props) => {
           <h2 className="text-center text-2xl font-bold leading-9 tracking-tight text-gray-900 mb-6">
             Inicio de Sesión
           </h2>
-          <form className="space-y-6 w-full" onSubmit={handleLogin}>
+          <form className="space-y-10 w-full" onSubmit={handleLogin}>
             <div className="relative">
               <label htmlFor="username" className="block text-sm font-medium leading-6 text-gray-900">
                 Nombre de usuario
@@ -104,7 +103,7 @@ const Login = (props) => {
                 required
               />
               {usernameError && <p className="mt-2 text-sm text-red-600">{usernameError}</p>}
-              <Link to="/forgot-username" className="text-sm font-semibold text-sky-500 hover:text-indigo-500 absolute right-0 mt-1">
+              <Link to="/forgot-username" className="text-xs font-semibold text-sky-500 hover:text-indigo-500 absolute right-0 mt-1">
                 ¿Olvidaste tu usuario?
               </Link>
             </div>
@@ -130,24 +129,20 @@ const Login = (props) => {
                 {passwordInputTouched && (
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                    className="absolute right-0 pr-3 flex items-center top-1/2 transform -translate-y-1/2"
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    <img
-                      src={showPassword ? EyeOpenIcon : EyeClosedIcon}
-                      alt="Toggle Password Visibility"
-                      className="h-5 w-5"
-                    />
+                    {showPassword ? <FaRegEye /> : <FaRegEyeSlash />}
                   </button>
                 )}
               </div>
               {passwordError && <p className="mt-2 text-sm text-red-600">{passwordError}</p>}
-              <Link to="/forgot-password" className="text-sm font-semibold text-sky-500 hover:text-indigo-500 absolute right-0 mt-1">
+              <Link to="/forgot-password" className="text-xs font-semibold text-sky-500 hover:text-indigo-500 absolute right-0 mt-1">
                 ¿Olvidaste tu contraseña?
               </Link>
             </div>
 
-            <div>
+            <div className="mt-4">
               <button
                 type="submit"
                 className="flex w-full justify-center rounded-md bg-sky-900 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-sky-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
