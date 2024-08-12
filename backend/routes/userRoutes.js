@@ -1,9 +1,8 @@
 const express = require('express');
-const router = express.Router();
-const userController = require('../controllers/userController');
+const { requestUsernameReset } = require('../controllers/userController');
 
-// Rutas para restablecimiento de nombre de usuario
-router.post('/request-username-reset', userController.requestUsernameReset);
-router.post('/reset-username', userController.resetUsername);
+const router = express.Router();
+
+router.post('/request-username-reset', requestUsernameReset);
 
 module.exports = router;
