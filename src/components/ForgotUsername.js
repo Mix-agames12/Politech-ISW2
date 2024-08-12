@@ -32,7 +32,7 @@ const ForgotUsername = () => {
     }
 
     try {
-      const response = await fetch('https://politech-isw2.onrender.com/auth/send-code', {
+      const response = await fetch('https://politech-isw2.onrender.com/users/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),

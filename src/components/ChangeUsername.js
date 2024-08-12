@@ -30,17 +30,16 @@ const ChangeUsername = () => {
     }
 
     try {
-      const params = new URLSearchParams(window.location.search);
-      const token = params.get('token');
+      const email = localStorage.getItem('email'); // Recuperar el correo almacenado
 
-      if (!token) {
-        throw new Error('Token de restablecimiento no encontrado.');
+      if (!email) {
+        throw new Error('Correo no encontrado');
       }
 
       const response = await fetch('https://politech-isw2.onrender.com/users/reset-username', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, newUsername }),
+        body: JSON.stringify({ email, newUsername }),
       });
 
       if (response.ok) {
