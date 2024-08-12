@@ -69,7 +69,7 @@ const GenerarPago = () => {
     }
 
     try {
-      const response = await fetch('https://politech-isw2.onrender.com/send-code', {
+      const response = await fetch('https://politech-isw2.onrender.com/auth/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: user.email })
