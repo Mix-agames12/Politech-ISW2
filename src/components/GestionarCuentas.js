@@ -107,7 +107,7 @@ const GestionarCuentas = () => {
     const renderAccountSection = (title, accounts) => (
         <>
             <h3 className="text-xl font-semibold mb-4 text-left">{title}</h3>
-            <div className="account-cards grid gap-5 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="account-cards grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {accounts.length > 0 ? accounts.map(renderAccountCard) : <p>No se encontraron cuentas.</p>}
             </div>
         </>
@@ -122,7 +122,7 @@ const GestionarCuentas = () => {
                     <div className="flex justify-between items-center w-full">
                         <h2 className="text-3xl font-bold mb-4 text-center lg:text-left">Mis Productos</h2>
                         <button 
-                            className="bg-sky-900 text-white font-semibold p-2 rounded-lg hover:bg-sky-600 transition-colors duration-300 fixed right-20 bottom-20 z-50"
+                            className="bg-sky-900 text-white font-semibold p-2 rounded-lg hover:bg-sky-600 transition-colors duration-300 fixed md:right-20 md:top-25 lg:right-20 lg:bottom-20 z-50"
                             onClick={handleCreateAccountClick}
                         >
                             <IoMdPersonAdd className="h-6 w-6 " />
