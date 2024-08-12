@@ -4,7 +4,7 @@ const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const sendResetEmail = async (email, token) => {
-    const resetLink = `https://politechsw.app.web/change-username?token=${token}`;
+    const resetLink = `https://politechsw.web.app/change-username?token=${token}`;
 
     const msg = {
         to: email,
