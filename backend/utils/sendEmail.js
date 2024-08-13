@@ -4,7 +4,9 @@ exports.sendEmail = async (to, subject, htmlContent) => {
   try {
     // Configura el transportador de nodemailer
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: "smtp.gmail.com",
+      port:465,
+      secure:true,
       auth: {
         user: 'politechsw@gmail.com', // Tu dirección de correo de Gmail
         pass: 'Prueba1234.'// Tu contraseña de la cuenta de Gmail
