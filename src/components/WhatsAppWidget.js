@@ -1,5 +1,5 @@
 // src/WhatsAppWidget.js
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 
 const WhatsAppWidget = () => {
   useEffect(() => {

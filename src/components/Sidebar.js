@@ -72,10 +72,10 @@ export const Sidebar = ({ isOpen = true, toggleSidebar }) => {
                 {!isCollapsed && <span className="ms-3">Menú</span>}
               </button>
             </li>
-            {renderMenuItem('/gestionar-cuentas', GoHome, 'Mis Productos')}
-            {renderMenuItem('/transaction', GoArrowSwitch, 'Transferencias')}
-            {renderMenuItem('/pago-servicios', BiStore, 'Pago de servicios')}
-            {renderMenuItem('/movimientos', BiTable, 'Movimientos')}
+            {renderMenuItem('/manage-accounts', GoHome, 'Mis Productos')}
+            {renderMenuItem('/transfer', GoArrowSwitch, 'Transferencias')}
+            {renderMenuItem('/bills-payment', BiStore, 'Pago de servicios')}
+            {renderMenuItem('/movements', BiTable, 'Movimientos')}
           </ul>
         </div>
       </aside>

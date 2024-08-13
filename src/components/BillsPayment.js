@@ -14,7 +14,7 @@ const BillsPayment = () => {
   };
 
   const handlePayment = (service, amount) => {
-    navigate('/generar-pago', { state: { service, amount } }); // Navegación a una página para proceder al pago
+    navigate('/payment-service', { state: { service, amount } }); // Navegación a una página para proceder al pago
   };
 
   return (
@@ -37,7 +37,7 @@ const BillsPayment = () => {
               >
                 <h4 className="account-number font-bold text-lg text-center">Agua potable</h4>
                 <MdWaterDrop className="w-8 h-8 mx-auto mb-4" />
-                <p>Realiza tu pago con tu número de cédula</p>
+                <p>Realiza tu pago automáticamente</p>
               </div>
               <div
                 className="account-card bg-sky-50 shadow-md rounded-lg p-6 lg:p-5 xl:p-7 hover:scale-105 transition-transform duration-300 cursor-pointer border border-gray-300 w-full max-w-xs"
@@ -45,7 +45,7 @@ const BillsPayment = () => {
               >
                 <h4 className="account-number font-bold text-lg text-center">Electricidad</h4>
                 <MdElectricBolt className="w-8 h-8 mx-auto mb-4" />
-                <p>Realiza tu pago con tu número de cédula</p>
+                <p>Realiza tu pago automáticamente</p>
               </div>
               <div
                 className="account-card bg-sky-50 shadow-md rounded-lg p-6 lg:p-5 xl:p-7 hover:scale-105 transition-transform duration-300 cursor-pointer border border-gray-300 w-full max-w-xs"
@@ -53,7 +53,7 @@ const BillsPayment = () => {
               >
                 <h4 className="account-number font-bold text-lg text-center">Teléfono</h4>
                 <MdLocalPhone className="w-8 h-8 mx-auto mb-4" />
-                <p>Realiza tu pago con tu número de cédula</p>
+                <p>Realiza tu pago automáticamente</p>
               </div>
               <div
                 className="account-card bg-sky-50 shadow-md rounded-lg p-6 lg:p-5 xl:p-7 hover:scale-105 transition-transform duration-300 cursor-pointer border border-gray-300 w-full max-w-xs"
@@ -61,7 +61,7 @@ const BillsPayment = () => {
               >
                 <h4 className="account-number font-bold text-lg text-center">Servicio de internet</h4>
                 <TbNetwork className="w-8 h-8 mx-auto mb-4" />
-                <p>Realiza tu pago con tu número de cédula</p>
+                <p>Realiza tu pago automáticamente</p>
               </div>
             </div>
           </div>

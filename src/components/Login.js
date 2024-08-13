@@ -65,7 +65,7 @@ const Login = (props) => {
         setUser(firebaseUser);
       }
 
-      navigate('/gestionar-cuentas');
+      navigate('/manage-accounts');
     } catch (error) {
       console.error('Error al iniciar sesión:', error);
       if (error.code === 'auth/user-not-found') {
