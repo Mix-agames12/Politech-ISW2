@@ -1,29 +1,29 @@
-const nodemailer = require('nodemailer');
+const mailjet = require('node-mailjet').apiConnect(process.env.MAILJET_API_KEY, process.env.MAILJET_SECRET_KEY);
 
 exports.sendEmail = async (to, subject, htmlContent) => {
   try {
-    // Configura el transportador de nodemailer
-    const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port:465,
-      secure:true,
-      auth: {
-        user: 'politechsw@gmail.com', // Tu dirección de correo de Gmail
-        pass: 'Prueba1234.'// Tu contraseña de la cuenta de Gmail
-      }
-    });
-
-    // Configura los detalles del correo electrónico
-    const mailOptions = {
-      from: '"Politech" <politechsw@gmail.com>', // Remitente
-      to: to, // Receptor
-      subject: subject, // Asunto
-      html: htmlContent // Contenido en formato HTML
-    };
-
-    // Envía el correo
-    const result = await transporter.sendMail(mailOptions);
-    console.log('Correo enviado:', result.response);
+    const request = mailjet
+      .post("send", { version: 'v3.1' })
+      .request({
+        "Messages": [
+          {
+            "From": {
+              "Email": "politechsw@gmail.com",
+              "Name": "Politech"
+            },
+            "To": [
+              {
+                "Email": to,
+                "Name": "Usuario"
+              }
+            ],
+            "Subject": subject,
+            "HTMLPart": htmlContent,
+          }
+        ]
+      });
+    const result = await request;
+    console.log(result.body);
   } catch (err) {
     console.error('Error al enviar el correo:', err);
     throw err;
